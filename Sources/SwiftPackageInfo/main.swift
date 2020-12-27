@@ -60,7 +60,16 @@ struct SwiftPackageInfo: ParsableCommand {
             """
         )
 
-        Shell.run(arguments: "xcodebuild","--help")
+        Shell.run(arguments: "xcodebuild", "--help")
+
+        Shell.run("xcodebuild --help")
+
+        Shell.run(
+            """
+            xcodebuild
+            --help
+            """
+        )
     }
 }
 

@@ -15,18 +15,58 @@ struct Shell {
         output: Pipe = .init(),
         arguments: String...
     ) -> Int32 {
-        let task = Process()
-        task.launchPath = launchPath
-        task.arguments = arguments
-        task.standardOutput = output
+        runProcess(
+            launchPath: launchPath,
+            workingDirectory: workingDirectory,
+            output: output,
+            arguments: arguments
+        )
+    }
 
-        if let workingDirectory = workingDirectory {
-            task.currentDirectoryPath = workingDirectory
+    @discardableResult
+    static func run(
+        _ command: String,
+        launchPath: String = "/usr/bin/env",
+        workingDirectory: String? = FileManager.default.currentDirectoryPath,
+        output: Pipe = .init()
+    ) -> Int32 {
+        let commands = command.split(whereSeparator: \.isWhitespace)
+
+        let arguments: [String]
+        if commands.count > 1 {
+            arguments = commands.map { String($0) }
+        } else {
+            arguments = command
+                .split { [" -", " --"].contains(String($0)) }
+                .map { String($0) }
         }
 
-        task.launch()
-        task.waitUntilExit()
+        return runProcess(
+            launchPath: launchPath,
+            workingDirectory: workingDirectory,
+            output: output,
+            arguments: arguments
+        )
+    }
 
-        return task.terminationStatus
+    private static func runProcess(
+        launchPath: String = "/usr/bin/env",
+        workingDirectory: String? = FileManager.default.currentDirectoryPath,
+        output: Pipe = .init(),
+        arguments: [String]
+    ) -> Int32 {
+        let process = Process()
+        process.launchPath = launchPath
+        process.arguments = arguments
+        process.standardOutput = output
+
+        if let workingDirectory = workingDirectory {
+            process.currentDirectoryPath = workingDirectory
+        }
+
+        process.launch()
+        process.waitUntilExit()
+
+        return process.terminationStatus
     }
 }
