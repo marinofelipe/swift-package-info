@@ -8,17 +8,23 @@
 import Foundation
 
 struct Shell {
+    struct Output: Equatable {
+        let succeeded: Bool
+        let outputText: String?
+        let errorText: String?
+    }
+
     @discardableResult
     static func run(
         launchPath: String = "/usr/bin/env",
         workingDirectory: String? = FileManager.default.currentDirectoryPath,
-        output: Pipe = .init(),
+        outputPipe: Pipe = .init(),
         arguments: String...
-    ) -> Int32 {
+    ) -> Output {
         runProcess(
             launchPath: launchPath,
             workingDirectory: workingDirectory,
-            output: output,
+            outputPipe: outputPipe,
             arguments: arguments
         )
     }
@@ -28,8 +34,8 @@ struct Shell {
         _ command: String,
         launchPath: String = "/usr/bin/env",
         workingDirectory: String? = FileManager.default.currentDirectoryPath,
-        output: Pipe = .init()
-    ) -> Int32 {
+        outputPipe: Pipe = .init()
+    ) -> Output {
         let commands = command.split(whereSeparator: \.isWhitespace)
 
         let arguments: [String]
@@ -44,7 +50,7 @@ struct Shell {
         return runProcess(
             launchPath: launchPath,
             workingDirectory: workingDirectory,
-            output: output,
+            outputPipe: outputPipe,
             arguments: arguments
         )
     }
@@ -52,13 +58,14 @@ struct Shell {
     private static func runProcess(
         launchPath: String = "/usr/bin/env",
         workingDirectory: String? = FileManager.default.currentDirectoryPath,
-        output: Pipe = .init(),
+        outputPipe: Pipe = .init(),
+        errorPipe: Pipe = .init(),
         arguments: [String]
-    ) -> Int32 {
+    ) -> Output {
         let process = Process()
         process.launchPath = launchPath
         process.arguments = arguments
-        process.standardOutput = output
+        process.standardOutput = outputPipe
 
         if let workingDirectory = workingDirectory {
             process.currentDirectoryPath = workingDirectory
@@ -67,6 +74,18 @@ struct Shell {
         process.launch()
         process.waitUntilExit()
 
-        return process.terminationStatus
+        let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+        let outputText = String(data: outputData, encoding: .utf8)?
+            .trimmingCharacters(in: .newlines)
+
+        let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+        let errorText = String(data: errorData, encoding: .utf8)?
+            .trimmingCharacters(in: .newlines)
+
+        return .init(
+            succeeded: process.terminationStatus == 0,
+            outputText: outputText,
+            errorText: errorText
+        )
     }
 }
