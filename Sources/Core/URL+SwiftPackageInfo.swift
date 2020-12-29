@@ -1,20 +1,13 @@
 //
 //  URL+SwiftPackageInfo.swift
 //
-//  Acknowledgement: This piece of code is inspired by StackOverflow post and top-voted answer on how to get directory size on OS X:
+//  Acknowledgement: This piece of code is inspired by StackOverflow post's top-voted answer on how to get directory size on OS X:
 //  https://stackoverflow.com/questions/32814535/how-to-get-directory-size-with-swift-on-os-x
 //
 //  Created by Marino Felipe on 28.12.20.
 //
 
 import Foundation
-
-struct SizeOnDisk: Equatable {
-    let amount: Int
-    let formatted: String
-
-    static let empty: SizeOnDisk = .init(amount: 0, formatted: "0.0")
-}
 
 extension URL {
     static let fileByteCountFormatter: ByteCountFormatter = {
@@ -27,16 +20,10 @@ extension URL {
         try resourceValues(forKeys: [.totalFileAllocatedSizeKey]).totalFileAllocatedSize ?? 0
     }
 
-    /// check if the URL is a directory and if it is reachable
-    func isDirectoryAndReachable() throws -> Bool {
-        guard try resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true else {
-            return false
-        }
-
-        return try checkResourceIsReachable()
+    func isDirectory() throws -> Bool {
+        try resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true
     }
 
-    /// returns total allocated size of a the directory including its subFolders or not
     func directoryTotalAllocatedSize(
         fileManager: FileManager = .default,
         includingSubfolders: Bool = false
@@ -56,9 +43,8 @@ extension URL {
         return try allocatedSizeWithoutSubfolders()
     }
 
-    /// returns the directory total size on disk
     func sizeOnDisk() throws -> SizeOnDisk {
-        let size = try isDirectoryAndReachable()
+        let size = try isDirectory()
             ? try directoryTotalAllocatedSize(includingSubfolders: true)
             : try totalFileAllocatedSize()
 
