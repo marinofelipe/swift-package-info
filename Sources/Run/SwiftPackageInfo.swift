@@ -1,8 +1,16 @@
+//
+//  SwiftPackageInfo.swift
+//  
+//
+//  Created by Marino Felipe on 29.12.20.
+//
+
 import ArgumentParser
+import Core
 
 /// A command that analyzes a given Swift Package
-struct SwiftPackageInfo: ParsableCommand {
-    static var configuration = CommandConfiguration(
+public struct SwiftPackageInfo: ParsableCommand {
+    public static var configuration = CommandConfiguration(
         abstract: "Check the estimated size of a Swift Package.",
         discussion: """
         Check key information about a Swift Package, such as "ArgumentParser".
@@ -49,7 +57,9 @@ struct SwiftPackageInfo: ParsableCommand {
     )
     var verbose = false
 
-    func run() throws {
+    public init() {}
+
+    public func run() throws {
         guard CommandLine.argc > 1 else { throw CleanExit.helpRequest() }
 
         debugPrint(
@@ -59,18 +69,7 @@ struct SwiftPackageInfo: ParsableCommand {
             -library: \(library ?? "")
             """
         )
-
-        Shell.run(arguments: "xcodebuild", "--help")
-
-        Shell.run("xcodebuild --help")
-
-        Shell.run(
-            """
-            xcodebuild
-            --help
-            """
-        )
+        Measure.buildApp()
+        print("App size \(Measure.emptyAppSize()) bytes")
     }
 }
-
-SwiftPackageInfo.main()

@@ -8,10 +8,28 @@
 import Foundation
 
 struct Shell {
-    struct Output: Equatable {
+    struct Output: Equatable, CustomStringConvertible {
         let succeeded: Bool
         let outputText: String?
         let errorText: String?
+
+        var description: String {
+            if succeeded {
+                return """
+                    Command did run SUCCESSFULLY!
+                    -----------------------------
+                    OUTPUT: \(outputText ?? "")
+                """
+            } else {
+                return """
+                    FAILED to run command
+                    -----------------------------
+                    OUTPUT: \(outputText ?? "")
+                    -----------------------------
+                    ERROR: \(errorText ?? "")
+                """
+            }
+        }
     }
 
     @discardableResult
@@ -66,26 +84,43 @@ struct Shell {
         process.launchPath = launchPath
         process.arguments = arguments
         process.standardOutput = outputPipe
+        process.standardError = errorPipe
 
         if let workingDirectory = workingDirectory {
             process.currentDirectoryPath = workingDirectory
         }
 
+        Printer.print("Running process...")
+
         process.launch()
         process.waitUntilExit()
 
-        let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-        let outputText = String(data: outputData, encoding: .utf8)?
-            .trimmingCharacters(in: .newlines)
+        let semaphore = DispatchSemaphore(value: 0)
 
-        let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-        let errorText = String(data: errorData, encoding: .utf8)?
-            .trimmingCharacters(in: .newlines)
+        let completionHandler: (Process) -> Output = { process in
+            let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+            let outputText = String(data: outputData, encoding: .utf8)?
+                .trimmingCharacters(in: .newlines)
 
-        return .init(
-            succeeded: process.terminationStatus == 0,
-            outputText: outputText,
-            errorText: errorText
-        )
+            let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+            let errorText = String(data: errorData, encoding: .utf8)?
+                .trimmingCharacters(in: .newlines)
+
+            return .init(
+                succeeded: process.terminationStatus == 0,
+                outputText: outputText,
+                errorText: errorText
+            )
+        }
+
+        process.terminationHandler = { _ in
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+
+        Printer.print("Running finished...")
+
+        return completionHandler(process)
     }
 }

@@ -1,7 +1,13 @@
-import XCTest
-import class Foundation.Bundle
+//
+//  RunTests.swift
+//  
+//
+//  Created by Marino Felipe on 28.12.20.
+//
 
-final class swift_package_infoTests: XCTestCase {
+import XCTest
+
+final class RunTests: XCTestCase {
     func testExample() throws {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
@@ -31,14 +37,14 @@ final class swift_package_infoTests: XCTestCase {
 
     /// Returns path to the built products directory.
     var productsDirectory: URL {
-      #if os(macOS)
+        #if os(macOS)
         for bundle in Bundle.allBundles where bundle.bundlePath.hasSuffix(".xctest") {
             return bundle.bundleURL.deletingLastPathComponent()
         }
         fatalError("couldn't find the products directory")
-      #else
+        #else
         return Bundle.main.bundleURL
-      #endif
+        #endif
     }
 
     static var allTests = [

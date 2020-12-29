@@ -1,0 +1,1 @@
+SwiftPackageInfo.main()

@@ -5,25 +5,43 @@ import PackageDescription
 
 let package = Package(
     name: "swift-package-info",
+    platforms: [
+        .macOS(.v10_10)
+    ],
     products: [
-        .library(
+        .executable(
             name: "SwiftPackageInfo",
-            targets: ["SwiftPackageInfo"]
-        ),
+            targets: [
+                "Run"
+            ]
+        )
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.3.0")
     ],
     targets: [
         .target(
-            name: "SwiftPackageInfo",
+            name: "Run",
             dependencies: [
+                .target(name: "Core"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]
         ),
         .testTarget(
-            name: "SwiftPackageInfoTests",
-            dependencies: ["SwiftPackageInfo"]
+            name: "RunTests",
+            dependencies: [
+                .target(name: "Run")
+            ]
+        ),
+        .target(
+            name: "Core",
+            dependencies: []
+        ),
+        .testTarget(
+            name: "CoreTests",
+            dependencies: [
+                .target(name: "Core")
+            ]
         )
     ]
 )
