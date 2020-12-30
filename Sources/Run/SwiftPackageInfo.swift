@@ -11,14 +11,22 @@ import struct Foundation.URL
 
 /// A command that analyzes a given Swift Package
 public struct SwiftPackageInfo: ParsableCommand {
+    static let estimatedSizeNote = """
+    * Note: When adding a Swift Package dependency to your project, its final contributed binary size varies depending on
+    the platform, user devices, etc. The app binary goes through optimization processes, such as app thinning,
+    which decrease the final binary size.
+
+    The reported size here though can give you a good general idea of the binary impact, and it can help you on making
+    a decision to adopt or not such dependency. Be careful and mindful of your decision! *
+    """
+
     public static var configuration = CommandConfiguration(
         abstract: "Check the estimated size of a Swift Package.",
         discussion: """
-        Provides you with key information about a Swift Package product,
+        Measures the estimated binary size impact of a Swift Package product,
         such as "ArgumentParser" declared on `swift-argument-parser`.
 
-        Estimation of binary size it would contribute to your app,
-        its direct dependencies, and more...
+        \(estimatedSizeNote)
         """,
         version: "1.0"
     )
@@ -92,9 +100,7 @@ public struct SwiftPackageInfo: ParsableCommand {
         |
         |  Binary size increased by: \(formattedIncreasedSize)
         |
-        |  * Note that the sizes reported are an estimation. When adding this dependency to your project, for the final user it will go through
-        |  optimization processes, such as app thinning, which will decrease the final size the dependency adds to that binary.
-        |  Even then, the added size gives a good idea of the amount of source code you're adding to your app. Be careful and mindful of your decision! *
+        |  \(Self.estimatedSizeNote)
         + ----------------------------------------------------------
         """
 
