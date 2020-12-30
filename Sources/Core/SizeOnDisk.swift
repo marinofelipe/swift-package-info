@@ -5,7 +5,7 @@
 //  Created by Marino Felipe on 29.12.20.
 //
 
-public struct SizeOnDisk: Equatable, CustomConsoleMessageConvertible, CustomStringConvertible {
+public struct SizeOnDisk: Equatable, CustomStringConvertible, CustomConsoleMessageConvertible {
     public let amount: Int
     public let formatted: String
 
@@ -15,7 +15,7 @@ public struct SizeOnDisk: Equatable, CustomConsoleMessageConvertible, CustomStri
         "Size on disk: \(formatted)"
     }
 
-    var message: ConsoleMessage {
+    public var message: ConsoleMessage {
         .init(
             text: description,
             color: .yellow,

@@ -69,7 +69,7 @@ public struct ConsoleMessage: ExpressibleByStringLiteral, ExpressibleByStringInt
     }
 }
 
-protocol CustomConsoleMessageConvertible {
+public protocol CustomConsoleMessageConvertible {
     var message: ConsoleMessage { get }
 }
 

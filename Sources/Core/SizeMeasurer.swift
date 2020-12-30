@@ -34,16 +34,16 @@ public struct SizeMeasurer {
         emptyAppSize = try appManager.calculateBinarySize()
     }
 
-    public mutating func measureAppSizeWithAlamofire() throws {
+    public mutating func measureAppSize(with swiftPackage: SwiftPackage) throws {
         Console.default.lineBreakAndWrite(
             .init(
-                text: "Measuring app size with added dependency",
+                text: "Measuring app size with \(swiftPackage.product) added as dependency",
                 color: .green,
                 isBold: true
             )
         )
 
-        try appManager.addAlamofireDependency()
+        try appManager.add(asDependency: swiftPackage)
         appManager.generateArchive()
         appWithDependencyAddedSize = try appManager.calculateBinarySize()
     }

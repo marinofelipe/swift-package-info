@@ -9,8 +9,10 @@
 
 import Foundation
 
+// MARK: - Size on disk
+
 extension URL {
-    static let fileByteCountFormatter: ByteCountFormatter = {
+    public static let fileByteCountFormatter: ByteCountFormatter = {
         let byteCountFormatter = ByteCountFormatter()
         byteCountFormatter.countStyle = .file
         return byteCountFormatter
@@ -70,4 +72,18 @@ extension Array where Element == URL {
     func totalAllocatedSize() throws -> Int {
         try lazy.reduce(0) { try $1.totalFileAllocatedSize() + $0 }
     }
+}
+
+// MARK: - Extension: ExpressibleByArgument
+
+import ArgumentParser
+
+extension URL: ExpressibleByArgument {
+    public init?(argument: String) {
+        self.init(string: argument)
+    }
+
+    /// The description of this instance to show as a default value in a
+    /// command-line tool's help screen.
+    public var defaultValueDescription: String { "https://github.com/Alamofire/Alamofire" }
 }

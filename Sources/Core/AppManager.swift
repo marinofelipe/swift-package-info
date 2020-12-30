@@ -63,21 +63,27 @@ struct AppManager {
         }
     }
 
-    mutating func addAlamofireDependency() throws {
+    mutating func add(asDependency swiftPackage: SwiftPackage) throws {
         let xcodeProj = try XcodeProj(path: .init(appPath))
 
         guard let appProject = xcodeProj.pbxproj.projects.first else {
             throw RuntimeError.unableToRetrieveAppProject(atPath: appPath)
         }
 
-        let swiftPackage = try appProject.addSwiftPackage(
-            repositoryURL: "https://github.com/Alamofire/Alamofire",
-            productName: "Alamofire",
-            versionRequirement: .upToNextMinorVersion("5.4.0"),
-            targetName: "MeasurementApp"
-        )
+        let swiftPackage = try appProject.add(swiftPackage: swiftPackage)
         xcodeProj.pbxproj.add(object: swiftPackage)
 
         try xcodeProj.write(path: .init(appPath))
+    }
+}
+
+extension PBXProject {
+    func add(swiftPackage: SwiftPackage) throws -> XCRemoteSwiftPackageReference {
+        try addSwiftPackage(
+            repositoryURL: swiftPackage.repositoryURL.absoluteString,
+            productName: swiftPackage.product,
+            versionRequirement: .upToNextMinorVersion(swiftPackage.version),
+            targetName: "MeasurementApp"
+        )
     }
 }

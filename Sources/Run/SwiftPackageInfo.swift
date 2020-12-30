@@ -7,50 +7,54 @@
 
 import ArgumentParser
 import Core
+import struct Foundation.URL
 
 /// A command that analyzes a given Swift Package
 public struct SwiftPackageInfo: ParsableCommand {
     public static var configuration = CommandConfiguration(
         abstract: "Check the estimated size of a Swift Package.",
         discussion: """
-        Check key information about a Swift Package, such as "ArgumentParser".
-        Estimation of binary size it will contribute to your app,
-        its dependency graph, and more...
+        Provides you with key information about a Swift Package product,
+        such as "ArgumentParser" declared on `swift-argument-parser`.
+
+        Estimation of binary size it would contribute to your app,
+        its direct dependencies, and more...
         """,
         version: "1.0"
     )
 
     @Option(
         name: [
-            .short,
             .long,
             .customLong("for"),
-            .customLong("package")
+            .customLong("package"),
+            .customLong("repo-url"),
+            .customLong("url")
         ],
-        help: "URL of the Swift Package to generate analyzes for"
+        help: "URL containing the Swift Package / `Package.swift` that contains the product you want to run analyzes for."
     )
-    var packageURL: String
+    var repositoryURL: URL
 
     @Option(
         name: [
-            .short,
-            .long
-        ],
-        help: "Semantic version of the Swift Package"
-    )
-    var version: String?
-
-    @Option(
-        name: [
-            .short,
             .long,
-            .customLong("library-named"),
-            .customLong("library-name")
+            .customShort("v")
         ],
-        help: "Name of the library to run analyzes for. If not passed in, the Package's first declared library will be used instead"
+        help: "Semantic version of the Swift Package." // If not passed the latest one will be used instead.
     )
-    var library: String?
+    var packageVersion: String
 
+    @Option(
+        name: [
+            .long,
+            .customLong("product-named"),
+            .customLong("product-name")
+        ],
+        help: "Name of the product to be checked."
+    )
+    var product: String
+
+    // TODO: tbi.
     @Flag(
         name: .long,
         help: "Output all steps of a running analyzes"
@@ -60,18 +64,46 @@ public struct SwiftPackageInfo: ParsableCommand {
     public init() {}
 
     public func run() throws {
-        guard CommandLine.argc > 1 else { throw CleanExit.helpRequest() }
+        // TODO: Check for URL validity
+
+        guard CommandLine.argc > 2 else { throw CleanExit.helpRequest() }
+
+        let swiftPackage = SwiftPackage(
+            repositoryURL: repositoryURL,
+            version: packageVersion,
+            product: product
+        )
+
+        Console.default.lineBreakAndWrite(swiftPackage.message)
 
         var sizeMeasurer = SizeMeasurer()
         try sizeMeasurer.measureEmptyAppSize()
-        try sizeMeasurer.measureAppSizeWithAlamofire()
+        try sizeMeasurer.measureAppSize(with: swiftPackage)
 
-        let message: ConsoleMessage = """
-        Empty app size \(sizeMeasurer.emptyAppSize.formatted)
-        ----
-        App size with Alamofire \(sizeMeasurer.appWithDependencyAddedSize.formatted)
+        let increasedSize = sizeMeasurer.appWithDependencyAddedSize.amount - sizeMeasurer.emptyAppSize.amount
+        let formattedIncreasedSize = URL.fileByteCountFormatter
+            .string(for: increasedSize) ?? "\(increasedSize)"
+
+        let message = """
+        + -----------------------------------------------------------
+        |  Empty app size: \(sizeMeasurer.emptyAppSize.formatted)
+        |
+        |  App size with \(swiftPackage.product): \(sizeMeasurer.appWithDependencyAddedSize.formatted)
+        |
+        |  Binary size increased by: \(formattedIncreasedSize)
+        |
+        |  * Note that the sizes reported are an estimation. When adding this dependency to your project, for the final user it will go through
+        |  optimization processes, such as app thinning, which will decrease the final size the dependency adds to that binary.
+        |  Even then, the added size gives a good idea of the amount of source code you're adding to your app. Be careful and mindful of your decision! *
+        + ----------------------------------------------------------
         """
 
-        Console.default.write(message)
+        Console.default.lineBreakAndWrite(
+            .init(
+                text: message,
+                color: .green,
+                isBold: true
+            )
+        )
     }
 }
