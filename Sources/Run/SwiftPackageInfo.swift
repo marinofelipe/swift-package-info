@@ -63,16 +63,15 @@ public struct SwiftPackageInfo: ParsableCommand {
         guard CommandLine.argc > 1 else { throw CleanExit.helpRequest() }
 
         var sizeMeasurer = SizeMeasurer()
-        sizeMeasurer.measureEmptyAppSize()
-
+        try sizeMeasurer.measureEmptyAppSize()
         try sizeMeasurer.measureAppSizeWithAlamofire()
 
-        Console.default.write(
-            """
-            Empty app size \(sizeMeasurer.emptyAppSize.formatted)
-            ----
-            App size with Alamofire \(sizeMeasurer.appWithDependencyAddedSize.formatted)
-            """
-        )
+        let message: ConsoleMessage = """
+        Empty app size \(sizeMeasurer.emptyAppSize.formatted)
+        ----
+        App size with Alamofire \(sizeMeasurer.appWithDependencyAddedSize.formatted)
+        """
+
+        Console.default.write(message)
     }
 }

@@ -75,7 +75,14 @@ struct Shell {
         outputHandler.readabilityHandler = { fileHandle in
             let data = fileHandle.availableData
             if data.isEmpty == false {
-                String(data: data, encoding: .utf8).map { Console.default.write($0, addLineBreakAfter: false) }
+                String(data: data, encoding: .utf8).map {
+                    Console.default.write(
+                        .init(
+                            text: $0,
+                            hasLineBreakAfter: false
+                        )
+                    )
+                }
             } else {
                 outputHandler.readabilityHandler = nil
             }
@@ -88,8 +95,10 @@ struct Shell {
             if data.isEmpty == false {
                 String(data: data, encoding: .utf8).map {
                     Console.default.lineBreakAndWrite(
-                        $0,
-                        color: .red
+                        .init(
+                            text: $0,
+                            color: .red
+                        )
                     )
                 }
             } else {
@@ -98,8 +107,10 @@ struct Shell {
         }
 
         Console.default.lineBreakAndWrite(
-            "Running Shell command",
-            color: .yellow
+            .init(
+                text: "Running Shell command",
+                color: .yellow
+            )
         )
 
         process.launch()
@@ -111,8 +122,10 @@ struct Shell {
         semaphore.wait()
 
         Console.default.lineBreakAndWrite(
-            "Finished Shell command",
-            color: .yellow
+            .init(
+                text: "Finished Shell command",
+                color: .yellow
+            )
         )
 
         return process.terminationStatus == 0
