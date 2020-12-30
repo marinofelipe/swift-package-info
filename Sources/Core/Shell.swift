@@ -8,29 +8,7 @@
 import Foundation
 
 struct Shell {
-    struct Output: Equatable, CustomStringConvertible {
-        let succeeded: Bool
-        let outputText: String?
-        let errorText: String?
-
-        var description: String {
-            if succeeded {
-                return """
-                    Command did run SUCCESSFULLY!
-                    -----------------------------
-                    OUTPUT: \(outputText ?? "")
-                """
-            } else {
-                return """
-                    FAILED to run command
-                    -----------------------------
-                    OUTPUT: \(outputText ?? "")
-                    -----------------------------
-                    ERROR: \(errorText ?? "")
-                """
-            }
-        }
-    }
+    typealias Succeeded = Bool
 
     @discardableResult
     static func run(
@@ -38,7 +16,7 @@ struct Shell {
         workingDirectory: String? = FileManager.default.currentDirectoryPath,
         outputPipe: Pipe = .init(),
         arguments: String...
-    ) -> Output {
+    ) -> Succeeded {
         runProcess(
             launchPath: launchPath,
             workingDirectory: workingDirectory,
@@ -53,7 +31,7 @@ struct Shell {
         launchPath: String = "/usr/bin/env",
         workingDirectory: String? = FileManager.default.currentDirectoryPath,
         outputPipe: Pipe = .init()
-    ) -> Output {
+    ) -> Succeeded {
         let commands = command.split(whereSeparator: \.isWhitespace)
 
         let arguments: [String]
@@ -79,7 +57,7 @@ struct Shell {
         outputPipe: Pipe = .init(),
         errorPipe: Pipe = .init(),
         arguments: [String]
-    ) -> Output {
+    ) -> Succeeded {
         let process = Process()
         process.launchPath = launchPath
         process.arguments = arguments
@@ -90,37 +68,53 @@ struct Shell {
             process.currentDirectoryPath = workingDirectory
         }
 
-        Printer.print("Running process...")
+        let semaphore = DispatchSemaphore(value: 0)
+
+        let outputHandler = outputPipe.fileHandleForReading
+
+        outputHandler.readabilityHandler = { fileHandle in
+            let data = fileHandle.availableData
+            if data.isEmpty == false {
+                String(data: data, encoding: .utf8).map { Console.default.write($0, addLineBreakAfter: false) }
+            } else {
+                outputHandler.readabilityHandler = nil
+            }
+        }
+
+        let errorHandler = errorPipe.fileHandleForReading
+
+        errorHandler.readabilityHandler = { fileHandle in
+            let data = fileHandle.availableData
+            if data.isEmpty == false {
+                String(data: data, encoding: .utf8).map {
+                    Console.default.lineBreakAndWrite(
+                        $0,
+                        color: .red
+                    )
+                }
+            } else {
+                errorHandler.readabilityHandler = nil
+            }
+        }
+
+        Console.default.lineBreakAndWrite(
+            "Running Shell command",
+            color: .yellow
+        )
 
         process.launch()
         process.waitUntilExit()
-
-        let semaphore = DispatchSemaphore(value: 0)
-
-        let completionHandler: (Process) -> Output = { process in
-            let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-            let outputText = String(data: outputData, encoding: .utf8)?
-                .trimmingCharacters(in: .newlines)
-
-            let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-            let errorText = String(data: errorData, encoding: .utf8)?
-                .trimmingCharacters(in: .newlines)
-
-            return .init(
-                succeeded: process.terminationStatus == 0,
-                outputText: outputText,
-                errorText: errorText
-            )
-        }
-
         process.terminationHandler = { _ in
             semaphore.signal()
         }
 
         semaphore.wait()
 
-        Printer.print("Running finished...")
+        Console.default.lineBreakAndWrite(
+            "Finished Shell command",
+            color: .yellow
+        )
 
-        return completionHandler(process)
+        return process.terminationStatus == 0
     }
 }

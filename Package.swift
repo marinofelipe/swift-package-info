@@ -17,7 +17,18 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "0.3.0")
+        .package(
+            url: "https://github.com/apple/swift-argument-parser",
+            .upToNextMinor(from: "0.3.0")
+        ),
+        .package(
+            url: "https://github.com/tuist/XcodeProj.git",
+            .upToNextMinor(from: "7.18.0")
+        ),
+        .package(
+            url: "https://github.com/apple/swift-tools-support-core.git",
+            .upToNextMinor(from: "0.1.11")
+        )
     ],
     targets: [
         .target(
@@ -35,7 +46,10 @@ let package = Package(
         ),
         .target(
             name: "Core",
-            dependencies: []
+            dependencies: [
+                .product(name: "XcodeProj", package: "XcodeProj"),
+                .product(name: "SwiftToolsSupport-auto", package: "swift-tools-support-core")
+            ]
         ),
         .testTarget(
             name: "CoreTests",
