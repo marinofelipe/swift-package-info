@@ -1,5 +1,5 @@
 //
-//  URL+SwiftPackageInfo.swift
+//  URL+Core.swift
 //
 //  Acknowledgement: This piece of code is inspired by StackOverflow post's top-voted answer on how to get directory size on OS X:
 //  https://stackoverflow.com/questions/32814535/how-to-get-directory-size-with-swift-on-os-x
@@ -83,7 +83,5 @@ extension URL: ExpressibleByArgument {
         self.init(string: argument)
     }
 
-    /// The description of this instance to show as a default value in a
-    /// command-line tool's help screen.
     public var defaultValueDescription: String { "https://github.com/Alamofire/Alamofire" }
 }

@@ -15,16 +15,18 @@ final class URLExtensionTests: XCTestCase {
     }
 
     private var fileManager: FileManager! = .default
-    private lazy var temporaryDirectoryURL: URL = fileManager.temporaryDirectory
+    private lazy var temporaryTestDirectoryPath: String = fileManager.currentDirectoryPath.appending("/TemporaryTest")
+    private lazy var temporaryTestDirectoryURL: URL = URL(fileURLWithPath: temporaryTestDirectoryPath)
     private lazy var defaultTestFileURL: URL = makeTestFileURL()
 
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try fileManager.createDirectory(atPath: temporaryTestDirectoryPath)
+    }
+
     override func tearDownWithError() throws {
-        try TestFile.allCases.forEach { testFile in
-            let testFileURL = makeTestFileURL(componentName: testFile.rawValue)
-            if fileManager.fileExists(atPath: testFileURL.path) {
-                try fileManager.removeItem(atPath: testFileURL.path)
-            }
-        }
+        try fileManager.removeItem(atPath: temporaryTestDirectoryPath)
         fileManager = nil
 
         try super.tearDownWithError()
@@ -48,7 +50,7 @@ final class URLExtensionTests: XCTestCase {
     }
 
     func testIsDirectoryForDirectory() throws {
-        XCTAssertTrue(try temporaryDirectoryURL.isDirectory())
+        XCTAssertTrue(try temporaryTestDirectoryURL.isDirectory())
     }
 
     func testDirectoryTotalAllocatedSizeIncludingSubfolders() throws {
@@ -57,11 +59,24 @@ final class URLExtensionTests: XCTestCase {
 
         // then
         XCTAssertEqual(
-            try temporaryDirectoryURL.directoryTotalAllocatedSize(includingSubfolders: true),
-            77209600
+            try temporaryTestDirectoryURL.directoryTotalAllocatedSize(includingSubfolders: true),
+            4096
         )
 
-        // create another file
+        // create a subfolder
+        let subDirectoryURL = URL(
+            fileURLWithPath: temporaryTestDirectoryPath
+                .appending("/Subdirectory")
+        )
+        try fileManager.createDirectory(atPath: subDirectoryURL.path)
+
+        // Add a file to the subfolder
+        try createTestFile(
+            atPath: makeTestFileURL(directoryURL: subDirectoryURL, componentName: TestFile.file1.rawValue).path,
+            content: String(repeating: "1", count: 5_000).data(using: .utf8)!
+        )
+
+        // create another file to the main folder
         try createTestFile(
             atPath: makeTestFileURL(componentName: TestFile.file1.rawValue).path,
             content: String(repeating: "1", count: 5_000).data(using: .utf8)!
@@ -69,8 +84,8 @@ final class URLExtensionTests: XCTestCase {
 
         // then
         XCTAssertEqual(
-            try temporaryDirectoryURL.directoryTotalAllocatedSize(includingSubfolders: true),
-            77217792
+            try temporaryTestDirectoryURL.directoryTotalAllocatedSize(includingSubfolders: true),
+            20480
         )
     }
 
@@ -80,11 +95,24 @@ final class URLExtensionTests: XCTestCase {
 
         // then
         XCTAssertEqual(
-            try temporaryDirectoryURL.directoryTotalAllocatedSize(includingSubfolders: false),
-            1224704
+            try temporaryTestDirectoryURL.directoryTotalAllocatedSize(includingSubfolders: false),
+            4096
         )
 
-        // create another file
+        // create a subfolder
+        let subDirectoryURL = URL(
+            fileURLWithPath: temporaryTestDirectoryPath
+                .appending("/Subdirectory")
+        )
+        try fileManager.createDirectory(atPath: subDirectoryURL.path)
+
+        // Add a file to the subfolder
+        try createTestFile(
+            atPath: makeTestFileURL(directoryURL: subDirectoryURL, componentName: TestFile.file1.rawValue).path,
+            content: String(repeating: "1", count: 5_000).data(using: .utf8)!
+        )
+
+        // create another file to the main folder
         try createTestFile(
             atPath: makeTestFileURL(componentName: TestFile.file1.rawValue).path,
             content: String(repeating: "1", count: 5_000).data(using: .utf8)!
@@ -92,8 +120,8 @@ final class URLExtensionTests: XCTestCase {
 
         // then
         XCTAssertEqual(
-            try temporaryDirectoryURL.directoryTotalAllocatedSize(includingSubfolders: false),
-            1232896
+            try temporaryTestDirectoryURL.directoryTotalAllocatedSize(includingSubfolders: false),
+            12288
         )
     }
 
@@ -109,8 +137,8 @@ final class URLExtensionTests: XCTestCase {
     func testSizeOnDiskForDirectory() throws {
         // Check initial directory size
         XCTAssertEqual(
-            try temporaryDirectoryURL.sizeOnDisk(),
-            .init(amount: 77205504, formatted: "77,2 MB")
+            try temporaryTestDirectoryURL.sizeOnDisk(),
+            .init(amount: 0, formatted: "Zero KB")
         )
 
         // Create a new file in temporaryDirectory
@@ -121,8 +149,8 @@ final class URLExtensionTests: XCTestCase {
 
         // Then
         XCTAssertEqual(
-            try temporaryDirectoryURL.sizeOnDisk(),
-            .init(amount: 77709312, formatted: "77,7 MB")
+            try temporaryTestDirectoryURL.sizeOnDisk(),
+            .init(amount: 503808, formatted: "504 KB")
         )
     }
 
@@ -141,8 +169,19 @@ final class URLExtensionTests: XCTestCase {
 // MARK: - Helpers
 
 private extension URLExtensionTests {
-    func makeTestFileURL(componentName: String = TestFile.file.rawValue) -> URL {
-        temporaryDirectoryURL
+    func makeTestFileURL(
+        componentName: String = TestFile.file.rawValue
+    ) -> URL {
+        temporaryTestDirectoryURL
+            .appendingPathComponent(componentName)
+            .appendingPathExtension("txt")
+    }
+
+    func makeTestFileURL(
+        directoryURL: URL,
+        componentName: String = TestFile.file.rawValue
+    ) -> URL {
+        directoryURL
             .appendingPathComponent(componentName)
             .appendingPathExtension("txt")
     }

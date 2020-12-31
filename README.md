@@ -1,3 +1,7 @@
+<a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-5.3-orange.svg?style=flat" alt="Swift" /></a>
+[![Swift Package Manager](https://rawgit.com/jlyonsmith/artwork/master/SwiftPackageManager/swiftpackagemanager-compatible.svg)](https://swift.org/package-manager/)
+[![Twitter](https://img.shields.io/badge/twitter-@_marinofelipe-blue.svg?style=flat)](https://twitter.com/_marinofelipe)
+
 # Swift Package Info
 Swift CLI tool, built on top of [Swift Argument Parser](https://github.com/apple/swift-argument-parser), that helps with *measuring the binary size impact* of a *given Swift Package product*.
 
@@ -63,7 +67,6 @@ swift run SwiftPackageInfo --for https://github.com/marinofelipe/http_client -v 
 - [ ] Prettify report
 - [ ] Handle verbose and non-verbose modes. Use [TSCUtility.ProgressAnimation](https://github.com/apple/swift-tools-support-core/blob/fcaa2ce5a852b5355aed5808a6610dc8b6dcf27e/Sources/TSCUtility/ProgressAnimation.swift) for non-verbose mode.
 - [ ] Validate repositoryURL argument
-- [ ] Validate packageVersion argument - Would be nice to make use of a type safe "SemanticVersion" type - TSCBasic.Version
 - [ ] 💅
 - [ ] More tests
 - [ ] Finalize README

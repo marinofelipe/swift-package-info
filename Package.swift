@@ -35,7 +35,8 @@ let package = Package(
             name: "Run",
             dependencies: [
                 .target(name: "Core"),
-                .product(name: "ArgumentParser", package: "swift-argument-parser")
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "SwiftToolsSupport-auto", package: "swift-tools-support-core")
             ]
         ),
         .testTarget(
@@ -48,6 +49,7 @@ let package = Package(
             name: "Core",
             dependencies: [
                 .product(name: "XcodeProj", package: "XcodeProj"),
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "SwiftToolsSupport-auto", package: "swift-tools-support-core")
             ]
         ),

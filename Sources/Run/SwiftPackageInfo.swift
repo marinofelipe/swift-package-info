@@ -8,6 +8,7 @@
 import ArgumentParser
 import Core
 import struct Foundation.URL
+import struct TSCUtility.Version
 
 /// A command that analyzes a given Swift Package
 public struct SwiftPackageInfo: ParsableCommand {
@@ -50,7 +51,7 @@ public struct SwiftPackageInfo: ParsableCommand {
         ],
         help: "Semantic version of the Swift Package." // If not passed the latest one will be used instead.
     )
-    var packageVersion: String
+    var packageVersion: Version
 
     @Option(
         name: [
@@ -78,7 +79,7 @@ public struct SwiftPackageInfo: ParsableCommand {
 
         let swiftPackage = SwiftPackage(
             repositoryURL: repositoryURL,
-            version: packageVersion,
+            version: packageVersion.description,
             product: product
         )
 
