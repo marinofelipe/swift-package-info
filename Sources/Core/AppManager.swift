@@ -11,10 +11,24 @@ import XcodeProj
 /// Provides API to work with the `measurement app`.
 /// Can `generate archive`, `calculate its binary size` and `mutate the project` with a given Swift Package dependency`.
 struct AppManager {
-    private lazy var appPath: String = {
+    private static let temporaryDerivedDataPath: String = "TempDerivedData"
+    private static let archiveName: String = "archive.xcarchive"
+    private static let archivePath: String = temporaryDerivedDataPath
+        .appending("/\(archiveName)")
+
+    private lazy var appPath: String = fileManager.currentDirectoryPath
+        .appending("/MeasurementApp.xcodeproj")
+
+    private var fullTemporaryDerivedDataPath: String {
         fileManager.currentDirectoryPath
-            .appending("/MeasurementApp.xcodeproj")
-    }()
+            .appending("/\(Self.temporaryDerivedDataPath)")
+    }
+
+    private var archivedProductPath: String {
+        fullTemporaryDerivedDataPath
+            .appending("/\(Self.archiveName)")
+            .appending("/Products/Applications/MeasurementApp.app")
+    }
 
     private let fileManager: FileManager
 
@@ -28,8 +42,8 @@ struct AppManager {
         archive \
         -project MeasurementApp.xcodeproj \
         -scheme MeasurementApp \
-        -archivePath TempDerivedData/archive.xcarchive \
-        -derivedDataPath TempDerivedData \
+        -archivePath \(Self.archivePath) \
+        -derivedDataPath \(Self.temporaryDerivedDataPath) \
         -sdk iphoneos \
         -configuration Release
         """
@@ -47,12 +61,9 @@ struct AppManager {
         }
     }
 
-    func calculateBinarySize() throws -> SizeOnDisk {
+    mutating func calculateBinarySize() throws -> SizeOnDisk {
         do {
-            let currentDirectoryPath = fileManager.currentDirectoryPath
-            let measurementAppPath = currentDirectoryPath + "/TempDerivedData/archive.xcarchive/Products/Applications/MeasurementApp.app"
-
-            let url = URL(fileURLWithPath: measurementAppPath)
+            let url = URL(fileURLWithPath: archivedProductPath)
             let appSize = try url.sizeOnDisk()
 
             Console.default.lineBreakAndWrite(appSize.message)
@@ -75,9 +86,17 @@ struct AppManager {
 
         try xcodeProj.write(path: .init(appPath))
     }
+
+    mutating func cleanupTemporaryDerivedData() throws {
+        try fileManager.removeItem(atPath: fullTemporaryDerivedDataPath)
+    }
+
+    func removeAppDependencies() {
+        Shell.run("git checkout MeasurementApp.xcodeproj/")
+    }
 }
 
-extension PBXProject {
+private extension PBXProject {
     func add(swiftPackage: SwiftPackage) throws -> XCRemoteSwiftPackageReference {
         try addSwiftPackage(
             repositoryURL: swiftPackage.repositoryURL.absoluteString,

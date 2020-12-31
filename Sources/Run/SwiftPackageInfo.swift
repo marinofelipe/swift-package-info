@@ -87,6 +87,7 @@ public struct SwiftPackageInfo: ParsableCommand {
         var sizeMeasurer = SizeMeasurer()
         try sizeMeasurer.measureEmptyAppSize()
         try sizeMeasurer.measureAppSize(with: swiftPackage)
+        try sizeMeasurer.cleanup()
 
         let increasedSize = sizeMeasurer.appWithDependencyAddedSize.amount - sizeMeasurer.emptyAppSize.amount
         let formattedIncreasedSize = URL.fileByteCountFormatter

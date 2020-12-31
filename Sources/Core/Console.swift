@@ -77,8 +77,6 @@ public final class Console {
     private var isOutputColored: Bool
     private let terminalController: TerminalController?
 
-    public static let `default`: Console = .init(isOutputColored: true)
-
     public init(
         isOutputColored: Bool,
         terminalController: TerminalController? = TerminalController(stream: stdoutStream)
@@ -122,3 +120,13 @@ public final class Console {
         if addLineBreakAfter { self.lineBreak() }
     }
 }
+
+#if DEBUG
+extension Console {
+    public static let `default` = Console(isOutputColored: false)
+}
+#else
+extension Console {
+    public static let `default` = Console(isOutputColored: true)
+}
+#endif

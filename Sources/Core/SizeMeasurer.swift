@@ -47,4 +47,9 @@ public struct SizeMeasurer {
         appManager.generateArchive()
         appWithDependencyAddedSize = try appManager.calculateBinarySize()
     }
+
+    public mutating func cleanup() throws {
+        try appManager.cleanupTemporaryDerivedData()
+        appManager.removeAppDependencies()
+    }
 }

@@ -60,12 +60,10 @@ swift run SwiftPackageInfo --for https://github.com/marinofelipe/http_client -v 
 
 ## TODO
 * v1
-- [ ] Cleanup temporary derived data
-- [ ] Reset MeasurementApp to initial state - remove added dependency
 - [ ] Prettify report
 - [ ] Handle verbose and non-verbose modes. Use [TSCUtility.ProgressAnimation](https://github.com/apple/swift-tools-support-core/blob/fcaa2ce5a852b5355aed5808a6610dc8b6dcf27e/Sources/TSCUtility/ProgressAnimation.swift) for non-verbose mode.
 - [ ] Validate repositoryURL argument
-- [ ] Validate packageVersion argument - Would be nice to make use of a type safe "SemanticVersion" type - maybe https://github.com/SwiftPackageIndex/SemanticVersion?
+- [ ] Validate packageVersion argument - Would be nice to make use of a type safe "SemanticVersion" type - TSCBasic.Version
 - [ ] 💅
 - [ ] More tests
 - [ ] Finalize README
