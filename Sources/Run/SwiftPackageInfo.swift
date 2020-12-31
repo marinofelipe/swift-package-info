@@ -73,9 +73,7 @@ public struct SwiftPackageInfo: ParsableCommand {
     public init() {}
 
     public func run() throws {
-        // TODO: Check for URL validity
-
-        guard CommandLine.argc > 2 else { throw CleanExit.helpRequest() }
+        try runArgumentsValidation()
 
         let swiftPackage = SwiftPackage(
             repositoryURL: repositoryURL,
@@ -113,5 +111,18 @@ public struct SwiftPackageInfo: ParsableCommand {
                 isBold: true
             )
         )
+    }
+
+    private func runArgumentsValidation() throws {
+        guard CommandLine.argc > 2 else { throw CleanExit.helpRequest() }
+
+        guard repositoryURL.isValid else {
+            throw CleanExit.message(
+                """
+                Error: Invalid argument '--repository-url <repository-url>'
+                Usage: The URL must be a valid git repository URL that contains a `Package.swift`, e.g. `https://github.com/Alamofire/Alamofire`.
+                """
+            )
+        }
     }
 }

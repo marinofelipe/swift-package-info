@@ -64,9 +64,9 @@ swift run SwiftPackageInfo --for https://github.com/marinofelipe/http_client -v 
 
 ## TODO
 * v1
+- [ ] Check if Package repository and product are valid, before running everything else.
 - [ ] Prettify report
 - [ ] Handle verbose and non-verbose modes. Use [TSCUtility.ProgressAnimation](https://github.com/apple/swift-tools-support-core/blob/fcaa2ce5a852b5355aed5808a6610dc8b6dcf27e/Sources/TSCUtility/ProgressAnimation.swift) for non-verbose mode.
-- [ ] Validate repositoryURL argument
 - [ ] 💅
 - [ ] More tests
 - [ ] Finalize README
