@@ -44,8 +44,11 @@ struct AppManager {
         -scheme MeasurementApp \
         -archivePath \(Self.archivePath) \
         -derivedDataPath \(Self.temporaryDerivedDataPath) \
-        -sdk iphoneos \
-        -configuration Release
+        -configuration Release \
+        -arch arm64 \
+        CODE_SIGNING_REQUIRED=NO \
+        CODE_SIGNING_ALLOWED=NO \
+        ENABLE_BITCODE=NO
         """
 
         Console.default.lineBreakAndWrite(command)
