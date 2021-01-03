@@ -7,11 +7,11 @@
 
 import Foundation
 
-struct Shell {
-    typealias Succeeded = Bool
+public struct Shell {
+    public typealias Succeeded = Bool
 
     @discardableResult
-    static func run(
+    public static func run(
         launchPath: String = "/usr/bin/env",
         workingDirectory: String? = FileManager.default.currentDirectoryPath,
         outputPipe: Pipe = .init(),
@@ -26,7 +26,7 @@ struct Shell {
     }
 
     @discardableResult
-    static func run(
+    public static func run(
         _ command: String,
         launchPath: String = "/usr/bin/env",
         workingDirectory: String? = FileManager.default.currentDirectoryPath,

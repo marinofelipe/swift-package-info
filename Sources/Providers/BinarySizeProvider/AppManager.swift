@@ -6,11 +6,12 @@
 //
 
 import Foundation
+import Core
 import XcodeProj
 
 /// Provides API to work with the `measurement app`.
 /// Can `generate archive`, `calculate its binary size` and `mutate the project` with a given Swift Package dependency`.
-struct AppManager {
+final class AppManager {
     private static let temporaryDerivedDataPath: String = "TempDerivedData"
     private static let archiveName: String = "archive.xcarchive"
     private static let archivePath: String = temporaryDerivedDataPath
@@ -31,9 +32,11 @@ struct AppManager {
     }
 
     private let fileManager: FileManager
+    private let console: Console
 
-    init(fileManager: FileManager = .default) {
+    init(fileManager: FileManager = .default, console: Console = .default) {
         self.fileManager = fileManager
+        self.console = console
     }
 
     func generateArchive() {
@@ -51,11 +54,11 @@ struct AppManager {
         ENABLE_BITCODE=NO
         """
 
-        Console.default.lineBreakAndWrite(command)
+        console.lineBreakAndWrite(command)
 
         let succeeded = Shell.run(command.text)
         if succeeded == false {
-            Console.default.lineBreakAndWrite(
+            console.lineBreakAndWrite(
                 .init(
                     text: "Command failed...",
                     color: .red
@@ -64,24 +67,24 @@ struct AppManager {
         }
     }
 
-    mutating func calculateBinarySize() throws -> SizeOnDisk {
+    func calculateBinarySize() throws -> SizeOnDisk {
         do {
             let url = URL(fileURLWithPath: archivedProductPath)
             let appSize = try url.sizeOnDisk()
 
-            Console.default.lineBreakAndWrite(appSize.message)
+            console.lineBreakAndWrite(appSize.message)
 
             return appSize
         } catch {
-            throw RuntimeError.unableToGetBinarySizeOnDisk(underlyingError: error as NSError)
+            throw BinarySizeProviderError.unableToGetBinarySizeOnDisk(underlyingError: error as NSError)
         }
     }
 
-    mutating func add(asDependency swiftPackage: SwiftPackage) throws {
+    func add(asDependency swiftPackage: SwiftPackage) throws {
         let xcodeProj = try XcodeProj(path: .init(appPath))
 
         guard let appProject = xcodeProj.pbxproj.projects.first else {
-            throw RuntimeError.unableToRetrieveAppProject(atPath: appPath)
+            throw BinarySizeProviderError.unableToRetrieveAppProject(atPath: appPath)
         }
 
         let swiftPackage = try appProject.add(swiftPackage: swiftPackage)
@@ -90,8 +93,12 @@ struct AppManager {
         try xcodeProj.write(path: .init(appPath))
     }
 
-    mutating func cleanupTemporaryDerivedData() throws {
-        try fileManager.removeItem(atPath: fullTemporaryDerivedDataPath)
+    func cleanupTemporaryDerivedData() throws {
+        do {
+            try fileManager.removeItem(atPath: fullTemporaryDerivedDataPath)
+        } catch {
+            throw BinarySizeProviderError.unableToClearTemporaryDerivedData(underlyingError: error as NSError)
+        }
     }
 
     func removeAppDependencies() {

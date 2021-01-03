@@ -6,32 +6,37 @@
 //
 
 import ArgumentParser
-import Core
 import struct Foundation.URL
 import struct TSCUtility.Version
+import Core
+import Providers
+import Reports
 
-/// A command that analyzes a given Swift Package
+// MARK: - Main parsable command
+
 public struct SwiftPackageInfo: ParsableCommand {
-    static let estimatedSizeNote = """
-    * Note: When adding a Swift Package dependency to your project, its final contributed binary size varies depending on
-    the platform, user devices, etc. The app binary goes through optimization processes, such as app thinning,
-    which decrease the final binary size.
-
-    The reported size here though can give you a good general idea of the binary impact, and it can help you on making
-    a decision to adopt or not such dependency. Be careful and mindful of your decision! *
-    """
-
     public static var configuration = CommandConfiguration(
-        abstract: "Check the estimated size of a Swift Package.",
+        abstract: "A tool for analyzing Swift Packages",
         discussion: """
-        Measures the estimated binary size impact of a Swift Package product,
-        such as "ArgumentParser" declared on `swift-argument-parser`.
-
-        \(estimatedSizeNote)
+        Provides valuable information about a given Swift Package,
+        that can be used in your favor when deciding whether to
+        adopt or not a Swift Package as a dependency on your app.
         """,
-        version: "1.0"
+        version: "1.0",
+        subcommands: [BinarySize.self, FullAnalyzes.self],
+        defaultSubcommand: FullAnalyzes.self
     )
 
+    static var subcommandsProviders: [InfoProvider] = [
+        BinarySize.fetchProvidedInfo(for:verbose:completion:)
+    ]
+
+    public init() {}
+}
+
+// MARK: - Available arguments
+
+struct AllArguments: ParsableArguments {
     @Option(
         name: [
             .long,
@@ -69,54 +74,15 @@ public struct SwiftPackageInfo: ParsableCommand {
         help: "Output all steps of a running analyzes"
     )
     var verbose = false
+}
 
-    public init() {}
+// MARK: - Common ParsableCommand extension
 
-    public func run() throws {
-        try runArgumentsValidation()
-
-        let swiftPackage = SwiftPackage(
-            repositoryURL: repositoryURL,
-            version: packageVersion.description,
-            product: product
-        )
-
-        Console.default.lineBreakAndWrite(swiftPackage.message)
-
-        var sizeMeasurer = SizeMeasurer()
-        try sizeMeasurer.measureEmptyAppSize()
-        try sizeMeasurer.measureAppSize(with: swiftPackage)
-        try sizeMeasurer.cleanup()
-
-        let increasedSize = sizeMeasurer.appWithDependencyAddedSize.amount - sizeMeasurer.emptyAppSize.amount
-        let formattedIncreasedSize = URL.fileByteCountFormatter
-            .string(for: increasedSize) ?? "\(increasedSize)"
-
-        let message = """
-        + -----------------------------------------------------------
-        |  Empty app size: \(sizeMeasurer.emptyAppSize.formatted)
-        |
-        |  App size with \(swiftPackage.product): \(sizeMeasurer.appWithDependencyAddedSize.formatted)
-        |
-        |  Binary size increased by: \(formattedIncreasedSize)
-        |
-        |  \(Self.estimatedSizeNote)
-        + ----------------------------------------------------------
-        """
-
-        Console.default.lineBreakAndWrite(
-            .init(
-                text: message,
-                color: .green,
-                isBold: true
-            )
-        )
-    }
-
-    private func runArgumentsValidation() throws {
+extension ParsableCommand {
+    func runArgumentsValidation(arguments: AllArguments) throws {
         guard CommandLine.argc > 2 else { throw CleanExit.helpRequest() }
 
-        guard repositoryURL.isValid else {
+        guard arguments.repositoryURL.isValid else {
             throw CleanExit.message(
                 """
                 Error: Invalid argument '--repository-url <repository-url>'
@@ -124,5 +90,13 @@ public struct SwiftPackageInfo: ParsableCommand {
                 """
             )
         }
+    }
+
+    func makeSwiftPackage(from arguments: AllArguments) -> SwiftPackage {
+        .init(
+            repositoryURL: arguments.repositoryURL,
+            version: arguments.packageVersion.description,
+            product: arguments.product
+        )
     }
 }

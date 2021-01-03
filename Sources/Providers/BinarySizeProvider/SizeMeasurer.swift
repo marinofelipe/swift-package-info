@@ -6,23 +6,26 @@
 //
 
 import Foundation
+import Core
 
-public struct SizeMeasurer {
-    public private(set) var emptyAppSize: SizeOnDisk = .empty
-    public private(set) var appWithDependencyAddedSize: SizeOnDisk = .empty
-
+final class SizeMeasurer {
     private var appManager: AppManager
+    private let console: Console
 
-    public init() {
+    public convenience init() {
         self.init(appManager: .init())
     }
 
-    init(appManager: AppManager = .init()) {
+    init(
+        appManager: AppManager = .init(),
+        console: Console = .default
+    ) {
         self.appManager = appManager
+        self.console = console
     }
 
-    public mutating func measureEmptyAppSize() throws {
-        Console.default.lineBreakAndWrite(
+    public func measureEmptyAppSize() throws -> SizeOnDisk {
+        console.lineBreakAndWrite(
             .init(
                 text: "Measuring empty app size",
                 color: .green,
@@ -31,11 +34,11 @@ public struct SizeMeasurer {
         )
 
         appManager.generateArchive()
-        emptyAppSize = try appManager.calculateBinarySize()
+        return try appManager.calculateBinarySize()
     }
 
-    public mutating func measureAppSize(with swiftPackage: SwiftPackage) throws {
-        Console.default.lineBreakAndWrite(
+    public func measureAppSize(with swiftPackage: SwiftPackage) throws -> SizeOnDisk {
+        console.lineBreakAndWrite(
             .init(
                 text: "Measuring app size with \(swiftPackage.product) added as dependency",
                 color: .green,
@@ -45,10 +48,10 @@ public struct SizeMeasurer {
 
         try appManager.add(asDependency: swiftPackage)
         appManager.generateArchive()
-        appWithDependencyAddedSize = try appManager.calculateBinarySize()
+        return try appManager.calculateBinarySize()
     }
 
-    public mutating func cleanup() throws {
+    public func cleanup() throws {
         try appManager.cleanupTemporaryDerivedData()
         appManager.removeAppDependencies()
     }

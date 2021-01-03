@@ -2,12 +2,14 @@
 //  Console.swift
 //
 //  Acknowledgement: This piece of code is inspired by Raycast's script-commands repository:
-//  https://github.com/unnamedd/script-commands/blob/Toolkit%2FImprovements/Tools/Toolkit/Sources/ToolkitLibrary/Core/Console.swift
+//  https://github.com/raycast/script-commands/blob/master/Tools/Toolkit/Sources/ToolkitLibrary/Core/Console.swift
 //
 //  Created by Marino Felipe on 28.12.20.
 //
 
 import TSCBasic
+
+// MARK: - ConsoleColor - Wrapper
 
 public enum ConsoleColor {
     case noColor
@@ -35,8 +37,10 @@ private extension ConsoleColor {
     }
 }
 
-public struct ConsoleMessage: ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
-    let text: String
+// MARK: - ConsoleMessage
+
+public struct ConsoleMessage: Equatable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public let text: String //FIXME: Remove public
     let color: ConsoleColor
     let isBold: Bool
     let hasLineBreakAfter: Bool
@@ -69,13 +73,25 @@ public struct ConsoleMessage: ExpressibleByStringLiteral, ExpressibleByStringInt
     }
 }
 
+// MARK: - CustomConsoleMessageConvertible
+
 public protocol CustomConsoleMessageConvertible {
+    /// A console message representation.
     var message: ConsoleMessage { get }
 }
+
+public protocol CustomConsoleMessagesConvertible {
+    /// A console message representation that is split into and composed by multiple messages.
+    var messages: [ConsoleMessage] { get }
+}
+
+// MARK: - Console
 
 public final class Console {
     private var isOutputColored: Bool
     private let terminalController: TerminalController?
+
+    let animation = MultiLineNinjaProgressAnimation(stream: stdoutStream)
 
     public init(
         isOutputColored: Bool,
@@ -107,10 +123,12 @@ public final class Console {
     public func lineBreak() {
         terminalController?.endLine()
     }
+}
 
-    // MARK: - Private
+// MARK: - Private
 
-    private func write(
+private extension Console {
+    func write(
         message: String,
         color: TerminalController.Color,
         bold: Bool,
@@ -123,10 +141,33 @@ public final class Console {
 
 #if DEBUG
 extension Console {
-    public static let `default` = Console(isOutputColored: false)
+    public static let `default` = Console(isOutputColored: true)
 }
 #else
 extension Console {
     public static let `default` = Console(isOutputColored: true)
 }
 #endif
+
+import TSCUtility
+
+public extension Console {
+//    let animation = MultiLineNinjaProgressAnimation(stream: stdoutStream)
+
+    func showLoading(
+//        progress: CFloat
+        text: String = "Operation in Progress..."
+    ) {
+//        let animation = MultiLineNinjaProgressAnimation(stream: stdoutStream)
+
+        animation.update(step: 0, total: 1, text: text)
+    }
+
+    func updateLoading() {
+        animation.update(step: 1, total: 1, text: "Progress completed!")
+    }
+
+    func completeLoading() {
+        animation.complete(success: true)
+    }
+}

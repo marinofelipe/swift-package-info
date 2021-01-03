@@ -45,7 +45,7 @@ extension URL {
         return try allocatedSizeWithoutSubfolders()
     }
 
-    func sizeOnDisk() throws -> SizeOnDisk {
+    public func sizeOnDisk() throws -> SizeOnDisk {
         let size = try isDirectory()
             ? try directoryTotalAllocatedSize(includingSubfolders: true)
             : try totalFileAllocatedSize()

@@ -7,7 +7,7 @@
 
 import struct Foundation.URL
 
-public struct SwiftPackage: Equatable, CustomStringConvertible, CustomConsoleMessageConvertible {
+public struct SwiftPackage: Equatable, CustomStringConvertible {
     public let repositoryURL: URL
     public let version: String
     public let product: String
@@ -24,20 +24,9 @@ public struct SwiftPackage: Equatable, CustomStringConvertible, CustomConsoleMes
 
     public var description: String {
         """
-        - repositoryURL: \(repositoryURL)
-        - version: \(version)
-        - product: \(product)
+        Repository URL: \(repositoryURL)
+        Version: \(version)
+        Product: \(product)
         """
-    }
-
-    public var message: ConsoleMessage {
-        .init(
-            text: """
-            Identified Swift Package:
-            \(description)
-            """,
-            color: .green,
-            isBold: true
-        )
     }
 }
