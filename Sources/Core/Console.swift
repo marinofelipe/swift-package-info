@@ -8,6 +8,7 @@
 //
 
 import TSCBasic
+import TSCUtility
 
 // MARK: - ConsoleColor - Wrapper
 
@@ -90,15 +91,16 @@ public protocol CustomConsoleMessagesConvertible {
 public final class Console {
     private var isOutputColored: Bool
     private let terminalController: TerminalController?
-
-    let animation = MultiLineNinjaProgressAnimation(stream: stdoutStream)
+    private let progressAnimation: ProgressAnimationProtocol?
 
     public init(
         isOutputColored: Bool,
-        terminalController: TerminalController? = TerminalController(stream: stdoutStream)
+        terminalController: TerminalController? = TerminalController(stream: stdoutStream),
+        progressAnimation: ProgressAnimationProtocol = NinjaProgressAnimation(stream: stdoutStream)
     ) {
         self.isOutputColored = isOutputColored
         self.terminalController = terminalController
+        self.progressAnimation = progressAnimation
     }
 
     public func write(_ message: ConsoleMessage) {
@@ -125,6 +127,26 @@ public final class Console {
     }
 }
 
+// MARK: - Loading
+
+public extension Console {
+    func showLoading(
+        step: Int ,
+        total: Int = 10,
+        text: String
+    ) {
+        progressAnimation?.update(
+            step: step,
+            total: total,
+            text: text
+        )
+    }
+
+    func completeLoading(success: Bool) {
+        progressAnimation?.complete(success: success)
+    }
+}
+
 // MARK: - Private
 
 private extension Console {
@@ -148,26 +170,3 @@ extension Console {
     public static let `default` = Console(isOutputColored: true)
 }
 #endif
-
-import TSCUtility
-
-public extension Console {
-//    let animation = MultiLineNinjaProgressAnimation(stream: stdoutStream)
-
-    func showLoading(
-//        progress: CFloat
-        text: String = "Operation in Progress..."
-    ) {
-//        let animation = MultiLineNinjaProgressAnimation(stream: stdoutStream)
-
-        animation.update(step: 0, total: 1, text: text)
-    }
-
-    func updateLoading() {
-        animation.update(step: 1, total: 1, text: "Progress completed!")
-    }
-
-    func completeLoading() {
-        animation.complete(success: true)
-    }
-}

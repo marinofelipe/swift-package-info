@@ -71,7 +71,7 @@ struct AllArguments: ParsableArguments {
     // TODO: tbi.
     @Flag(
         name: .long,
-        help: "Output all steps of a running analyzes"
+        help: "Increase verbosity of informational output"
     )
     var verbose = false
 }
@@ -100,3 +100,74 @@ extension ParsableCommand {
         )
     }
 }
+
+import Foundation
+
+// TODO: Pre-step - Check Swift Package
+
+// Info needed:
+// 1. Does repository exist?
+// 2. Is the tag valid?
+// 3. What are the possible tags?
+
+// All answered with:
+// `curl https://api.github.com/repos/ReactiveX/RxSwift`
+// `curl https://api.github.com/repos/ReactiveX/RxSwift/tags`
+
+// 4. Is the product valid?
+// 5. What are the possible products?
+
+// Can be fetched via:
+// `curl https://raw.githubusercontent.com/firebase/firebase-ios-sdk/master/Package.swift`
+
+// Extra, e.g. on a repository info provider
+// 4. dependencies
+// 5. Supported platforms
+// ...etc
+// Can be fetched via parsing a Package.Swift:
+// `curl https://raw.githubusercontent.com/firebase/firebase-ios-sdk/master/Package.swift`
+
+
+//extension Array {
+//    public subscript(safeIndex index: Int) -> Element? {
+//        guard index >= 0, index < endIndex else { return nil }
+//
+//        return self[index]
+//    }
+//}
+//
+//extension SwiftPackage {
+//    var repositoryName: String? {
+//        repositoryURL.absoluteString.contains(".git") ?
+//            repositoryURL.pathComponents[safeIndex: repositoryURL.pathComponents.count - 1] ?? repositoryURL.pathComponents.last :
+//            repositoryURL.pathComponents.last
+//    }
+//}
+//
+//final class PackageManagerKKK {
+//    func isRepositoryValid(swiftPackage: SwiftPackage) -> Bool {
+//        return Shell.run("git clone \(swiftPackage.repositoryURL)")
+//    }
+//
+//    func isVersionValid(swiftPackage: SwiftPackage) -> Bool {
+//        Shell.run("git clone \(swiftPackage.repositoryURL)")
+//    }
+//}
+//
+//final class Client {
+//    private let urlSession: URLSession
+//
+//    init(urlSession: URLSession = .shared) {
+//        self.urlSession = urlSession
+//    }
+//
+//    func fetchPackageDotSwift(for swiftPackage: SwiftPackage) {
+//        // TODO: tbi.
+//    }
+//}
+//
+//import TSCUtility
+//
+//func a() {
+//    let versions = Git.convertTagsToVersionMap([""])
+//}

@@ -34,14 +34,11 @@ public struct BinarySizeProvider {
         verbose: Bool,
         completion: (Result<ProvidedInfo, InfoProviderError>) -> Void
     ) {
-        let sizeMeasurer = SizeMeasurer()
-        var emptyAppSize: SizeOnDisk = .empty
-        var appSizeWithDependencyAdded: SizeOnDisk = .empty
+        let sizeMeasurer = SizeMeasurer(verbose: verbose)
+        var formattedPackageBinarySize: String = ""
 
         do {
-            emptyAppSize = try sizeMeasurer.measureEmptyAppSize()
-            appSizeWithDependencyAdded = try sizeMeasurer.measureAppSize(with: swiftPackage)
-            try sizeMeasurer.cleanup()
+            formattedPackageBinarySize = try sizeMeasurer.formattedBinarySize(for: swiftPackage)
         } catch let error as LocalizedError {
             completion(
                 .failure(
@@ -56,10 +53,6 @@ public struct BinarySizeProvider {
             )
         }
 
-        let increasedSize = appSizeWithDependencyAdded.amount - emptyAppSize.amount
-        let formattedIncreasedSize = URL.fileByteCountFormatter
-            .string(for: increasedSize) ?? "\(increasedSize)"
-
         let firstPartMessage = ConsoleMessage(
             text: "Binary size increased by ",
             color: .noColor,
@@ -67,7 +60,7 @@ public struct BinarySizeProvider {
             hasLineBreakAfter: false
         )
         let secondPartMessage = ConsoleMessage(
-            text: formattedIncreasedSize,
+            text: formattedPackageBinarySize,
             color: .yellow,
             isBold: true,
             hasLineBreakAfter: false

@@ -65,15 +65,12 @@ swift run SwiftPackageInfo --for https://github.com/marinofelipe/http_client -v 
 ## TODO
 * v1
 - [ ] Check if Package repository and product are valid, before running everything else.
-- [ ] Prettify report
-- [ ] Handle verbose and non-verbose modes. Use [TSCUtility.ProgressAnimation](https://github.com/apple/swift-tools-support-core/blob/fcaa2ce5a852b5355aed5808a6610dc8b6dcf27e/Sources/TSCUtility/ProgressAnimation.swift) for non-verbose mode.
+- [ ] Make Report scalable. Prepare to support different modes of output (e.g. JSON).
 - [ ] 💅
-- [ ] More tests
+- [ ] Much more tests
 - [ ] Finalize README
 - [ ] Tiny CI?
-
-* v2
-- [ ] Provide more information - E.g. The direct dependencies of a Swift Package product, to help on taking better decisions when adopting a Swift Package.
+- [ ] Provide more information, via analyzes of Package.swift. E.g. The direct dependencies of a Swift Package product, to help on taking better decisions when adopting a Swift Package.
 
 
 ## License
