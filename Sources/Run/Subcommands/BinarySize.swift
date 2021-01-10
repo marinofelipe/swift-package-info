@@ -38,10 +38,10 @@ extension SwiftPackageInfo {
 
         public func run() throws {
             try runArgumentsValidation(arguments: allArguments)
-            let swiftPackage = makeSwiftPackage(from: allArguments)
+            var swiftPackage = makeSwiftPackage(from: allArguments)
             swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
 
-            // TODO: Check Package.swift to see if repository URL, version and product are valid, before moving on.
+            try validate(swiftPackage: &swiftPackage, arguments: allArguments)
 
             let report = Report(swiftPackage: swiftPackage)
 

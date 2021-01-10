@@ -100,14 +100,13 @@ extension ParsableCommand {
         )
     }
 
+    @discardableResult
     func validate(
-        swiftPackage: SwiftPackage,
+        swiftPackage: inout SwiftPackage,
         arguments: AllArguments
-    ) throws -> ValidationResult {
+    ) throws -> PackageContent? {
         let swiftPackageService = SwiftPackageService()
         let packageResponse = try swiftPackageService.validate(swiftPackage: swiftPackage, verbose: arguments.verbose)
-
-        var updatedSwiftPackage = swiftPackage
 
         guard packageResponse.isRepositoryValid else {
             throw CleanExit.message(
@@ -122,7 +121,7 @@ extension ParsableCommand {
             Console.default.lineBreakAndWrite("Invalid version: \(swiftPackage.version)")
             Console.default.lineBreakAndWrite("Using latest found tag instead: \(latestTag)")
 
-            updatedSwiftPackage.version = latestTag
+            swiftPackage.version = latestTag
         }
 
         guard packageResponse.isProductValid else {
@@ -135,14 +134,6 @@ extension ParsableCommand {
             )
         }
 
-        return .init(
-            updatedSwiftPackage: updatedSwiftPackage,
-            packageContent: swiftPackageService.storedPackageContent
-        )
+        return swiftPackageService.storedPackageContent
     }
-}
-
-struct ValidationResult: Equatable {
-    let updatedSwiftPackage: SwiftPackage
-    let packageContent: PackageContent?
 }

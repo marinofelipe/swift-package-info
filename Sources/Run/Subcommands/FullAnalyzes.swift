@@ -31,12 +31,12 @@ extension SwiftPackageInfo {
 
         public func run() throws {
             try runArgumentsValidation(arguments: allArguments)
-            let swiftPackage = makeSwiftPackage(from: allArguments)
+            var swiftPackage = makeSwiftPackage(from: allArguments)
             swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
 
-            let validationResult = try validate(swiftPackage: swiftPackage, arguments: allArguments)
+            try validate(swiftPackage: &swiftPackage, arguments: allArguments)
 
-            let report = Report(swiftPackage: validationResult.updatedSwiftPackage)
+            let report = Report(swiftPackage: swiftPackage)
 
             // Providers have a synchronous API and are run in sequence. Each of them, even when performing async tasks, have to fulfill a sync API,
             // since generally the terminal is updated with logs of the current operation.
