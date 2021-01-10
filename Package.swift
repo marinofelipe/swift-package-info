@@ -10,7 +10,7 @@ let package = Package(
     ],
     products: [
         .executable(
-            name: "SwiftPackageInfo",
+            name: "swift-package-info",
             targets: [
                 "Run"
             ]
