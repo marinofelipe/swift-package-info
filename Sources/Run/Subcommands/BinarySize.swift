@@ -12,13 +12,11 @@ import Reports
 
 extension SwiftPackageInfo {
     public struct BinarySize: ParsableCommand {
-        // FIXME: Provide a better note around estimation that is done and how accurate it is
         static let estimatedSizeNote = """
-        * Note: The estimated size doesn't consider optimizations such as app thinning, but they've shown
-        to be reliably on our latest measurements, run with Xcode 12.3, Swift 5.3, and comparing archives made
-        with bitcode disabled.
-        As Example: An app with/without RxSwift has ***kb and ***kb when downloaded via TestFlight,
-        while the tool reports ***kb.
+        * Note: The estimated size doesn't consider optimizations such as app thinning.
+        Its methodology is inspired by [cocoapods-size](https://github.com/google/cocoapods-size),
+        and thus works by comparing archives with no bitcode and ARM64 arch.
+        Such a strategy has proven to be very consistent with the size added to iOS apps downloaded and installed via TestFlight.
         """
 
         public static var configuration = CommandConfiguration(

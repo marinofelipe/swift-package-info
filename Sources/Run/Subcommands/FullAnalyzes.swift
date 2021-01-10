@@ -17,7 +17,7 @@ import Reports
 extension SwiftPackageInfo {
     public struct FullAnalyzes: ParsableCommand {
         public static var configuration = CommandConfiguration(
-            abstract: "Get all provided information about a Swift Package",
+            abstract: "Get all available information about a Swift Package",
             discussion: """
             Runs all available providers (each one available via a subcommand, e.g. BinarySize),
             and generates a full report of a given Swift Package product for a specific version.
