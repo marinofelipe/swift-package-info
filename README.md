@@ -1,25 +1,20 @@
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-5.3-orange.svg?style=flat" alt="Swift" /></a>
 [![Swift Package Manager](https://rawgit.com/jlyonsmith/artwork/master/SwiftPackageManager/swiftpackagemanager-compatible.svg)](https://swift.org/package-manager/)
 [![Twitter](https://img.shields.io/badge/twitter-@_marinofelipe-blue.svg?style=flat)](https://twitter.com/_marinofelipe)
 
 # Swift Package Info
-Swift CLI tool, built on top of [Swift Argument Parser](https://github.com/apple/swift-argument-parser), that helps with *measuring the binary size impact* of a *given Swift Package product*.
+CLI tool that provides information about a *given Swift Package product*, such as a *measurament of its binary size impact*.
+It's built on top of [Swift Argument Parser](https://github.com/apple/swift-argument-parser).
 
 ## Usage
 ```
-OVERVIEW: Check the estimated size of a Swift Package.
+OVERVIEW: Get all provided information about a Swift Package
 
-Measures the estimated binary size impact of a Swift Package product,
-such as "ArgumentParser" declared on `swift-argument-parser`.
+Runs all available providers (each one available via a subcommand, e.g. BinarySize),
+and generates a full report of a given Swift Package product for a specific version.
 
-* Note: When adding a Swift Package dependency to your project, its final contributed binary size varies depending on
-the platform, user devices, etc. The app binary goes through optimization processes, such as app thinning,
-which decrease the final binary size.
-
-The reported size here though can give you a good general idea of the binary impact, and it can help you on making
-a decision to adopt or not such dependency. Be careful and mindful of your decision! *
-
-USAGE: swift-package-info --repository-url <repository-url> --package-version <package-version> --product <product> [--verbose]
+USAGE: swift-package-info full-analyzes --repository-url <repository-url> --package-version <package-version> --product <product> [--verbose]
 
 OPTIONS:
   --repository-url, --for, --package, --repo-url, --url <repository-url>
@@ -28,7 +23,7 @@ OPTIONS:
                           Semantic version of the Swift Package. 
   --product, --product-named, --product-name <product>
                           Name of the product to be checked. 
-  --verbose               Output all steps of a running analyzes 
+  --verbose               Increase verbosity of informational output 
   --version               Show the version.
   -h, --help              Show help information.
 ```
@@ -36,43 +31,53 @@ OPTIONS:
 ### Example
 > Command
 ```
-swift run SwiftPackageInfo --for https://github.com/marinofelipe/http_client -v 0.0.4 --product HTTPClient
+swift run swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product RxSwift
 ```
 > Report
+```
++-----------------------------------------------+
+|              Swift Package Info               |
+|                                               |
+|                RxSwift, 6.0.0                 |
++-------------+---------------------------------+
+| Provider    | Results                         |
++-------------+---------------------------------+
+| Binary Size | Binary size increased by 963 KB |
++-------------+---------------------------------+
+> Total of 1 provider used.
+```
 
-```
-+ -----------------------------------------------------------
-|  Empty app size: 164 KB
-|
-|  App size with HTTPClient: 1 MB
-|
-|  Binary size increased by: 864 KB
-|
-|  * Note: When adding a Swift Package dependency to your project, its final contributed binary size varies depending on
-|  the platform, user devices, etc. The app binary goes through optimization processes, such as app thinning,
-|  which decrease the final binary size.
-|
-|  The reported size here though can give you a good general idea of the binary impact, and it can help you on making
-|  a decision to adopt or not such dependency. Be careful and mindful of your decision! *
-+ ----------------------------------------------------------
-```
+## Installation
+* Install [mint](https://github.com/yonaskolb/Mint).
+* Run: `mint install marinofelipe/swift-package-info`
+
+## Building
+Build from Swift Package Manager
+
+* `swift build` in the top level directory 
+* The built utility can be found in `.build/debug/swift-package-info`
+* Run with `swift run`
 
 ## Dependencies
-- [Swift Argument Parser](https://github.com/apple/swift-argument-parser)
-- [XcodeProj](https://github.com/tuist/XcodeProj.git)
-- [swift-tools-support-core / SwiftToolsSupport-auto](https://github.com/apple/swift-tools-support-core/blob/main/Package.swift)
+* [CombineHTTPClient from HTTPClient](https://github.com/marinofelipe/http_client/blob/main/Package.swift)
+* [Swift Argument Parser](https://github.com/apple/swift-argument-parser)
+* [swift-tools-support-core from SwiftToolsSupport-auto](https://github.com/apple/swift-tools-support-core/blob/main/Package.swift)
+* [XcodeProj](https://github.com/tuist/XcodeProj.git)
 
-## TODO
-* v1
-- [ ] 💅
-- [ ] Make Report scalable. Prepare to support different modes of output (e.g. JSON).
-- [ ] `Much` more tests
-- [ ] Finalize README
-- [ ] Tiny CI?
-- [ ] Add other providers using in-memory package content. E.g. The direct dependencies of a Swift Package product, to help on taking better decisions when adopting a Swift Package.
+## Binary size report
+Its methodology is inspired by [cocoapods-size](https://github.com/google/cocoapods-size), and thus works by comparing archives with no bitcode and ARM64 arch.
+Such a strategy has proven to be very consistent with the size added to iOS apps downloaded and installed via TestFlight.
 
+## v1 TODO
+* [ ] 💅
+* [ ] `Much` more tests
+* [ ] Make Report scalable. Prepare to support different modes of output (e.g. JSON)
+* [ ] Tiny CI - GitHubActions will do
+* [ ] Add other providers using in-memory package content. E.g. The direct dependencies of a Swift Package product, to help on taking better decisions when adopting a Swift Package
+* [ ] First release 
 
-## License
-`SwiftPackageInfo` is released under the MIT license. [See LICENSE](/LICENSE) for details.
+## Thanks
+Special thanks to [@unnamedd](https://github.com/unnamedd) for sharing his experience with [swift-tools-support-core](https://github.com/apple/swift-tools-support-core) and on how to build a pretty 👌 report.
 
-Felipe Marino: [felipemarino91@gmail.com](mailto:felipemarino91@gmail.com), [@_marinofelipe](https://twitter.com/_marinofelipe)
+## Contributions
+*Swift Package Info* is fully open and your contributions are more than welcome.
