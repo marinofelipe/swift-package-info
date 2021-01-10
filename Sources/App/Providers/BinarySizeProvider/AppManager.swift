@@ -14,11 +14,7 @@ import XcodeProj
 fileprivate enum Constants {
     static let appName: String = "MeasurementApp"
     static let xcodeProjName: String = "\(appName).xcodeproj"
-    static let temporaryDerivedDataPath: String = "TempDerivedData"
     static let archiveName: String = "archive.xcarchive"
-    static let archivePath: String = temporaryDerivedDataPath
-        .appending("/")
-        .appending(archiveName)
 }
 
 // MARK: - App manager
@@ -30,14 +26,9 @@ final class AppManager {
         .appending("/")
         .appending(Constants.xcodeProjName)
 
-    private var fullTemporaryDerivedDataPath: String {
-        fileManager.currentDirectoryPath
-            .appending("/")
-            .appending(Constants.temporaryDerivedDataPath)
-    }
-
     private var archivedProductPath: String {
-        fullTemporaryDerivedDataPath
+        fileManager.temporaryDirectory
+            .path
             .appending("/")
             .appending(Constants.archiveName)
             .appending("/Products/Applications/MeasurementApp.app")
@@ -57,14 +48,14 @@ final class AppManager {
         self.verbose = verbose
     }
 
-    func generateArchive() {
+    func generateArchive() throws {
         let command: ConsoleMessage = """
         xcodebuild \
         archive \
         -project \(Constants.xcodeProjName) \
         -scheme \(Constants.appName) \
-        -archivePath \(Constants.archivePath) \
-        -derivedDataPath \(Constants.temporaryDerivedDataPath) \
+        -archivePath \(fileManager.temporaryDirectory.path)/\(Constants.archiveName) \
+        -derivedDataPath \(fileManager.temporaryDirectory.path) \
         -configuration Release \
         -arch arm64 \
         CODE_SIGNING_REQUIRED=NO \
@@ -72,28 +63,24 @@ final class AppManager {
         ENABLE_BITCODE=NO
         """
 
-        let semaphore = DispatchSemaphore(value: 0)
-
         if verbose {
             console.lineBreakAndWrite(command)
         }
 
-        Shell.run(
+        let output = try Shell.run(
             command.text,
-            verbose: verbose
-        ) { [weak console, verbose] succeeded in
-            if succeeded == false && verbose {
-                console?.lineBreakAndWrite(
-                    .init(
-                        text: "Command failed...",
-                        color: .red
-                    )
-                )
-            }
-            semaphore.signal()
-        }
+            verbose: verbose,
+            timeout: nil
+        )
 
-        semaphore.wait()
+        if output.succeeded == false && verbose {
+            console.lineBreakAndWrite(
+                .init(
+                    text: "Command failed...",
+                    color: .red
+                )
+            )
+        }
     }
 
     func calculateBinarySize() throws -> SizeOnDisk {
@@ -122,19 +109,10 @@ final class AppManager {
         try xcodeProj.write(path: .init(appPath))
     }
 
-    func cleanupTemporaryDerivedData() throws {
-        do {
-            try fileManager.removeItem(atPath: fullTemporaryDerivedDataPath)
-        } catch {
-            throw BinarySizeProviderError.unableToClearTemporaryDerivedData(underlyingError: error as NSError)
-        }
-    }
-
-    func removeAppDependencies() {
-        Shell.run(
+    func removeAppDependencies() throws {
+        try Shell.run(
             "git checkout \(Constants.xcodeProjName)",
-            verbose: verbose,
-            completion: nil
+            verbose: verbose
         )
     }
 }

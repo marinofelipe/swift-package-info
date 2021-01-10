@@ -2,11 +2,16 @@
 //  FullAnalyzes.swift
 //  
 //
+//  SwiftPackageInfo.swift
+//
+//
 //  Created by Marino Felipe on 03.01.21.
 //
 
 import ArgumentParser
+import App
 import Core
+import Foundation
 import Reports
 
 extension SwiftPackageInfo {
@@ -29,23 +34,20 @@ extension SwiftPackageInfo {
             let swiftPackage = makeSwiftPackage(from: allArguments)
             swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
 
-            // TODO: Check Package.swift to see if repository URL, version and product are valid, before moving on.
+            let validationResult = try validate(swiftPackage: swiftPackage, arguments: allArguments)
 
-            let report = Report(swiftPackage: swiftPackage)
+            let report = Report(swiftPackage: validationResult.updatedSwiftPackage)
 
-            // For the moment being all providers are run in a sequence, and each of them, even if performing and async task, have a sync API,
-            // since the terminal is updated with logs of the current operation.
-            // The concept of running providers, or at least some, in parallel, is not supported, and must be carefully investigated.
+            // Providers have a synchronous API and are run in sequence. Each of them, even when performing async tasks, have to fulfill a sync API,
+            // since generally the terminal is updated with logs of the current operation.
             var providedInfos: [ProvidedInfo] = []
             SwiftPackageInfo.subcommandsProviders.forEach { subcommandProvider in
                 subcommandProvider(
                     swiftPackage,
                     allArguments.verbose
-                ) { result in
-                    result
-                        .onSuccess { providedInfos.append($0) }
-                        .onFailure { Console.default.write($0.message) }
-                }
+                )
+                .onSuccess { providedInfos.append($0) }
+                .onFailure { Console.default.write($0.message) }
             }
             report.generate(for: providedInfos)
         }

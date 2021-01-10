@@ -64,13 +64,12 @@ swift run SwiftPackageInfo --for https://github.com/marinofelipe/http_client -v 
 
 ## TODO
 * v1
-- [ ] Check if Package repository and product are valid, before running everything else.
-- [ ] Make Report scalable. Prepare to support different modes of output (e.g. JSON).
 - [ ] 💅
-- [ ] Much more tests
+- [ ] Make Report scalable. Prepare to support different modes of output (e.g. JSON).
+- [ ] `Much` more tests
 - [ ] Finalize README
 - [ ] Tiny CI?
-- [ ] Provide more information, via analyzes of Package.swift. E.g. The direct dependencies of a Swift Package product, to help on taking better decisions when adopting a Swift Package.
+- [ ] Add other providers using in-memory package content. E.g. The direct dependencies of a Swift Package product, to help on taking better decisions when adopting a Swift Package.
 
 
 ## License

@@ -7,7 +7,7 @@
 
 import ArgumentParser
 import Core
-import Providers
+import App
 import Reports
 
 extension SwiftPackageInfo {
@@ -48,11 +48,9 @@ extension SwiftPackageInfo {
             Self.fetchProvidedInfo(
                 for: swiftPackage,
                 verbose: allArguments.verbose
-            ) { result in
-                result
-                    .onSuccess(report.generate(for:))
-                    .onFailure { Console.default.write($0.message) }
-            }
+            )
+            .onSuccess(report.generate(for:))
+            .onFailure { Console.default.write($0.message) }
         }
     }
 }
@@ -60,13 +58,11 @@ extension SwiftPackageInfo {
 extension SwiftPackageInfo.BinarySize {
     static func fetchProvidedInfo(
         for swiftPackage: SwiftPackage,
-        verbose: Bool,
-        completion: (Result<ProvidedInfo, InfoProviderError>) -> Void
-    ) {
+        verbose: Bool
+    ) -> Result<ProvidedInfo, InfoProviderError> {
         BinarySizeProvider.fetchInformation(
             for: swiftPackage,
-            verbose: verbose,
-            completion: completion
+            verbose: verbose
         )
     }
 }

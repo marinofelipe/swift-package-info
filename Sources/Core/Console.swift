@@ -41,7 +41,7 @@ private extension ConsoleColor {
 // MARK: - ConsoleMessage
 
 public struct ConsoleMessage: Equatable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
-    public let text: String //FIXME: Remove public
+    public let text: String
     let color: ConsoleColor
     let isBold: Bool
     let hasLineBreakAfter: Bool

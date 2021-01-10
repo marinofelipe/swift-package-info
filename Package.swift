@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "swift-package-info",
     platforms: [
-        .macOS(.v10_10)
+        .macOS(.v10_15)
     ],
     products: [
         .executable(
@@ -28,13 +28,18 @@ let package = Package(
         .package(
             url: "https://github.com/apple/swift-tools-support-core.git",
             .upToNextMinor(from: "0.1.11")
+        ),
+        .package(
+            name: "HTTPClient",
+            url: "https://github.com/marinofelipe/http_client",
+            .upToNextMinor(from: "0.0.4")
         )
     ],
     targets: [
         .target(
             name: "Run",
             dependencies: [
-                .target(name: "Providers"),
+                .target(name: "App"),
                 .target(name: "Reports"),
                 .target(name: "Core"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
@@ -48,16 +53,17 @@ let package = Package(
             ]
         ),
         .target(
-            name: "Providers",
+            name: "App",
             dependencies: [
                 .product(name: "XcodeProj", package: "XcodeProj"),
+                .product(name: "CombineHTTPClient", package: "HTTPClient"),
                 .target(name: "Core")
             ]
         ),
         .testTarget(
-            name: "ProvidersTests",
+            name: "AppTests",
             dependencies: [
-                .target(name: "Providers")
+                .target(name: "App")
             ]
         ),
         .target(

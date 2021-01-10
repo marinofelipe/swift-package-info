@@ -9,7 +9,7 @@ import ArgumentParser
 import struct Foundation.URL
 import struct TSCUtility.Version
 import Core
-import Providers
+import App
 import Reports
 
 // MARK: - Main parsable command
@@ -28,7 +28,7 @@ public struct SwiftPackageInfo: ParsableCommand {
     )
 
     static var subcommandsProviders: [InfoProvider] = [
-        BinarySize.fetchProvidedInfo(for:verbose:completion:)
+        BinarySize.fetchProvidedInfo(for:verbose:)
     ]
 
     public init() {}
@@ -99,75 +99,50 @@ extension ParsableCommand {
             product: arguments.product
         )
     }
+
+    func validate(
+        swiftPackage: SwiftPackage,
+        arguments: AllArguments
+    ) throws -> ValidationResult {
+        let swiftPackageService = SwiftPackageService()
+        let packageResponse = try swiftPackageService.validate(swiftPackage: swiftPackage, verbose: arguments.verbose)
+
+        var updatedSwiftPackage = swiftPackage
+
+        guard packageResponse.isRepositoryValid else {
+            throw CleanExit.message(
+                """
+                Error: Invalid argument '--repository-url <repository-url>'
+                Usage: The URL must be a valid git repository URL that contains a `Package.swift`, e.g. `https://github.com/Alamofire/Alamofire`.
+                """
+            )
+        }
+
+        if packageResponse.isTagValid == false, let latestTag = packageResponse.latestTag {
+            Console.default.lineBreakAndWrite("Invalid version: \(swiftPackage.version)")
+            Console.default.lineBreakAndWrite("Using latest found tag instead: \(latestTag)")
+
+            updatedSwiftPackage.version = latestTag
+        }
+
+        guard packageResponse.isProductValid else {
+            throw CleanExit.message(
+                """
+                Error: Invalid argument '--product <product>'
+                Usage: The product should match one of the declared products on \(swiftPackage.repositoryURL).
+                Found available products: \(packageResponse.availableProducts).
+                """
+            )
+        }
+
+        return .init(
+            updatedSwiftPackage: updatedSwiftPackage,
+            packageContent: swiftPackageService.storedPackageContent
+        )
+    }
 }
 
-import Foundation
-
-// TODO: Pre-step - Check Swift Package
-
-// Info needed:
-// 1. Does repository exist?
-// 2. Is the tag valid?
-// 3. What are the possible tags?
-
-// All answered with:
-// `curl https://api.github.com/repos/ReactiveX/RxSwift`
-// `curl https://api.github.com/repos/ReactiveX/RxSwift/tags`
-
-// 4. Is the product valid?
-// 5. What are the possible products?
-
-// Can be fetched via:
-// `curl https://raw.githubusercontent.com/firebase/firebase-ios-sdk/master/Package.swift`
-
-// Extra, e.g. on a repository info provider
-// 4. dependencies
-// 5. Supported platforms
-// ...etc
-// Can be fetched via parsing a Package.Swift:
-// `curl https://raw.githubusercontent.com/firebase/firebase-ios-sdk/master/Package.swift`
-
-
-//extension Array {
-//    public subscript(safeIndex index: Int) -> Element? {
-//        guard index >= 0, index < endIndex else { return nil }
-//
-//        return self[index]
-//    }
-//}
-//
-//extension SwiftPackage {
-//    var repositoryName: String? {
-//        repositoryURL.absoluteString.contains(".git") ?
-//            repositoryURL.pathComponents[safeIndex: repositoryURL.pathComponents.count - 1] ?? repositoryURL.pathComponents.last :
-//            repositoryURL.pathComponents.last
-//    }
-//}
-//
-//final class PackageManagerKKK {
-//    func isRepositoryValid(swiftPackage: SwiftPackage) -> Bool {
-//        return Shell.run("git clone \(swiftPackage.repositoryURL)")
-//    }
-//
-//    func isVersionValid(swiftPackage: SwiftPackage) -> Bool {
-//        Shell.run("git clone \(swiftPackage.repositoryURL)")
-//    }
-//}
-//
-//final class Client {
-//    private let urlSession: URLSession
-//
-//    init(urlSession: URLSession = .shared) {
-//        self.urlSession = urlSession
-//    }
-//
-//    func fetchPackageDotSwift(for swiftPackage: SwiftPackage) {
-//        // TODO: tbi.
-//    }
-//}
-//
-//import TSCUtility
-//
-//func a() {
-//    let versions = Git.convertTagsToVersionMap([""])
-//}
+struct ValidationResult: Equatable {
+    let updatedSwiftPackage: SwiftPackage
+    let packageContent: PackageContent?
+}

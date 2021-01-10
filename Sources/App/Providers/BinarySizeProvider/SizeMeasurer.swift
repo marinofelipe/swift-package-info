@@ -27,7 +27,7 @@ final class SizeMeasurer {
         self.verbose = verbose
     }
 
-    private static let stepsCount = 7
+    private static let stepsCount = 6
     private var currentStep = 1
     private static let second: Double = 1_000_000
 
@@ -59,7 +59,7 @@ private extension SizeMeasurer {
         }
 
         if verbose == false { showOrUpdateLoading(withText: "Generating archive for empty app...") }
-        appManager.generateArchive()
+        try appManager.generateArchive()
         if verbose == false { showOrUpdateLoading(withText: "Calculating binary size...") }
         return try appManager.calculateBinarySize()
     }
@@ -77,17 +77,15 @@ private extension SizeMeasurer {
 
         if verbose == false { showOrUpdateLoading(withText: "Adding \(swiftPackage.product) as dependency...") }
         try appManager.add(asDependency: swiftPackage)
-        if verbose == false { showOrUpdateLoading(withText: "Generating archive updated app...") }
-        appManager.generateArchive()
+        if verbose == false { showOrUpdateLoading(withText: "Generating archive for updated app...") }
+        try appManager.generateArchive()
         if verbose == false { showOrUpdateLoading(withText: "Calculating updated binary size...") }
         return try appManager.calculateBinarySize()
     }
     
     func cleanup() throws {
-        if verbose == false { showOrUpdateLoading(withText: "Cleaning up derived data...") }
-        try appManager.cleanupTemporaryDerivedData()
         if verbose == false { showOrUpdateLoading(withText: "Reseting app...") }
-        appManager.removeAppDependencies()
+        try appManager.removeAppDependencies()
 
         completeLoading()
     }

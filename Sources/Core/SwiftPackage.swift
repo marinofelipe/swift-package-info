@@ -9,7 +9,7 @@ import struct Foundation.URL
 
 public struct SwiftPackage: Equatable, CustomStringConvertible {
     public let repositoryURL: URL
-    public let version: String
+    public var version: String
     public let product: String
 
     public init(
@@ -28,5 +28,16 @@ public struct SwiftPackage: Equatable, CustomStringConvertible {
         Version: \(version)
         Product: \(product)
         """
+    }
+}
+
+public extension SwiftPackage {
+    var accountName: String {
+        repositoryURL.pathComponents[safeIndex: repositoryURL.pathComponents.count - 2] ?? ""
+    }
+
+    var repositoryName: String {
+        (repositoryURL.pathComponents.last ?? "")
+            .replacingOccurrences(of: ".git", with: "")
     }
 }
