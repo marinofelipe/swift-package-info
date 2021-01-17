@@ -8,31 +8,50 @@
 import XCTest
 
 final class RunTests: XCTestCase {
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
+    func testHelp() throws {
+        guard #available(macOS 10.13, *) else { return }
 
-        // Some of the APIs that we use below are available in macOS 10.13 and above.
-        guard #available(macOS 10.13, *) else {
-            return
-        }
-
-        let fooBinary = productsDirectory.appendingPathComponent("swift-package-info")
+        let executableURL = productsDirectory.appendingPathComponent("SwiftPackageInfo")
 
         let process = Process()
-        process.executableURL = fooBinary
+        process.executableURL = executableURL
+        process.arguments = ["--help"]
 
-        let pipe = Pipe()
-        process.standardOutput = pipe
+        let outputPipe = Pipe()
+        process.standardOutput = outputPipe
+
+        let errorPipe = Pipe()
+        process.standardError = errorPipe
 
         try process.run()
         process.waitUntilExit()
 
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let output = String(data: data, encoding: .utf8)
+        let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+        let outputContent = String(data: outputData, encoding: .utf8)
 
-        XCTAssertEqual(output, "Hello, world!\n")
+        let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+        let errorContent = String(data: errorData, encoding: .utf8)
+
+        XCTAssertEqual(
+            outputContent,
+            """
+            OVERVIEW: A tool for analyzing Swift Packages
+
+            Provides valuable information about a given Swift Package,\nthat can be used in your favor when deciding whether to\nadopt or not a Swift Package as a dependency on your app.
+
+            USAGE: swift-package-info <subcommand>
+
+            OPTIONS:
+              --version               Show the version.
+              -h, --help              Show help information.\n\nSUBCOMMANDS:
+              binary-size             Check the estimated size of a Swift Package.
+              full-analyzes (default) Get all provided information about a Swift Package
+
+              See \'swift-package-info help <subcommand>\' for detailed help.
+
+            """
+        )
+        XCTAssertEqual(errorContent, "")
     }
 
     /// Returns path to the built products directory.
@@ -48,6 +67,6 @@ final class RunTests: XCTestCase {
     }
 
     static var allTests = [
-        ("testExample", testExample),
+        ("testHelp", testHelp),
     ]
 }

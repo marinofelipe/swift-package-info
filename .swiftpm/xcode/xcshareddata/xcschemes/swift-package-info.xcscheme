@@ -14,37 +14,23 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "SwiftPackageInfo"
-               BuildableName = "SwiftPackageInfo"
-               BlueprintName = "SwiftPackageInfo"
+               BlueprintIdentifier = "swift-package-info"
+               BuildableName = "swift-package-info"
+               BlueprintName = "swift-package-info"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "YES"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RunTests"
-               BuildableName = "RunTests"
-               BlueprintName = "RunTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "SwiftPackageInfoTests"
-               BuildableName = "SwiftPackageInfoTests"
-               BlueprintName = "SwiftPackageInfoTests"
+               BlueprintIdentifier = "App"
+               BuildableName = "App"
+               BlueprintName = "App"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -76,34 +62,6 @@
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Providers"
-               BuildableName = "Providers"
-               BlueprintName = "Providers"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "App"
-               BuildableName = "App"
-               BlueprintName = "App"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -116,19 +74,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RunTests"
-               BuildableName = "RunTests"
-               BlueprintName = "RunTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "SwiftPackageInfoTests"
-               BuildableName = "SwiftPackageInfoTests"
-               BlueprintName = "SwiftPackageInfoTests"
+               BlueprintIdentifier = "AppTests"
+               BuildableName = "AppTests"
+               BlueprintName = "AppTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>
@@ -156,19 +104,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "ProvidersTests"
-               BuildableName = "ProvidersTests"
-               BlueprintName = "ProvidersTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "AppTests"
-               BuildableName = "AppTests"
-               BlueprintName = "AppTests"
+               BlueprintIdentifier = "RunTests"
+               BuildableName = "RunTests"
+               BlueprintName = "RunTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>
@@ -180,7 +118,6 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
-      customWorkingDirectory = "/Users/marino.felipe/Documents/projects/personal/swift-package-info"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
@@ -189,9 +126,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "SwiftPackageInfo"
-            BuildableName = "SwiftPackageInfo"
-            BlueprintName = "SwiftPackageInfo"
+            BlueprintIdentifier = "swift-package-info"
+            BuildableName = "swift-package-info"
+            BlueprintName = "swift-package-info"
             ReferencedContainer = "container:">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -201,11 +138,11 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--package-version 7.0.0"
+            argument = "-v 6.0.0"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = " --product RxSwift"
+            argument = "--product RxSwift"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -214,7 +151,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--verbose"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>
@@ -228,9 +165,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "SwiftPackageInfo"
-            BuildableName = "SwiftPackageInfo"
-            BlueprintName = "SwiftPackageInfo"
+            BlueprintIdentifier = "swift-package-info"
+            BuildableName = "swift-package-info"
+            BlueprintName = "swift-package-info"
             ReferencedContainer = "container:">
          </BuildableReference>
       </BuildableProductRunnable>
