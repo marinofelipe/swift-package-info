@@ -13,11 +13,14 @@ import HTTPClientCore
 
 enum SwiftPackageServiceError: LocalizedError, Equatable {
     case unableToDumpPackageContent(errorMessage: String)
+    case unableToFetchPackageContent(errorMessage: String)
 
     var errorDescription: String? {
         switch self {
             case let .unableToDumpPackageContent(errorMessage):
                 return "Failed to dump package content with error: \(errorMessage)"
+            case let .unableToFetchPackageContent(errorMessage):
+                return "Failed to fetch package content with error: \(errorMessage)"
         }
     }
 }
@@ -26,6 +29,7 @@ public final class SwiftPackageService {
     private let httpClient: CombineHTTPClient
     private let gitHubRequestBuilder: HTTPRequestBuilder
     private let console: Console
+    private let fileManager: FileManager
     private let jsonDecoder: JSONDecoder
 
     /// In-memory `Package.swift decoded content`. Can be used to retrieve information for Providers.
@@ -35,11 +39,13 @@ public final class SwiftPackageService {
         httpClient: CombineHTTPClient = .default,
         gitHubRequestBuilder: HTTPRequestBuilder = .gitHub,
         console: Console = .default,
+        fileManager: FileManager = .default,
         jsonDecoder: JSONDecoder = .default
     ) {
         self.httpClient = httpClient
         self.gitHubRequestBuilder = gitHubRequestBuilder
         self.console = console
+        self.fileManager = fileManager
         self.jsonDecoder = jsonDecoder
     }
 
@@ -123,24 +129,31 @@ public final class SwiftPackageService {
     }
 
     private func fetchPackageContent(for swiftPackage: SwiftPackage, version: String, verbose: Bool) throws -> PackageContent {
-        try Shell.run(
+        let repositoryTemporaryPath = "\(fileManager.temporaryDirectory.path)/\(swiftPackage.repositoryName)"
+        try fileManager.removeItem(atPath: repositoryTemporaryPath)
+
+        let fetchOutput = try Shell.run(
             "git clone --branch \(version) --depth 1 \(swiftPackage.repositoryURL)",
-            workingDirectory: FileManager.default.temporaryDirectory.path,
+            workingDirectory: fileManager.temporaryDirectory.path,
             verbose: verbose
         )
+        guard fetchOutput.succeeded else {
+            let errorMessage = String(data: fetchOutput.errorData, encoding: .utf8) ?? ""
+            throw SwiftPackageServiceError.unableToFetchPackageContent(errorMessage: errorMessage)
+        }
 
-        let output = try Shell.run(
+        let dumpOutput = try Shell.run(
             "swift package dump-package",
-            workingDirectory: "\(FileManager.default.temporaryDirectory.path)/\(swiftPackage.repositoryName)",
+            workingDirectory: repositoryTemporaryPath,
             verbose: verbose
         )
 
-        guard output.succeeded else {
-            let errorMessage = String(data: output.errorData, encoding: .utf8) ?? ""
+        guard dumpOutput.succeeded else {
+            let errorMessage = String(data: dumpOutput.errorData, encoding: .utf8) ?? ""
             throw SwiftPackageServiceError.unableToDumpPackageContent(errorMessage: errorMessage)
         }
 
-        return try jsonDecoder.decode(PackageContent.self, from: output.data)
+        return try jsonDecoder.decode(PackageContent.self, from: dumpOutput.data)
     }
 }
 

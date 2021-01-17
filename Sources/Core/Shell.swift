@@ -133,7 +133,7 @@ private extension Shell {
         return .init(
             succeeded: process.terminationStatus == 0,
             data: outputData,
-            errorData: outputData
+            errorData: errorData
         )
     }
 
