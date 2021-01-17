@@ -11,7 +11,7 @@ final class RunTests: XCTestCase {
     func testHelp() throws {
         guard #available(macOS 10.13, *) else { return }
 
-        let executableURL = productsDirectory.appendingPathComponent("SwiftPackageInfo")
+        let executableURL = productsDirectory.appendingPathComponent("swift-package-info")
 
         let process = Process()
         process.executableURL = executableURL
@@ -45,7 +45,7 @@ final class RunTests: XCTestCase {
               --version               Show the version.
               -h, --help              Show help information.\n\nSUBCOMMANDS:
               binary-size             Check the estimated size of a Swift Package.
-              full-analyzes (default) Get all provided information about a Swift Package
+              full-analyzes (default) Get all available information about a Swift Package
 
               See \'swift-package-info help <subcommand>\' for detailed help.
 
