@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import TestSupport
 @testable import App
 
 final class PackageContentTests: XCTestCase {
@@ -128,13 +129,5 @@ final class PackageContentTests: XCTestCase {
             packageContent,
             expectedPackageContent
         )
-    }
-}
-
-extension XCTestCase {
-    public func dataFromJSON(named name: String, bundle: Bundle, _ file: StaticString = #file, _ line: UInt = #line) throws -> Data {
-        let jsonData = try bundle.url(forResource: name, withExtension: "json")
-            .flatMap { try Data(contentsOf: $0) }
-        return try XCTUnwrap(jsonData)
     }
 }

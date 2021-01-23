@@ -80,6 +80,7 @@ Such strategy has proven to be consistent with the size added to iOS apps downlo
 
 ## v1 TODO
 * [ ] Add other providers using in-memory package content. E.g. The direct dependencies of a Swift Package product, to help on taking better decisions when adopting a Swift Package
+* [ ] Allow passing only `--repository-url` by defaulting product and version, to first and later respectively.
 * [ ] First release
 
 ## Thanks
