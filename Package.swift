@@ -64,6 +64,9 @@ let package = Package(
             name: "AppTests",
             dependencies: [
                 .target(name: "App")
+            ],
+            resources: [
+                .copy("Resources/package_full.json")
             ]
         ),
         .target(
