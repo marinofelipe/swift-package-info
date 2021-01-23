@@ -58,6 +58,16 @@ Build from Swift Package Manager
 * The built utility can be found in `.build/debug/swift-package-info`
 * Run with `swift run`
 
+## Running tests
+Run from Xcode
+
+* Add the project path to `swift-package-info` scheme customWorkingDirectory.
+* Run the tests
+
+Run from command line
+
+* `swift test --build-path PROJECT_DIR`
+
 ## Dependencies
 * [CombineHTTPClient from HTTPClient](https://github.com/marinofelipe/http_client/blob/main/Package.swift)
 * [Swift Argument Parser](https://github.com/apple/swift-argument-parser)
@@ -66,15 +76,11 @@ Build from Swift Package Manager
 
 ## Binary size report
 Its methodology is inspired by [cocoapods-size](https://github.com/google/cocoapods-size), and thus works by comparing archives with no bitcode and ARM64 arch.
-Such a strategy has proven to be very consistent with the size added to iOS apps downloaded and installed via TestFlight.
+Such strategy has proven to be consistent with the size added to iOS apps downloaded and installed via TestFlight.
 
 ## v1 TODO
-* [ ] 💅
-* [ ] `Much` more tests
-* [ ] Make Report scalable. Prepare to support different modes of output (e.g. JSON)
-* [ ] Tiny CI - GitHubActions will do
 * [ ] Add other providers using in-memory package content. E.g. The direct dependencies of a Swift Package product, to help on taking better decisions when adopting a Swift Package
-* [ ] First release 
+* [ ] First release
 
 ## Thanks
 Special thanks to [@unnamedd](https://github.com/unnamedd) for sharing his experience with [swift-tools-support-core](https://github.com/apple/swift-tools-support-core) and on how to build a pretty 👌 report.

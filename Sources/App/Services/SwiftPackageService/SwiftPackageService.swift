@@ -130,7 +130,10 @@ public final class SwiftPackageService {
 
     private func fetchPackageContent(for swiftPackage: SwiftPackage, version: String, verbose: Bool) throws -> PackageContent {
         let repositoryTemporaryPath = "\(fileManager.temporaryDirectory.path)/\(swiftPackage.repositoryName)"
-        try fileManager.removeItem(atPath: repositoryTemporaryPath)
+
+        if fileManager.fileExists(atPath: repositoryTemporaryPath) {
+            try fileManager.removeItem(atPath: repositoryTemporaryPath)
+        }
 
         let fetchOutput = try Shell.run(
             "git clone --branch \(version) --depth 1 \(swiftPackage.repositoryURL)",

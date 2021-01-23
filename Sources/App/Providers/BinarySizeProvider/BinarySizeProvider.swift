@@ -9,12 +9,15 @@ import Core
 import Foundation
 
 enum BinarySizeProviderError: LocalizedError, Equatable {
+    case unableToGenerateArchive(errorMessage: String)
     case unableToGetBinarySizeOnDisk(underlyingError: NSError)
     case unableToRetrieveAppProject(atPath: String)
     case unexpectedError
 
     var errorDescription: String? {
         switch self {
+            case let .unableToGenerateArchive(errorMessage):
+                return "Failed to generate archive with error: \(errorMessage)"
             case let .unableToGetBinarySizeOnDisk(underlyingError):
                 return "Failed to get archive size with error: \(underlyingError.localizedDescription)"
             case let .unableToRetrieveAppProject(path):

@@ -73,13 +73,18 @@ final class AppManager {
             timeout: nil
         )
 
-        if output.succeeded == false && verbose {
-            console.lineBreakAndWrite(
-                .init(
-                    text: "Command failed...",
-                    color: .red
+        if output.succeeded == false {
+            if verbose {
+                console.lineBreakAndWrite(
+                    .init(
+                        text: "Command failed...",
+                        color: .red
+                    )
                 )
-            )
+            }
+
+            let errorMessage = String(data: output.errorData, encoding: .utf8) ?? ""
+            throw BinarySizeProviderError.unableToGenerateArchive(errorMessage: errorMessage)
         }
     }
 

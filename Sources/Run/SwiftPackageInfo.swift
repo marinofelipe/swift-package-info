@@ -54,7 +54,7 @@ struct AllArguments: ParsableArguments {
             .long,
             .customShort("v")
         ],
-        help: "Semantic version of the Swift Package." // If not passed the latest one will be used instead.
+        help: "Semantic version of the Swift Package."
     )
     var packageVersion: Version
 
@@ -68,7 +68,6 @@ struct AllArguments: ParsableArguments {
     )
     var product: String
 
-    // TODO: tbi.
     @Flag(
         name: .long,
         help: "Increase verbosity of informational output"
