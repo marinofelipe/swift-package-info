@@ -26,6 +26,7 @@ public struct SwiftPackageInfo: ParsableCommand {
         subcommands: [
             BinarySize.self,
             Platforms.self,
+            Dependencies.self,
             FullAnalyzes.self
         ],
         defaultSubcommand: FullAnalyzes.self
@@ -33,7 +34,8 @@ public struct SwiftPackageInfo: ParsableCommand {
 
     static var subcommandsProviders: [InfoProvider] = [
         BinarySizeProvider.fetchInformation(for:packageContent:verbose:),
-        PlatformsProvider.fetchInformation(for:packageContent:verbose:)
+        PlatformsProvider.fetchInformation(for:packageContent:verbose:),
+        DependenciesProvider.fetchInformation(for:packageContent:verbose:)
     ]
 
     public init() {}

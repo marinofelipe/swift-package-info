@@ -17,7 +17,7 @@ public struct PlatformsProvider {
         if packageContent.platforms.isEmpty {
             messages = [
                 .init(
-                    text: "System default - For more details check: https://github.com/apple/swift-package-manager/blob/main/Documentation/PackageDescription.md#supportedplatform",
+                    text: "System default",
                     hasLineBreakAfter: false
                 )
             ]
@@ -50,7 +50,6 @@ public struct PlatformsProvider {
                     +
                 )
         }
-
 
         return .success(
             .init(

@@ -50,7 +50,7 @@ public struct BinarySizeProvider {
         }
 
         let firstPartMessage = ConsoleMessage(
-            text: "Binary size increased by ",
+            text: "Binary size increases by ",
             color: .noColor,
             isBold: false,
             hasLineBreakAfter: false
