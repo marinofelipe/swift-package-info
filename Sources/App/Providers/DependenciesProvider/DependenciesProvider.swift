@@ -43,8 +43,7 @@ public struct DependenciesProvider {
         if externalDependencies.isEmpty {
             messages = [
                 .init(
-                    text: "No external dependencies :)",
-                    color: .green,
+                    text: "No third-party dependencies :)",
                     hasLineBreakAfter: false
                 )
             ]

@@ -13,7 +13,7 @@ import Reports
 extension SwiftPackageInfo {
     public struct Dependencies: ParsableCommand {
         public static var configuration = CommandConfiguration(
-            abstract: "List dependencies of a Package product",
+            abstract: "List dependencies of a Package product.",
             discussion: """
             Show direct and indirect dependencies of a product, listing
             all dependencies that are linked to its binary.

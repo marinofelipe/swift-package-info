@@ -81,7 +81,7 @@ final class RunTests: XCTestCase {
             command: "--repository-url https://github.com/ReactiveX/RxSwift",
             expectedOutput: "",
             expectedError: """
-            Error: Missing expected argument \'--package-version <package-version>\'\nUsage: swift-package-info full-analyzes --repository-url <repository-url> --package-version <package-version> --product <product> [--verbose]
+            Error: Missing expected argument \'--product <product>\'\nUsage: swift-package-info full-analyzes --repository-url <repository-url> [--package-version <package-version>] --product <product> [--verbose]
               See \'swift-package-info full-analyzes --help\' for more information.
 
             """
@@ -92,7 +92,7 @@ final class RunTests: XCTestCase {
             command: "--repository-url https://github.com/ReactiveX/RxSwift --package-version 6.0.0",
             expectedOutput: "",
             expectedError: """
-            Error: Missing expected argument \'--product <product>\'\nUsage: swift-package-info full-analyzes --repository-url <repository-url> --package-version <package-version> --product <product> [--verbose]
+            Error: Missing expected argument \'--product <product>\'\nUsage: swift-package-info full-analyzes --repository-url <repository-url> [--package-version <package-version>] --product <product> [--verbose]
               See \'swift-package-info full-analyzes --help\' for more information.
 
             """
@@ -110,8 +110,10 @@ final class RunTests: XCTestCase {
         OPTIONS:
           --version               Show the version.
           -h, --help              Show help information.\n\nSUBCOMMANDS:
-          binary-size             Check the estimated size of a Swift Package.
-          full-analyzes (default) Get all available information about a Swift Package
+          binary-size             Estimated binary size of a Swift Package product.
+          platforms               Shows platforms supported b a Package product.
+          dependencies            List dependencies of a Package product.
+          full-analyzes (default) All available information about a Swift Package\n                          product.
 
           See \'swift-package-info help <subcommand>\' for detailed help.
 

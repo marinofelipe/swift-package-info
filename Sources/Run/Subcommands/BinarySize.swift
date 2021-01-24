@@ -20,7 +20,7 @@ extension SwiftPackageInfo {
         """
 
         public static var configuration = CommandConfiguration(
-            abstract: "Check the estimated size of a Swift Package.",
+            abstract: "Estimated binary size of a Swift Package product.",
             discussion: """
             Measures the estimated binary size impact of a Swift Package product,
             such as "ArgumentParser" declared on `swift-argument-parser`.

@@ -13,9 +13,10 @@ import Reports
 extension SwiftPackageInfo {
     public struct Platforms: ParsableCommand {
         public static var configuration = CommandConfiguration(
-            abstract: "Informs a Package's supported platforms",
+            abstract: "Shows platforms supported b a Package product.",
             discussion: """
-            Informs supported platforms by a given Package.swift and its products.
+            Informs supported platforms by a given Package.swift and its products,
+            e.g 'iOS with 9.0 minimum deployment target'.
             """,
             version: "1.0"
         )

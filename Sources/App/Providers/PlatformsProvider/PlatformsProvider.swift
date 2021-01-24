@@ -28,7 +28,7 @@ public struct PlatformsProvider {
 
                     var messages = [
                         ConsoleMessage(
-                            text: "\(platform.platformName) v. \(platform.version)",
+                            text: "\(platform.platformName) from v. \(platform.version)",
                             isBold: true,
                             hasLineBreakAfter: false
                         )

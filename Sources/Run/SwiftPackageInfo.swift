@@ -61,9 +61,9 @@ struct AllArguments: ParsableArguments {
             .long,
             .customShort("v")
         ],
-        help: "Semantic version of the Swift Package."
+        help: "Semantic version of the Swift Package. If not passed in the latest release is used."
     )
-    var packageVersion: Version
+    var packageVersion: Version?
 
     @Option(
         name: [
@@ -86,7 +86,7 @@ struct AllArguments: ParsableArguments {
 
 extension ParsableCommand {
     func runArgumentsValidation(arguments: AllArguments) throws {
-        guard CommandLine.argc > 2 else { throw CleanExit.helpRequest() }
+        guard CommandLine.argc > 1 else { throw CleanExit.helpRequest() }
 
         guard arguments.repositoryURL.isValid else {
             throw CleanExit.message(
@@ -101,7 +101,7 @@ extension ParsableCommand {
     func makeSwiftPackage(from arguments: AllArguments) -> SwiftPackage {
         .init(
             repositoryURL: arguments.repositoryURL,
-            version: arguments.packageVersion.description,
+            version: arguments.packageVersion?.description ?? "Undefined",
             product: arguments.product
         )
     }
