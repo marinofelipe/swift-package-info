@@ -71,51 +71,22 @@ final class PackageContentTests: XCTestCase {
                 .init(
                     name: "Target1",
                     dependencies: [
-                        .init(
-                            target: nil,
-                            product: [
-                                "swift-argument-parser",
-                                nil
-                            ],
-                            byName: nil
-                        )
+                        .product(["swift-argument-parser"])
                     ],
                     kind: .regular
                 ),
                 .init(
                     name: "Target2",
                     dependencies: [
-                        .init(
-                            target: nil,
-                            product: nil,
-                            byName: [
-                                "Target1",
-                                nil
-                            ]
-                        )
+                        .byName(["Target1"])
                     ],
                     kind: .regular
                 ),
                 .init(
                     name: "Target3",
                     dependencies: [
-                        .init(
-                            target: nil,
-                            product: [
-                                "ArgumentParser",
-                                "swift-argument-parser",
-                                nil
-                            ],
-                            byName: nil
-                        ),
-                        .init(
-                            target: [
-                                "Target1",
-                                nil
-                            ],
-                            product: nil,
-                            byName: nil
-                        )
+                        .product(["ArgumentParser", "swift-argument-parser"]),
+                        .target(["Target1"])
                     ],
                     kind: .test
                 )
