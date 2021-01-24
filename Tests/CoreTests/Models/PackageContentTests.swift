@@ -7,7 +7,7 @@
 
 import XCTest
 import TestSupport
-@testable import App
+@testable import Core
 
 final class PackageContentTests: XCTestCase {
     private let jsonDecoder: JSONDecoder = .init()

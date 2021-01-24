@@ -34,7 +34,7 @@ extension SwiftPackageInfo {
             var swiftPackage = makeSwiftPackage(from: allArguments)
             swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
 
-            try validate(swiftPackage: &swiftPackage, arguments: allArguments)
+            let packageContent = try validate(swiftPackage: &swiftPackage, arguments: allArguments)
 
             let report = Report(swiftPackage: swiftPackage)
 
@@ -44,6 +44,7 @@ extension SwiftPackageInfo {
             SwiftPackageInfo.subcommandsProviders.forEach { subcommandProvider in
                 subcommandProvider(
                     swiftPackage,
+                    packageContent,
                     allArguments.verbose
                 )
                 .onSuccess { providedInfos.append($0) }

@@ -31,6 +31,7 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
 public struct BinarySizeProvider {
     public static func fetchInformation(
         for swiftPackage: SwiftPackage,
+        packageContent: PackageContent,
         verbose: Bool
     ) -> Result<ProvidedInfo, InfoProviderError> {
         let sizeMeasurer = SizeMeasurer(verbose: verbose)

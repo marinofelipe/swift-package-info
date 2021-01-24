@@ -32,9 +32,6 @@ public final class SwiftPackageService {
     private let fileManager: FileManager
     private let jsonDecoder: JSONDecoder
 
-    /// In-memory `Package.swift decoded content`. Can be used to retrieve information for Providers.
-    public private(set) var storedPackageContent: PackageContent?
-
     init(
         httpClient: CombineHTTPClient = .default,
         gitHubRequestBuilder: HTTPRequestBuilder = .gitHub,
@@ -63,6 +60,7 @@ public final class SwiftPackageService {
         public let latestTag: String?
         public let isProductValid: Bool
         public let availableProducts: [String]
+        public let packageContent: PackageContent
     }
 
     deinit {
@@ -117,14 +115,14 @@ public final class SwiftPackageService {
             version: version,
             verbose: verbose
         )
-        storedPackageContent = packageContent
 
         return .init(
             isRepositoryValid: isRepositoryValid,
             isTagValid: isTagValid,
             latestTag: latestTag,
             isProductValid: packageContent.products.contains(where: \.name == swiftPackage.product),
-            availableProducts: packageContent.products.map(\.name)
+            availableProducts: packageContent.products.map(\.name),
+            packageContent: packageContent
         )
     }
 

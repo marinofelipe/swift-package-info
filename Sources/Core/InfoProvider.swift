@@ -25,6 +25,7 @@ public struct InfoProviderError: Error, CustomConsoleMessageConvertible {
 
 public typealias InfoProvider = (
     _ swiftPackage: SwiftPackage,
+    _ packageContent: PackageContent,
     _ verbose: Bool
 ) -> Result<ProvidedInfo, InfoProviderError>
 

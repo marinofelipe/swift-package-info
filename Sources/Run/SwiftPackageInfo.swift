@@ -23,12 +23,17 @@ public struct SwiftPackageInfo: ParsableCommand {
         adopt or not a Swift Package as a dependency on your app.
         """,
         version: "1.0",
-        subcommands: [BinarySize.self, FullAnalyzes.self],
+        subcommands: [
+            BinarySize.self,
+            Platforms.self,
+            FullAnalyzes.self
+        ],
         defaultSubcommand: FullAnalyzes.self
     )
 
     static var subcommandsProviders: [InfoProvider] = [
-        BinarySize.fetchProvidedInfo(for:verbose:)
+        BinarySizeProvider.fetchInformation(for:packageContent:verbose:),
+        PlatformsProvider.fetchInformation(for:packageContent:verbose:)
     ]
 
     public init() {}
@@ -99,11 +104,10 @@ extension ParsableCommand {
         )
     }
 
-    @discardableResult
     func validate(
         swiftPackage: inout SwiftPackage,
         arguments: AllArguments
-    ) throws -> PackageContent? {
+    ) throws -> PackageContent {
         let swiftPackageService = SwiftPackageService()
         let packageResponse = try swiftPackageService.validate(swiftPackage: swiftPackage, verbose: arguments.verbose)
 
@@ -133,6 +137,6 @@ extension ParsableCommand {
             )
         }
 
-        return swiftPackageService.storedPackageContent
+        return packageResponse.packageContent
     }
 }
