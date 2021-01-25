@@ -1,5 +1,4 @@
-[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
-<a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-5.3-orange.svg?style=flat" alt="Swift" /></a>
+![CI](https://github.com/marinofelipe/swift-package-info/workflows/CI/badge.svg)
 [![Swift Package Manager](https://rawgit.com/jlyonsmith/artwork/master/SwiftPackageManager/swiftpackagemanager-compatible.svg)](https://swift.org/package-manager/)
 [![Twitter](https://img.shields.io/badge/twitter-@_marinofelipe-blue.svg?style=flat)](https://twitter.com/_marinofelipe)
 
@@ -30,38 +29,11 @@ SUBCOMMANDS:
   See 'swift-package-info help <subcommand>' for detailed help.
 ```
 
-> swift run swift-package-info help binary-size
-```
-OVERVIEW: Estimated binary size of a Swift Package product.
-
-Measures the estimated binary size impact of a Swift Package product,
-such as "ArgumentParser" declared on `swift-argument-parser`.
-
-* Note: The estimated size doesn't consider optimizations such as app thinning.
-Its methodology is inspired by [cocoapods-size](https://github.com/google/cocoapods-size),
-and thus works by comparing archives with no bitcode and ARM64 arch.
-Such a strategy has proven to be very consistent with the size added to iOS apps downloaded and installed via TestFlight.
-
-USAGE: swift-package-info binary-size --repository-url <repository-url> [--package-version <package-version>] --product <product> [--verbose]
-
-OPTIONS:
-  --repository-url, --for, --package, --repo-url, --url <repository-url>
-                          URL containing the Swift Package / `Package.swift` that contains the product you want to run analyzes for. 
-  -v, --package-version <package-version>
-                          Semantic version of the Swift Package. If not passed in the latest release is used. 
-  --product, --product-named, --product-name <product>
-                          Name of the product to be checked. 
-  --verbose               Increase verbosity of informational output 
-  --version               Show the version.
-  -h, --help              Show help information.
-```
-
 ### Example
 - To run a full analyzes
 ```
 swift run swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product RxSwift
 ```
-> Report
 ```
 +------------------------------------------------+
 |               Swift Package Info               |
@@ -81,7 +53,6 @@ swift run swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0
 ```
 swift run swift-package-info platforms --for https://github.com/krzyzanowskim/CryptoSwift -v 1.3.8 --product CryptoSwift
 ```
-> Report
 ```
 +----------------------------------------------------------------------+
 |                          Swift Package Info                          |
@@ -94,7 +65,6 @@ swift run swift-package-info platforms --for https://github.com/krzyzanowskim/Cr
 +-----------+----------------------------------------------------------+
 > Total of 1 provider used.
 ```
-
 
 ## Installation
 * Install [mint](https://github.com/yonaskolb/Mint).
