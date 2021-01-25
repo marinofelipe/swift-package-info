@@ -23,12 +23,19 @@ public struct SwiftPackageInfo: ParsableCommand {
         adopt or not a Swift Package as a dependency on your app.
         """,
         version: "1.0",
-        subcommands: [BinarySize.self, FullAnalyzes.self],
+        subcommands: [
+            BinarySize.self,
+            Platforms.self,
+            Dependencies.self,
+            FullAnalyzes.self
+        ],
         defaultSubcommand: FullAnalyzes.self
     )
 
     static var subcommandsProviders: [InfoProvider] = [
-        BinarySize.fetchProvidedInfo(for:verbose:)
+        BinarySizeProvider.fetchInformation(for:packageContent:verbose:),
+        PlatformsProvider.fetchInformation(for:packageContent:verbose:),
+        DependenciesProvider.fetchInformation(for:packageContent:verbose:)
     ]
 
     public init() {}
@@ -54,9 +61,9 @@ struct AllArguments: ParsableArguments {
             .long,
             .customShort("v")
         ],
-        help: "Semantic version of the Swift Package."
+        help: "Semantic version of the Swift Package. If not passed in the latest release is used."
     )
-    var packageVersion: Version
+    var packageVersion: Version?
 
     @Option(
         name: [
@@ -79,7 +86,7 @@ struct AllArguments: ParsableArguments {
 
 extension ParsableCommand {
     func runArgumentsValidation(arguments: AllArguments) throws {
-        guard CommandLine.argc > 2 else { throw CleanExit.helpRequest() }
+        guard CommandLine.argc > 1 else { throw CleanExit.helpRequest() }
 
         guard arguments.repositoryURL.isValid else {
             throw CleanExit.message(
@@ -94,16 +101,15 @@ extension ParsableCommand {
     func makeSwiftPackage(from arguments: AllArguments) -> SwiftPackage {
         .init(
             repositoryURL: arguments.repositoryURL,
-            version: arguments.packageVersion.description,
+            version: arguments.packageVersion?.description ?? "Undefined",
             product: arguments.product
         )
     }
 
-    @discardableResult
     func validate(
         swiftPackage: inout SwiftPackage,
         arguments: AllArguments
-    ) throws -> PackageContent? {
+    ) throws -> PackageContent {
         let swiftPackageService = SwiftPackageService()
         let packageResponse = try swiftPackageService.validate(swiftPackage: swiftPackage, verbose: arguments.verbose)
 
@@ -133,6 +139,6 @@ extension ParsableCommand {
             )
         }
 
-        return swiftPackageService.storedPackageContent
+        return packageResponse.packageContent
     }
 }

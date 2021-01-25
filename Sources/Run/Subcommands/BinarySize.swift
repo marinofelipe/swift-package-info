@@ -20,7 +20,7 @@ extension SwiftPackageInfo {
         """
 
         public static var configuration = CommandConfiguration(
-            abstract: "Check the estimated size of a Swift Package.",
+            abstract: "Estimated binary size of a Swift Package product.",
             discussion: """
             Measures the estimated binary size impact of a Swift Package product,
             such as "ArgumentParser" declared on `swift-argument-parser`.
@@ -39,29 +39,18 @@ extension SwiftPackageInfo {
             var swiftPackage = makeSwiftPackage(from: allArguments)
             swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
 
-            try validate(swiftPackage: &swiftPackage, arguments: allArguments)
+            let packageContent = try validate(swiftPackage: &swiftPackage, arguments: allArguments)
 
             let report = Report(swiftPackage: swiftPackage)
 
-            Self.fetchProvidedInfo(
+            BinarySizeProvider.fetchInformation(
                 for: swiftPackage,
+                packageContent: packageContent,
                 verbose: allArguments.verbose
             )
             .onSuccess(report.generate(for:))
             .onFailure { Console.default.write($0.message) }
         }
-    }
-}
-
-extension SwiftPackageInfo.BinarySize {
-    static func fetchProvidedInfo(
-        for swiftPackage: SwiftPackage,
-        verbose: Bool
-    ) -> Result<ProvidedInfo, InfoProviderError> {
-        BinarySizeProvider.fetchInformation(
-            for: swiftPackage,
-            verbose: verbose
-        )
     }
 }
 

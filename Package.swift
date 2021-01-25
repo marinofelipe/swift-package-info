@@ -89,8 +89,16 @@ let package = Package(
         .testTarget(
             name: "CoreTests",
             dependencies: [
-                .target(name: "Core")
+                .target(name: "Core"),
+                .target(name: "TestSupport")
+            ],
+            resources: [
+                .copy("Resources/package_full.json")
             ]
+        ),
+        .target(
+            name: "TestSupport",
+            dependencies: []
         )
     ]
 )
