@@ -32,7 +32,7 @@ SUBCOMMANDS:
 ### Example
 - To run a full analyzes
 ```
-swift run swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product RxSwift
+swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product RxSwift
 ```
 ```
 +------------------------------------------------+
@@ -51,7 +51,7 @@ swift run swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0
 
 - To check supported platforms (sub command)
 ```
-swift run swift-package-info platforms --for https://github.com/krzyzanowskim/CryptoSwift -v 1.3.8 --product CryptoSwift
+swift-package-info platforms --for https://github.com/krzyzanowskim/CryptoSwift -v 1.3.8 --product CryptoSwift
 ```
 ```
 +----------------------------------------------------------------------+
@@ -80,7 +80,7 @@ Build from Swift Package Manager
 ## Running tests
 Run from Xcode
 
-* Add the project path to `swift-package-info` scheme customWorkingDirectory.
+* Add the project directory to `swift-package-info` scheme customWorkingDirectory
 * Run the tests
 
 Run from command line
