@@ -27,7 +27,7 @@ final class SizeMeasurer {
         self.verbose = verbose
     }
 
-    private static let stepsCount = 6
+    private static let stepsCount = 7
     private var currentStep = 1
     private static let second: Double = 1_000_000
 
@@ -48,6 +48,13 @@ final class SizeMeasurer {
 
 private extension SizeMeasurer {
     func measureEmptyAppSize() throws -> SizeOnDisk {
+        if verbose {
+            console.lineBreakAndWrite("Cloning empty app")
+        } else {
+            showOrUpdateLoading(withText: "Cloning empty app...")
+        }
+        try appManager.cloneEmptyApp()
+
         if verbose {
             console.lineBreakAndWrite(
                 .init(
@@ -84,8 +91,8 @@ private extension SizeMeasurer {
     }
     
     func cleanup() throws {
-        if verbose == false { showOrUpdateLoading(withText: "Reseting app...") }
-        try appManager.removeAppDependencies()
+        if verbose == false { showOrUpdateLoading(withText: "Reseting and cleaning up empty app...") }
+        try appManager.cleanupClonedApp()
 
         completeLoading()
     }

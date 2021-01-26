@@ -13,7 +13,9 @@ import XcodeProj
 
 fileprivate enum Constants {
     static let appName: String = "MeasurementApp"
+    static let clonedRepoName: String = "swift-package-info"
     static let xcodeProjName: String = "\(appName).xcodeproj"
+    static let xcodeProjPath: String = "\(clonedRepoName)/\(xcodeProjName)"
     static let archiveName: String = "archive.xcarchive"
 }
 
@@ -24,7 +26,7 @@ fileprivate enum Constants {
 final class AppManager {
     private lazy var appPath: String = fileManager.currentDirectoryPath
         .appending("/")
-        .appending(Constants.xcodeProjName)
+        .appending(Constants.xcodeProjPath)
 
     private var archivedProductPath: String {
         fileManager.temporaryDirectory
@@ -48,11 +50,23 @@ final class AppManager {
         self.verbose = verbose
     }
 
+    func cloneEmptyApp() throws {
+        do {
+            try Shell.performShallowGitClone(
+                repositoryURLString: "https://github.com/marinofelipe/swift-package-info",
+                branchOrTag: "main",
+                verbose: verbose
+            )
+        } catch {
+            throw BinarySizeProviderError.unableToCloneEmptyApp(errorMessage: error.localizedDescription)
+        }
+    }
+
     func generateArchive() throws {
         let command: ConsoleMessage = """
         xcodebuild \
         archive \
-        -project \(Constants.xcodeProjName) \
+        -project \(Constants.xcodeProjPath) \
         -scheme \(Constants.appName) \
         -archivePath \(fileManager.temporaryDirectory.path)/\(Constants.archiveName) \
         -derivedDataPath \(fileManager.temporaryDirectory.path) \
@@ -114,9 +128,9 @@ final class AppManager {
         try xcodeProj.write(path: .init(appPath))
     }
 
-    func removeAppDependencies() throws {
+    func cleanupClonedApp() throws {
         try Shell.run(
-            "git checkout \(Constants.xcodeProjName)",
+            "rm -rf swift-package-info",
             verbose: verbose
         )
     }

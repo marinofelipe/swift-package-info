@@ -153,17 +153,6 @@ final class URLExtensionTests: XCTestCase {
             .init(amount: 503808, formatted: "504 KB")
         )
     }
-
-    static var allTests = [
-        ("testByteCountFormatter", testByteCountFormatter),
-        ("testTotalFileAllocatedSize", testTotalFileAllocatedSize),
-        ("testIsDirectoryForFile", testIsDirectoryForFile),
-        ("testIsDirectoryForDirectory", testIsDirectoryForDirectory),
-        ("testDirectoryTotalAllocatedSizeIncludingSubfolders", testDirectoryTotalAllocatedSizeIncludingSubfolders),
-        ("testDirectoryTotalAllocatedSizeWithoutIncludingSubfolders", testDirectoryTotalAllocatedSizeWithoutIncludingSubfolders),
-        ("testSizeOnDiskForFile", testSizeOnDiskForFile),
-        ("testSizeOnDiskForDirectory", testSizeOnDiskForDirectory)
-    ]
 }
 
 // MARK: - Helpers

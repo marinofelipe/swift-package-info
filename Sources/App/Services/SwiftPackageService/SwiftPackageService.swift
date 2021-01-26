@@ -133,9 +133,10 @@ public final class SwiftPackageService {
             try fileManager.removeItem(atPath: repositoryTemporaryPath)
         }
 
-        let fetchOutput = try Shell.run(
-            "git clone --branch \(version) --depth 1 \(swiftPackage.repositoryURL)",
+        let fetchOutput = try Shell.performShallowGitClone(
             workingDirectory: fileManager.temporaryDirectory.path,
+            repositoryURLString: swiftPackage.repositoryURL.absoluteString,
+            branchOrTag: version,
             verbose: verbose
         )
         guard fetchOutput.succeeded else {
