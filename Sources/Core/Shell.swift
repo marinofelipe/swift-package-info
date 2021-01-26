@@ -66,6 +66,23 @@ public enum Shell {
     }
 }
 
+public extension Shell {
+    @discardableResult
+    static func performShallowGitClone(
+        workingDirectory: String? = FileManager.default.currentDirectoryPath,
+        repositoryURLString: String,
+        branchOrTag: String,
+        verbose: Bool
+    ) throws -> Output {
+        try Shell.run(
+            "git clone --branch \(branchOrTag) --depth 1 \(repositoryURLString)",
+            workingDirectory: workingDirectory,
+            verbose: verbose,
+            timeout: 5
+        )
+    }
+}
+
 // MARK: - Private
 
 private extension Shell {

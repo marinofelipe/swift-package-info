@@ -10,6 +10,7 @@ import Foundation
 
 enum BinarySizeProviderError: LocalizedError, Equatable {
     case unableToGenerateArchive(errorMessage: String)
+    case unableToCloneEmptyApp(errorMessage: String)
     case unableToGetBinarySizeOnDisk(underlyingError: NSError)
     case unableToRetrieveAppProject(atPath: String)
     case unexpectedError
@@ -18,6 +19,8 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
         switch self {
             case let .unableToGenerateArchive(errorMessage):
                 return "Failed to generate archive with error: \(errorMessage)"
+            case let .unableToCloneEmptyApp(errorMessage):
+                return "Failed to clone empty app with error: \(errorMessage)"
             case let .unableToGetBinarySizeOnDisk(underlyingError):
                 return "Failed to get archive size with error: \(underlyingError.localizedDescription)"
             case let .unableToRetrieveAppProject(path):
