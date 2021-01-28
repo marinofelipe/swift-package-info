@@ -66,6 +66,17 @@
       "type" : {
         "executable" : null
       }
+    },
+    {
+      "name" : "Product4",
+      "targets" : [
+        "Target1"
+      ],
+      "type" : {
+        "library" : [
+          "dynamic"
+        ]
+      }
     }
   ],
   "providers" : null,

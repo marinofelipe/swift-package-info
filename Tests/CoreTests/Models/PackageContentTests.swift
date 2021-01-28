@@ -35,7 +35,7 @@ final class PackageContentTests: XCTestCase {
                         "Target1",
                         "Target2"
                     ],
-                    kind: .library(.dynamic)
+                    kind: .library(.automatic)
                 ),
                 .init(
                     name: "Product2",
@@ -51,6 +51,13 @@ final class PackageContentTests: XCTestCase {
                         "Target2"
                     ],
                     kind: .executable
+                ),
+                .init(
+                    name: "Product4",
+                    targets: [
+                        "Target1"
+                    ],
+                    kind: .library(.dynamic)
                 )
             ],
             dependencies: [

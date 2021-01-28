@@ -23,8 +23,9 @@ public struct PackageContent: Decodable, Equatable {
     public struct Product: Decodable, Equatable {
         public enum Kind: Equatable {
             public enum LibraryKind: String, Decodable {
-                case dynamic = "automatic"
+                case dynamic
                 case `static`
+                case automatic
             }
 
             case executable
