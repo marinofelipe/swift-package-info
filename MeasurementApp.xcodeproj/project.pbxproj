@@ -7,13 +7,30 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ED2B733125C627A60088B5A1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED2B732F25C627A50088B5A1 /* Accelerate.framework */; };
+		ED2B733225C627A60088B5A1 /* Accelerate.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ED2B732F25C627A50088B5A1 /* Accelerate.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ED39101A2598F6B60059494D /* MeasurementApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3910192598F6B60059494D /* MeasurementApp.swift */; };
 		ED39101C2598F6B60059494D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED39101B2598F6B60059494D /* ContentView.swift */; };
 		ED39101E2598F6B70059494D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED39101D2598F6B70059494D /* Assets.xcassets */; };
 		ED3910212598F6B70059494D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED3910202598F6B70059494D /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		ED2B733325C627A60088B5A1 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				ED2B733225C627A60088B5A1 /* Accelerate.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		ED2B732F25C627A50088B5A1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		ED3910162598F6B60059494D /* MeasurementApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeasurementApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED3910192598F6B60059494D /* MeasurementApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementApp.swift; sourceTree = "<group>"; };
 		ED39101B2598F6B60059494D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -27,17 +44,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ED2B733125C627A60088B5A1 /* Accelerate.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		ED2B732E25C627A50088B5A1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				ED2B732F25C627A50088B5A1 /* Accelerate.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		ED39100D2598F6B60059494D = {
 			isa = PBXGroup;
 			children = (
 				ED3910182598F6B60059494D /* MeasurementApp */,
 				ED3910172598F6B60059494D /* Products */,
+				ED2B732E25C627A50088B5A1 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -79,6 +106,7 @@
 				ED3910122598F6B60059494D /* Sources */,
 				ED3910132598F6B60059494D /* Frameworks */,
 				ED3910142598F6B60059494D /* Resources */,
+				ED2B733325C627A60088B5A1 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
