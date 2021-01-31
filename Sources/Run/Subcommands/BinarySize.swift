@@ -13,7 +13,7 @@ import Reports
 extension SwiftPackageInfo {
     public struct BinarySize: ParsableCommand {
         static let estimatedSizeNote = """
-        * Note: The estimated size doesn't consider optimizations such as app thinning.
+        * Note: The estimated size may not reflect the exact amount since it doesn't account optimizations such as app thinning.
         Its methodology is inspired by [cocoapods-size](https://github.com/google/cocoapods-size),
         and thus works by comparing archives with no bitcode and ARM64 arch.
         Such a strategy has proven to be very consistent with the size added to iOS apps downloaded and installed via TestFlight.
