@@ -16,18 +16,31 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
     case unexpectedError
 
     var errorDescription: String? {
+        let step: String
+        let message: String
         switch self {
             case let .unableToGenerateArchive(errorMessage):
-                return "Failed to generate archive with error: \(errorMessage)"
+                step = "Archiving"
+                message = errorMessage
             case let .unableToCloneEmptyApp(errorMessage):
-                return "Failed to clone empty app with error: \(errorMessage)"
+                step = "Cloning empty app"
+                message = errorMessage
             case let .unableToGetBinarySizeOnDisk(underlyingError):
-                return "Failed to get archive size with error: \(underlyingError.localizedDescription)"
+                step = "Reading binary size"
+                message = "Failed to read binary size from archive. Details: \(underlyingError.localizedDescription)"
             case let .unableToRetrieveAppProject(path):
-                return "Failed to get MeasurementApp project from XcodeProj at path: \(path)"
+                step = "Read measurement app project"
+                message = "Failed to get MeasurementApp project from XcodeProj at path: \(path)"
             case .unexpectedError:
-                return "Unexpected failure to calculate binary size. Please run with --verbose enabled for more details."
+                step = "Undefined"
+                message = "Unexpected failure. Please run with --verbose enabled for more details."
         }
+
+        return """
+        Failed to measure binary size
+        Step: \(step)
+        Error: \(message)
+        """
     }
 }
 
@@ -40,8 +53,15 @@ public struct BinarySizeProvider {
         let sizeMeasurer = SizeMeasurer(verbose: verbose)
         var formattedPackageBinarySize: String = ""
 
+        let isProductDynamicLibrary = packageContent.products
+            .first{ $0.name == swiftPackage.product }?
+            .isDynamicLibrary ?? false
+
         do {
-            formattedPackageBinarySize = try sizeMeasurer.formattedBinarySize(for: swiftPackage)
+            formattedPackageBinarySize = try sizeMeasurer.formattedBinarySize(
+                for: swiftPackage,
+                isDynamic: isProductDynamicLibrary
+            )
         } catch let error as LocalizedError {
             return .failure(
                 .init(localizedError: error)

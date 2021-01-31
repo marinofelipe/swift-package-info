@@ -35,7 +35,7 @@ final class PackageContentTests: XCTestCase {
                         "Target1",
                         "Target2"
                     ],
-                    kind: .library(.dynamic)
+                    kind: .library(.automatic)
                 ),
                 .init(
                     name: "Product2",
@@ -51,6 +51,13 @@ final class PackageContentTests: XCTestCase {
                         "Target2"
                     ],
                     kind: .executable
+                ),
+                .init(
+                    name: "Product4",
+                    targets: [
+                        "Target1"
+                    ],
+                    kind: .library(.dynamic)
                 )
             ],
             dependencies: [
@@ -100,5 +107,60 @@ final class PackageContentTests: XCTestCase {
             packageContent,
             expectedPackageContent
         )
+    }
+
+    func testIsDynamicLibrary() throws {
+        let fixturePackageContent = PackageContent(
+            name: "SomePackage",
+            platforms: [
+                .init(
+                    platformName: "ios",
+                    version: "9.0"
+                ),
+                .init(
+                    platformName: "macos",
+                    version: "10.15"
+                )
+            ],
+            products: [
+                .init(
+                    name: "Product1",
+                    targets: [
+                        "Target1",
+                        "Target2"
+                    ],
+                    kind: .library(.automatic)
+                ),
+                .init(
+                    name: "Product2",
+                    targets: [
+                        "Target1",
+                        "Target3"
+                    ],
+                    kind: .library(.static)
+                ),
+                .init(
+                    name: "Product3",
+                    targets: [
+                        "Target2"
+                    ],
+                    kind: .executable
+                ),
+                .init(
+                    name: "Product4",
+                    targets: [
+                        "Target1"
+                    ],
+                    kind: .library(.dynamic)
+                )
+            ],
+            dependencies: [],
+            targets: [],
+            swiftLanguageVersions: []
+        )
+
+        fixturePackageContent.products.forEach { product in
+            XCTAssertEqual(product.isDynamicLibrary, product == fixturePackageContent.products.last)
+        }
     }
 }

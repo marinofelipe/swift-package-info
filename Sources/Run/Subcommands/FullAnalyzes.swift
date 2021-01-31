@@ -38,8 +38,11 @@ extension SwiftPackageInfo {
 
             let report = Report(swiftPackage: swiftPackage)
 
-            // Providers have a synchronous API and are run in sequence. Each of them, even when performing async tasks, have to fulfill a sync API,
-            // since generally the terminal is updated with logs of the current operation.
+            // Providers have a synchronous API and are run in sequence. Each of them, even when performing async tasks, have to fulfill a sync API.
+            // For current setup it works as wanted, since the only heavy provider is binary size, that executes xcodebuild commands that are logged into the console
+            // when verbose flag is passed in. All other providers have sync logic that consumes PackageContent (Package.swift) decoded and provide specific
+            // information over it.
+            // Adding providers with asynchronous tasks should be avoided, and in case of adding any appears, things can be re-evaluated to run providers concurrently.
             var providedInfos: [ProvidedInfo] = []
             SwiftPackageInfo.subcommandsProviders.forEach { subcommandProvider in
                 subcommandProvider(

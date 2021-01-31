@@ -23,8 +23,9 @@ public struct PackageContent: Decodable, Equatable {
     public struct Product: Decodable, Equatable {
         public enum Kind: Equatable {
             public enum LibraryKind: String, Decodable {
-                case dynamic = "automatic"
+                case dynamic
                 case `static`
+                case automatic
             }
 
             case executable
@@ -153,5 +154,12 @@ public extension PackageContent.Target.Dependency {
     var byName: String? {
         guard case let .byName(names) = self else { return nil }
         return names.first
+    }
+}
+
+public extension PackageContent.Product {
+    var isDynamicLibrary: Bool {
+        guard case let .library(libraryKind) = self.kind else { return false }
+        return libraryKind == .dynamic
     }
 }

@@ -31,16 +31,27 @@ final class SizeMeasurer {
     private var currentStep = 1
     private static let second: Double = 1_000_000
 
-    public func formattedBinarySize(for swiftPackage: SwiftPackage) throws -> String {
+    public func formattedBinarySize(
+        for swiftPackage: SwiftPackage,
+        isDynamic: Bool
+    ) throws -> String {
         console.lineBreak()
-        
-        let emptyAppSize = try measureEmptyAppSize()
-        let appSizeWithDependencyAdded = try measureAppSize(with: swiftPackage)
-        try cleanup()
 
-        let increasedSize = appSizeWithDependencyAdded.amount - emptyAppSize.amount
-        return URL.fileByteCountFormatter
-            .string(for: increasedSize) ?? "\(increasedSize)"
+        do {
+            let emptyAppSize = try measureEmptyAppSize()
+            let appSizeWithDependencyAdded = try measureAppSize(
+                with: swiftPackage,
+                isDynamic: isDynamic
+            )
+            try cleanup()
+
+            let increasedSize = appSizeWithDependencyAdded.amount - emptyAppSize.amount
+            return URL.fileByteCountFormatter
+                .string(for: increasedSize) ?? "\(increasedSize)"
+        } catch {
+            try? cleanup()
+            throw error
+        }
     }
 }
 
@@ -71,7 +82,10 @@ private extension SizeMeasurer {
         return try appManager.calculateBinarySize()
     }
     
-    func measureAppSize(with swiftPackage: SwiftPackage) throws -> SizeOnDisk {
+    func measureAppSize(
+        with swiftPackage: SwiftPackage,
+        isDynamic: Bool
+    ) throws -> SizeOnDisk {
         if verbose {
             console.lineBreakAndWrite(
                 .init(
@@ -83,7 +97,10 @@ private extension SizeMeasurer {
         }
 
         if verbose == false { showOrUpdateLoading(withText: "Adding \(swiftPackage.product) as dependency...") }
-        try appManager.add(asDependency: swiftPackage)
+        try appManager.add(
+            asDependency: swiftPackage,
+            isDynamic: isDynamic
+        )
         if verbose == false { showOrUpdateLoading(withText: "Generating archive for updated app...") }
         try appManager.generateArchive()
         if verbose == false { showOrUpdateLoading(withText: "Calculating updated binary size...") }
