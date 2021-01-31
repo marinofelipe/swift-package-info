@@ -156,3 +156,10 @@ public extension PackageContent.Target.Dependency {
         return names.first
     }
 }
+
+public extension PackageContent.Product {
+    var isDynamicLibrary: Bool {
+        guard case let .library(libraryKind) = self.kind else { return false }
+        return libraryKind == .dynamic
+    }
+}

@@ -115,17 +115,30 @@ final class AppManager {
         }
     }
 
-    func add(asDependency swiftPackage: SwiftPackage) throws {
+    func add(
+        asDependency swiftPackage: SwiftPackage,
+        isDynamic: Bool
+    ) throws {
         let xcodeProj = try XcodeProj(path: .init(appPath))
 
         guard let appProject = xcodeProj.pbxproj.projects.first else {
             throw BinarySizeProviderError.unableToRetrieveAppProject(atPath: appPath)
         }
 
-        let swiftPackage = try appProject.add(swiftPackage: swiftPackage)
-        xcodeProj.pbxproj.add(object: swiftPackage)
+        let xcSwiftPackageReference = try appProject.add(swiftPackage: swiftPackage)
+        xcodeProj.pbxproj.add(object: xcSwiftPackageReference)
 
         try xcodeProj.write(path: .init(appPath))
+
+        if isDynamic {
+            let packageDependency = appProject.targets.first?.packageProductDependencies.first
+            let packageBuildFile = PBXBuildFile(product: packageDependency)
+
+            let embedFrameworksBuildPhase = appProject.targets.first?.embedFrameworksBuildPhases().first
+            embedFrameworksBuildPhase?.files?.append(packageBuildFile)
+
+            try xcodeProj.write(path: .init(appPath))
+        }
     }
 
     func cleanupClonedApp() throws {
