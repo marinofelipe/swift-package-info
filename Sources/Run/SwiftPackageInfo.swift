@@ -7,7 +7,6 @@
 
 import ArgumentParser
 import struct Foundation.URL
-import struct TSCUtility.Version
 import Core
 import App
 import Reports
@@ -63,7 +62,7 @@ struct AllArguments: ParsableArguments {
         ],
         help: "Semantic version of the Swift Package. If not passed in the latest release is used."
     )
-    var packageVersion: Version?
+    var packageVersion: String?
 
     @Option(
         name: [
@@ -101,7 +100,7 @@ extension ParsableCommand {
     func makeSwiftPackage(from arguments: AllArguments) -> SwiftPackage {
         .init(
             repositoryURL: arguments.repositoryURL,
-            version: arguments.packageVersion?.description ?? "Undefined",
+            version: arguments.packageVersion ?? "Undefined",
             product: arguments.product
         )
     }

@@ -156,7 +156,12 @@ private extension PBXProject {
         try addSwiftPackage(
             repositoryURL: swiftPackage.repositoryURL.absoluteString,
             productName: swiftPackage.product,
-            versionRequirement: .upToNextMinorVersion(swiftPackage.version),
+            versionRequirement: .upToNextMinorVersion(
+                swiftPackage.version
+                    .trimmingCharacters(
+                        in: CharacterSet.decimalDigits.inverted
+                    )
+            ),
             targetName: targetName
         )
     }
