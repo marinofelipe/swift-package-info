@@ -70,7 +70,9 @@ final class PackageContentTests: XCTestCase {
                                 lowerBound: "0.3.0",
                                 upperBound: "0.4.0"
                             )
-                        ]
+                        ],
+                        revision: [],
+                        branch: []
                     )
                 )
             ],
@@ -78,22 +80,39 @@ final class PackageContentTests: XCTestCase {
                 .init(
                     name: "Target1",
                     dependencies: [
-                        .product(["swift-argument-parser"])
+                        .product(
+                            [
+                                .name("swift-argument-parser")
+                            ]
+                        )
                     ],
                     kind: .regular
                 ),
                 .init(
                     name: "Target2",
                     dependencies: [
-                        .byName(["Target1"])
+                        .byName(
+                            [
+                                .name("Target1")
+                            ]
+                        )
                     ],
-                    kind: .regular
+                    kind: .binary
                 ),
                 .init(
                     name: "Target3",
                     dependencies: [
-                        .product(["ArgumentParser", "swift-argument-parser"]),
-                        .target(["Target1"])
+                        .product(
+                            [
+                                .name("ArgumentParser"),
+                                .name("swift-argument-parser")
+                            ]
+                        ),
+                        .target(
+                            [
+                                .name("Target1")
+                            ]
+                        )
                     ],
                     kind: .test
                 )
@@ -110,7 +129,7 @@ final class PackageContentTests: XCTestCase {
     }
 
     func testIsDynamicLibrary() throws {
-        let fixturePackageContent = PackageContent(
+        let packageContent = PackageContent(
             name: "SomePackage",
             platforms: [
                 .init(
@@ -159,8 +178,141 @@ final class PackageContentTests: XCTestCase {
             swiftLanguageVersions: []
         )
 
-        fixturePackageContent.products.forEach { product in
-            XCTAssertEqual(product.isDynamicLibrary, product == fixturePackageContent.products.last)
+        packageContent.products.forEach { product in
+            XCTAssertEqual(product.isDynamicLibrary, product == packageContent.products.last)
         }
+    }
+
+    func testDifferentTypesOfDependencyRequirement() throws {
+        let fixtureData = try dataFromJSON(named: "package_with_multiple_dependencies", bundle: .module)
+        let packageContent = try jsonDecoder.decode(PackageContent.self, from: fixtureData)
+
+        let expectedPackageContent = PackageContent(
+            name: "SomePackage",
+            platforms: [],
+            products: [],
+            dependencies: [
+                .init(
+                    name: "swift-argument-parser",
+                    urlString: "https://github.com/apple/swift-argument-parser",
+                    requirement: .init(
+                        range: [
+                            .init(
+                                lowerBound: "0.3.0",
+                                upperBound: "0.4.0"
+                            )
+                        ],
+                        revision: [],
+                        branch: []
+                    )
+                ),
+                .init(
+                    name: "SomeDependency",
+                    urlString: "https://github.com/someDev/some-dependency",
+                    requirement: .init(
+                        range: [],
+                        revision: [
+                            "123456CrazyHash"
+                        ],
+                        branch: []
+                    )
+                ),
+                .init(
+                    name: "SomeOtherDependency",
+                    urlString: "https://github.com/someOtherDev/some-other-dependency",
+                    requirement: .init(
+                        range: [],
+                        revision: [],
+                        branch: [
+                            "some-fork-123"
+                        ]
+                    )
+                )
+            ],
+            targets: [],
+            swiftLanguageVersions: []
+        )
+
+        XCTAssertEqual(
+            packageContent,
+            expectedPackageContent
+        )
+    }
+
+    func testWhenTargetDependencyIsOfTypeTargetWithNestedPlatforms() throws {
+        let fixtureData = try dataFromJSON(
+            named: "package_with_custom_target_dependency",
+            bundle: .module
+        )
+        let packageContent = try jsonDecoder.decode(PackageContent.self, from: fixtureData)
+
+        let expectedPackageContent = PackageContent(
+            name: "SomePackage",
+            platforms: [],
+            products: [],
+            dependencies: [],
+            targets: [
+                .init(
+                    name: "Target1",
+                    dependencies: [
+                        .target(
+                            [
+                                .name("Target2"),
+                                .platforms(
+                                    .init(
+                                        platformNames: [
+                                            "ios"
+                                        ]
+                                    )
+                                )
+                            ]
+                        )
+                    ],
+                    kind: .regular
+                ),
+                .init(
+                    name: "Target2",
+                    dependencies: [
+                        .product(
+                            [
+                                .name("Product3"),
+                                .platforms(
+                                    .init(
+                                        platformNames: [
+                                            "ios"
+                                        ]
+                                    )
+                                )
+                            ]
+                        )
+                    ],
+                    kind: .regular
+                ),
+                .init(
+                    name: "Target3",
+                    dependencies: [
+                        .byName(
+                            [
+                                .name("Name4"),
+                                .platforms(
+                                    .init(
+                                        platformNames: [
+                                            "ios"
+                                        ]
+                                    )
+                                )
+                            ]
+                        )
+                    ],
+                    kind: .regular
+                )
+            ],
+            swiftLanguageVersions: []
+        )
+
+        XCTAssertEqual(
+            packageContent,
+            expectedPackageContent
+        )
     }
 }

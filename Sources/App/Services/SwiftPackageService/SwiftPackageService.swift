@@ -78,11 +78,17 @@ public final class SwiftPackageService {
             .build()
 
         let tagsRequest = try gitHubRequestBuilder
-            .path("/repos/\(swiftPackage.accountName)/\(swiftPackage.repositoryName)/tags")
+            .path("/repos/\(swiftPackage.accountName)/\(swiftPackage.repositoryName)/git/refs/tags")
             .build()
 
-        let repositoryRequestPublisher: AnyPublisher<HTTPResponse<EmptyBody, EmptyBody>, HTTPResponseError> = httpClient.run(repositoryRequest, receiveOn: .global(qos: .userInteractive))
-        let tagsRequestPublisher: AnyPublisher<HTTPResponse<TagsResponse, EmptyBody>, HTTPResponseError> = httpClient.run(tagsRequest, receiveOn: .global(qos: .userInteractive))
+        let repositoryRequestPublisher: AnyPublisher<
+            HTTPResponse<EmptyBody, EmptyBody>,
+            HTTPResponseError
+        > = httpClient.run(repositoryRequest, receiveOn: .global(qos: .userInteractive))
+        let tagsRequestPublisher: AnyPublisher<
+            HTTPResponse<TagsResponse, EmptyBody>,
+            HTTPResponseError
+        > = httpClient.run(tagsRequest, receiveOn: .global(qos: .userInteractive))
 
         let semaphore = DispatchSemaphore(value: 0)
 
@@ -98,11 +104,14 @@ public final class SwiftPackageService {
                 }
             } receiveValue: { repositoryResponse, tagsResponse in
                 isRepositoryValid = repositoryResponse.isSuccess
+
                 if case let .success(response) = tagsResponse.value {
-                    isTagValid = response.tags
+                    let tags = response.tags.normalized
+
+                    isTagValid = tags
                         .map(\.name)
                         .contains(swiftPackage.version)
-                    latestTag = response.tags.first?.name
+                    latestTag = tags.last?.name
                 }
                 semaphore.signal()
             }
@@ -126,7 +135,11 @@ public final class SwiftPackageService {
         )
     }
 
-    private func fetchPackageContent(for swiftPackage: SwiftPackage, version: String, verbose: Bool) throws -> PackageContent {
+    private func fetchPackageContent(
+        for swiftPackage: SwiftPackage,
+        version: String,
+        verbose: Bool
+    ) throws -> PackageContent {
         let repositoryTemporaryPath = "\(fileManager.temporaryDirectory.path)/\(swiftPackage.repositoryName)"
 
         if fileManager.fileExists(atPath: repositoryTemporaryPath) {
@@ -171,4 +184,24 @@ extension CombineHTTPClient {
 
 extension JSONDecoder {
     static let `default`: JSONDecoder = .init()
+}
+
+// MARK: - Extensions - Tags
+
+private extension Array where Element == TagsResponse.Tag {
+    var normalized: Self {
+        map(\.normalized)
+    }
+}
+
+private extension TagsResponse.Tag {
+    var normalized: Self {
+        .init(
+            name: self.name
+                .replacingOccurrences(
+                    of: "refs/tags/",
+                    with: ""
+                )
+        )
+    }
 }

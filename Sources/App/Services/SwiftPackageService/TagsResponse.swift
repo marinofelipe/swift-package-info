@@ -8,6 +8,10 @@
 struct TagsResponse: Equatable {
     struct Tag: Decodable, Equatable {
         let name: String
+
+        enum CodingKeys: String, CodingKey {
+            case name = "ref"
+        }
     }
 
     let tags: [Tag]

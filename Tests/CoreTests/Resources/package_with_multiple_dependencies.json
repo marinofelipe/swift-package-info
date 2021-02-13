@@ -1,0 +1,46 @@
+{
+  "cLanguageStandard" : null,
+  "cxxLanguageStandard" : null,
+  "dependencies" : [
+    {
+      "name" : "swift-argument-parser",
+      "requirement" : {
+        "range" : [
+          {
+            "lowerBound" : "0.3.0",
+            "upperBound" : "0.4.0"
+          }
+        ]
+      },
+      "url" : "https:\/\/github.com\/apple\/swift-argument-parser"
+    },
+    {
+      "name" : "SomeDependency",
+      "requirement" : {
+        "revision" : [
+            "123456CrazyHash"
+        ]
+      },
+      "url" : "https:\/\/github.com\/someDev\/some-dependency"
+    },
+    {
+      "name" : "SomeOtherDependency",
+      "requirement" : {
+        "branch" : [
+            "some-fork-123"
+        ]
+      },
+      "url" : "https:\/\/github.com\/someOtherDev\/some-other-dependency"
+    }
+  ],
+  "name" : "SomePackage",
+  "pkgConfig" : null,
+  "platforms" : [],
+  "products" : [],
+  "providers" : null,
+  "swiftLanguageVersions" : [],
+  "targets" : [],
+  "toolsVersion" : {
+    "_version" : "5.0.0"
+  }
+}

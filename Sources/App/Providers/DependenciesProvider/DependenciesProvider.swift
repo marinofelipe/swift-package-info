@@ -51,11 +51,11 @@ public struct DependenciesProvider {
             messages = externalDependencies.map { dependency -> [ConsoleMessage] in
                 var messages: [ConsoleMessage] = [
                     .init(
-                        text: "\(dependency.name) ",
+                        text: "\(dependency.name)",
                         hasLineBreakAfter: false
                     ),
                     .init(
-                        text: "v. \(dependency.requirement.range.first?.lowerBound ?? "")",
+                        text: " v. \(dependency.requirement.range.first?.lowerBound ?? "")",
                         hasLineBreakAfter: false
                     )
                 ]
@@ -101,7 +101,11 @@ public struct DependenciesProvider {
         let externalDependenciesNames = targetDependencies.compactMap(\.product)
         let potentialExternalDependenciesNames = targetDependencies.compactMap(\.byName)
 
-        let otherTargetsDependenciesNames = targetDependencies.compactMap(\.target)
+        let allTargetsNames = packageContent.targets.map(\.name)
+        var otherTargetsDependenciesNames = targetDependencies.compactMap(\.target)
+        otherTargetsDependenciesNames += potentialExternalDependenciesNames
+            .filter { allTargetsNames.contains($0) }
+
         var externalDependenciesFromOtherTargets: [PackageContent.Dependency] = []
         if otherTargetsDependenciesNames.isEmpty == false {
             externalDependenciesFromOtherTargets = getExternalDependencies(
@@ -111,10 +115,13 @@ public struct DependenciesProvider {
         }
 
         let externalDependencies = packageContent.dependencies.filter {
-            externalDependenciesNames.contains($0.name) ||
-                potentialExternalDependenciesNames.contains($0.name)
+            externalDependenciesNames.contains($0.name)
+                || potentialExternalDependenciesNames.contains($0.name)
         }
 
-        return externalDependencies + externalDependenciesFromOtherTargets
+        let allDependencies = externalDependencies + externalDependenciesFromOtherTargets
+
+        return Array(Set(allDependencies))
+            .sorted(by: { $0.name < $1.name })
     }
 }

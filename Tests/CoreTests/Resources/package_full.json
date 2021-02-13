@@ -126,7 +126,7 @@
       "settings" : [
 
       ],
-      "type" : "regular"
+      "type" : "binary"
     },
     {
       "dependencies" : [

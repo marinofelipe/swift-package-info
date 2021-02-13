@@ -21,62 +21,6 @@ final class RunTests: XCTestCase {
         )
     }
 
-    func testWithInexistentTag() throws {
-        try runToolProcessAndAssert(
-            command: "--repository-url https://github.com/ReactiveX/RxSwift --package-version 8.0.0 --product RxSwift",
-            expectedOutput: """
-            [1/7] Cloning empty app...
-            [2/7] Generating archive for empty app...
-            [3/7] Calculating binary size...
-            [4/7] Adding RxSwift as dependency...
-            [5/7] Generating archive for updated app...
-            [6/7] Calculating updated binary size...
-            [7/7] Reseting and cleaning up empty app...
-
-            """,
-            expectedError: ""
-        )
-    }
-
-    func testWithInvalidProduct() throws {
-        try runToolProcessAndAssert(
-            command: "--repository-url https://github.com/ReactiveX/RxSwift --package-version 8.0.0 --product some",
-            expectedOutput: """
-            Error: Invalid argument \'--product <product>\'
-            Usage: The product should match one of the declared products on https://github.com/ReactiveX/RxSwift.
-            Found available products: [\"RxSwift\", \"RxCocoa\", \"RxRelay\", \"RxBlocking\", \"RxTest\"].
-
-            """,
-            expectedError: ""
-        )
-    }
-
-    func testWhenAllParametersAreValid() throws {
-        try runToolProcessAndAssert(
-            command: "--repository-url https://github.com/ReactiveX/RxSwift --package-version 6.0.0 --product RxSwift",
-            expectedOutput: """
-            [1/7] Cloning empty app...
-            [2/7] Generating archive for empty app...
-            [3/7] Calculating binary size...
-            [4/7] Adding RxSwift as dependency...
-            [5/7] Generating archive for updated app...
-            [6/7] Calculating updated binary size...
-            [7/7] Reseting and cleaning up empty app...
-
-            """,
-            expectedError: ""
-        )
-    }
-
-    func testWhenVerboseFlagIsSet() throws {
-        // All values are expected to be logged via Console
-        try runToolProcessAndAssert(
-            command: "--repository-url https://github.com/ReactiveX/RxSwift --package-version 6.0.0 --product RxSwift --verbose",
-            expectedOutput: "",
-            expectedError: ""
-        )
-    }
-
     func testWithMissingParameters() throws {
         // assert when only --repository-url is passed in
         try runToolProcessAndAssert(
