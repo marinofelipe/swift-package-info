@@ -15,25 +15,25 @@ final class TagsResponseTests: XCTestCase {
         let jsonString = """
         [
           {
-            "name": "0.2.4",
-            "zipball_url": "https://api.github.com/repos/nerdishbynature/octokit.swift/zipball/0.2.4",
-            "tarball_url": "https://api.github.com/repos/nerdishbynature/octokit.swift/tarball/0.2.4",
-            "commit": {
-              "sha": "733f6f7ee4a86eb6c0371fb6b6a2c88b95d05fe8",
-              "url": "https://api.github.com/repos/nerdishbynature/octokit.swift/commits/733f6f7ee4a86eb6c0371fb6b6a2c88b95d05fe8"
+            "ref": "refs/tags/7.5.1",
+            "node_id": "MDM6UmVmODkwMzM1NTY6cmVmcy90YWdzLzcuNS4x",
+            "url": "https://api.github.com/repos/firebase/firebase-ios-sdk/git/refs/tags/7.5.1",
+            "object": {
+              "sha": "447cf74cc561d408bc66c0294145a624645038ac",
+              "type": "commit",
+               "url": "https://api.github.com/repos/firebase/firebase-ios-sdk/git/commits/447cf74cc561d408bc66c0294145a624645038ac"
+            }
             },
-            "node_id": "MDM6UmVmMjkxNTI4OTI6cmVmcy90YWdzLzAuMi40"
-          },
-          {
-            "name": "0.2.3",
-            "zipball_url": "https://api.github.com/repos/nerdishbynature/octokit.swift/zipball/0.2.3",
-            "tarball_url": "https://api.github.com/repos/nerdishbynature/octokit.swift/tarball/0.2.3",
-            "commit": {
-              "sha": "786a65fec263c8308672c481175ef5980d4f2d8e",
-              "url": "https://api.github.com/repos/nerdishbynature/octokit.swift/commits/786a65fec263c8308672c481175ef5980d4f2d8e"
-            },
-            "node_id": "MDM6UmVmMjkxNTI4OTI6cmVmcy90YWdzLzAuMi4z"
-          }
+            {
+              "ref": "refs/tags/7.6.0",
+              "node_id": "MDM6UmVmODkwMzM1NTY6cmVmcy90YWdzLzcuNi4w",
+              "url": "https://api.github.com/repos/firebase/firebase-ios-sdk/git/refs/tags/7.6.0",
+              "object": {
+                "sha": "0dd2ad1054177670dfa5bb1bbc6767e2a965095d",
+                "type": "commit",
+                "url": "https://api.github.com/repos/firebase/firebase-ios-sdk/git/commits/0dd2ad1054177670dfa5bb1bbc6767e2a965095d"
+              }
+            }
         ]
         """
 
@@ -44,8 +44,8 @@ final class TagsResponseTests: XCTestCase {
             tagsResponse,
             .init(
                 tags: [
-                    .init(name: "0.2.4"),
-                    .init(name: "0.2.3")
+                    .init(name: "refs/tags/7.5.1"),
+                    .init(name: "refs/tags/7.6.0")
                 ]
             )
         )
