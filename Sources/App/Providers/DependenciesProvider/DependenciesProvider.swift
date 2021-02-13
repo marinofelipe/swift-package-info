@@ -51,7 +51,7 @@ public struct DependenciesProvider {
             messages = externalDependencies.map { dependency -> [ConsoleMessage] in
                 var messages: [ConsoleMessage] = [
                     .init(
-                        text: "\(dependency.name) ",
+                        text: "\(dependency.name)",
                         hasLineBreakAfter: false
                     ),
                     .init(
@@ -101,8 +101,14 @@ public struct DependenciesProvider {
         let externalDependenciesNames = targetDependencies.compactMap(\.product)
         let potentialExternalDependenciesNames = targetDependencies.compactMap(\.byName)
 
-        let otherTargetsDependenciesNames = targetDependencies.compactMap(\.target)
+        let allTargetsNames = packageContent.targets.map(\.name)
+
+        var otherTargetsDependenciesNames = targetDependencies.compactMap(\.target)
+        otherTargetsDependenciesNames += potentialExternalDependenciesNames.filter { allTargetsNames.contains($0) }
+
         var externalDependenciesFromOtherTargets: [PackageContent.Dependency] = []
+
+
         if otherTargetsDependenciesNames.isEmpty == false {
             externalDependenciesFromOtherTargets = getExternalDependencies(
                 forTargetNames: otherTargetsDependenciesNames,
@@ -111,8 +117,8 @@ public struct DependenciesProvider {
         }
 
         let externalDependencies = packageContent.dependencies.filter {
-            externalDependenciesNames.contains($0.name) ||
-                potentialExternalDependenciesNames.contains($0.name)
+            externalDependenciesNames.contains($0.name)
+                || potentialExternalDependenciesNames.contains($0.name)
         }
 
         return externalDependencies + externalDependenciesFromOtherTargets

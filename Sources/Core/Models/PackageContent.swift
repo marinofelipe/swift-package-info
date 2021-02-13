@@ -186,7 +186,7 @@ public extension PackageContent.Target.Dependency {
 
     var byName: String? {
         guard case let .byName(names) = self else { return nil }
-        return names.first?.name
+        return names.last?.name
     }
 }
 
