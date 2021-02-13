@@ -81,8 +81,14 @@ public final class SwiftPackageService {
             .path("/repos/\(swiftPackage.accountName)/\(swiftPackage.repositoryName)/tags")
             .build()
 
-        let repositoryRequestPublisher: AnyPublisher<HTTPResponse<EmptyBody, EmptyBody>, HTTPResponseError> = httpClient.run(repositoryRequest, receiveOn: .global(qos: .userInteractive))
-        let tagsRequestPublisher: AnyPublisher<HTTPResponse<TagsResponse, EmptyBody>, HTTPResponseError> = httpClient.run(tagsRequest, receiveOn: .global(qos: .userInteractive))
+        let repositoryRequestPublisher: AnyPublisher<
+            HTTPResponse<EmptyBody, EmptyBody>,
+            HTTPResponseError
+        > = httpClient.run(repositoryRequest, receiveOn: .global(qos: .userInteractive))
+        let tagsRequestPublisher: AnyPublisher<
+            HTTPResponse<TagsResponse, EmptyBody>,
+            HTTPResponseError
+        > = httpClient.run(tagsRequest, receiveOn: .global(qos: .userInteractive))
 
         let semaphore = DispatchSemaphore(value: 0)
 
@@ -126,7 +132,11 @@ public final class SwiftPackageService {
         )
     }
 
-    private func fetchPackageContent(for swiftPackage: SwiftPackage, version: String, verbose: Bool) throws -> PackageContent {
+    private func fetchPackageContent(
+        for swiftPackage: SwiftPackage,
+        version: String,
+        verbose: Bool
+    ) throws -> PackageContent {
         let repositoryTemporaryPath = "\(fileManager.temporaryDirectory.path)/\(swiftPackage.repositoryName)"
 
         if fileManager.fileExists(atPath: repositoryTemporaryPath) {

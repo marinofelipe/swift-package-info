@@ -44,13 +44,15 @@ public struct PackageContent: Decodable, Equatable {
     }
 
     public struct Dependency: Decodable, Equatable {
-        public struct Requirement: Decodable, Equatable {
+        public struct Requirement: Equatable {
             public struct Range: Decodable, Equatable {
                 public let lowerBound: Version
                 public let upperBound: Version
             }
 
             public let range: [Range]
+            public let revision: [String]
+            public let branch: [String]
         }
 
         public let name: String
@@ -161,5 +163,26 @@ public extension PackageContent.Product {
     var isDynamicLibrary: Bool {
         guard case let .library(libraryKind) = self.kind else { return false }
         return libraryKind == .dynamic
+    }
+}
+
+extension PackageContent.Dependency.Requirement: Decodable {
+    enum CodingKeys: String, CodingKey {
+        case range
+        case revision
+        case branch
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        let range = try container.decodeIfPresent([Range].self, forKey: .range)
+        self.range = range ?? []
+
+        let revision = try container.decodeIfPresent([String].self, forKey: .revision)
+        self.revision = revision ?? []
+
+        let branch = try container.decodeIfPresent([String].self, forKey: .branch)
+        self.branch = branch ?? []
     }
 }

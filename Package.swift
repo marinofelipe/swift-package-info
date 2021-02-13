@@ -93,7 +93,8 @@ let package = Package(
                 .target(name: "TestSupport")
             ],
             resources: [
-                .copy("Resources/package_full.json")
+                .copy("Resources/package_full.json"),
+                .copy("Resources/package_with_multiple_dependencies.json")
             ]
         ),
         .target(

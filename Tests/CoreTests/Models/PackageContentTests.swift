@@ -70,7 +70,9 @@ final class PackageContentTests: XCTestCase {
                                 lowerBound: "0.3.0",
                                 upperBound: "0.4.0"
                             )
-                        ]
+                        ],
+                        revision: [],
+                        branch: []
                     )
                 )
             ],
@@ -110,7 +112,7 @@ final class PackageContentTests: XCTestCase {
     }
 
     func testIsDynamicLibrary() throws {
-        let fixturePackageContent = PackageContent(
+        let packageContent = PackageContent(
             name: "SomePackage",
             platforms: [
                 .init(
@@ -159,8 +161,64 @@ final class PackageContentTests: XCTestCase {
             swiftLanguageVersions: []
         )
 
-        fixturePackageContent.products.forEach { product in
-            XCTAssertEqual(product.isDynamicLibrary, product == fixturePackageContent.products.last)
+        packageContent.products.forEach { product in
+            XCTAssertEqual(product.isDynamicLibrary, product == packageContent.products.last)
         }
+    }
+
+    func testDifferentTypesOfDependencyRequirement() throws {
+        let fixtureData = try dataFromJSON(named: "package_with_multiple_dependencies", bundle: .module)
+        let packageContent = try jsonDecoder.decode(PackageContent.self, from: fixtureData)
+
+        let expectedPackageContent = PackageContent(
+            name: "SomePackage",
+            platforms: [],
+            products: [],
+            dependencies: [
+                .init(
+                    name: "swift-argument-parser",
+                    urlString: "https://github.com/apple/swift-argument-parser",
+                    requirement: .init(
+                        range: [
+                            .init(
+                                lowerBound: "0.3.0",
+                                upperBound: "0.4.0"
+                            )
+                        ],
+                        revision: [],
+                        branch: []
+                    )
+                ),
+                .init(
+                    name: "SomeDependency",
+                    urlString: "https://github.com/someDev/some-dependency",
+                    requirement: .init(
+                        range: [],
+                        revision: [
+                            "123456CrazyHash"
+                        ],
+                        branch: []
+                    )
+                ),
+                .init(
+                    name: "SomeOtherDependency",
+                    urlString: "https://github.com/someOtherDev/some-other-dependency",
+                    requirement: .init(
+                        range: [],
+                        revision: [],
+                        branch: [
+                            "some-fork-123"
+                        ]
+                    )
+                )
+            ],
+            targets: [],
+            swiftLanguageVersions: []
+        )
+
+        XCTAssertEqual(
+            packageContent,
+            expectedPackageContent
+        )
     }
 }
