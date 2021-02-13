@@ -34,6 +34,58 @@
 
         ],
         "type" : "regular"
+      },
+      {
+        "dependencies" : [
+          {
+            "product" : [
+              "Product3",
+              {
+                  "platformNames": [
+                      "ios"
+                  ]
+              }
+            ]
+          }
+        ],
+        "exclude" : [
+
+        ],
+        "name" : "Target2",
+        "path" : "Path1",
+        "resources" : [
+
+        ],
+        "settings" : [
+
+        ],
+        "type" : "regular"
+      },
+      {
+        "dependencies" : [
+          {
+            "byName" : [
+              "Name4",
+              {
+                  "platformNames": [
+                      "ios"
+                  ]
+              }
+            ]
+          }
+        ],
+        "exclude" : [
+
+        ],
+        "name" : "Target3",
+        "path" : "Path1",
+        "resources" : [
+
+        ],
+        "settings" : [
+
+        ],
+        "type" : "regular"
       }
   ],
   "toolsVersion" : {

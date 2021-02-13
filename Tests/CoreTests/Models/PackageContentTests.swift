@@ -80,14 +80,22 @@ final class PackageContentTests: XCTestCase {
                 .init(
                     name: "Target1",
                     dependencies: [
-                        .product(["swift-argument-parser"])
+                        .product(
+                            [
+                                .name("swift-argument-parser")
+                            ]
+                        )
                     ],
                     kind: .regular
                 ),
                 .init(
                     name: "Target2",
                     dependencies: [
-                        .byName(["Target1"])
+                        .byName(
+                            [
+                                .name("Target1")
+                            ]
+                        )
                     ],
                     kind: .binary
                 ),
@@ -96,13 +104,13 @@ final class PackageContentTests: XCTestCase {
                     dependencies: [
                         .product(
                             [
-                                "ArgumentParser",
-                                "swift-argument-parser"
+                                .name("ArgumentParser"),
+                                .name("swift-argument-parser")
                             ]
                         ),
                         .target(
                             [
-                                .byName("Target1")
+                                .name("Target1")
                             ]
                         )
                     ],
@@ -249,7 +257,43 @@ final class PackageContentTests: XCTestCase {
                     dependencies: [
                         .target(
                             [
-                                .byName("Target2"),
+                                .name("Target2"),
+                                .platforms(
+                                    .init(
+                                        platformNames: [
+                                            "ios"
+                                        ]
+                                    )
+                                )
+                            ]
+                        )
+                    ],
+                    kind: .regular
+                ),
+                .init(
+                    name: "Target2",
+                    dependencies: [
+                        .product(
+                            [
+                                .name("Product3"),
+                                .platforms(
+                                    .init(
+                                        platformNames: [
+                                            "ios"
+                                        ]
+                                    )
+                                )
+                            ]
+                        )
+                    ],
+                    kind: .regular
+                ),
+                .init(
+                    name: "Target3",
+                    dependencies: [
+                        .byName(
+                            [
+                                .name("Name4"),
                                 .platforms(
                                     .init(
                                         platformNames: [

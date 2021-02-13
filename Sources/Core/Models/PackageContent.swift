@@ -73,18 +73,18 @@ public struct PackageContent: Decodable, Equatable {
 
     public struct Target: Decodable, Equatable {
         public enum Dependency: Equatable {
-            public enum Target: Equatable {
+            public enum Content: Equatable {
                 public struct Platforms: Decodable, Equatable {
                     let platformNames: [String]
                 }
 
-                case byName(_ name: String)
-                case platforms(_ platforms: Platforms)
+                case name(String)
+                case platforms(Platforms)
             }
 
-            case target([Target])
-            case product([String])
-            case byName([String])
+            case target([Content])
+            case product([Content])
+            case byName([Content])
         }
 
         public enum Kind: String, Decodable, Equatable {
@@ -140,11 +140,11 @@ extension PackageContent.Target.Dependency: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        if let targets = try container.decodeIfPresent([Target?].self, forKey: .target)?.compactMap({ $0 }) {
+        if let targets = try container.decodeIfPresent([Content?].self, forKey: .target)?.compactMap({ $0 }) {
             self = .target(targets)
-        } else if let products = try container.decodeIfPresent([String?].self, forKey: .product)?.compactMap({ $0 }) {
+        } else if let products = try container.decodeIfPresent([Content?].self, forKey: .product)?.compactMap({ $0 }) {
             self = .product(products)
-        } else if let dependenciesNames = try container.decodeIfPresent([String?].self, forKey: .byName)?.compactMap({ $0 }) {
+        } else if let dependenciesNames = try container.decodeIfPresent([Content?].self, forKey: .byName)?.compactMap({ $0 }) {
             self = .byName(dependenciesNames)
         } else {
             throw PackageContentError.failedToDecodeTargetDependencyType
@@ -152,24 +152,24 @@ extension PackageContent.Target.Dependency: Decodable {
     }
 }
 
-extension PackageContent.Target.Dependency.Target: Decodable {
+extension PackageContent.Target.Dependency.Content: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
 
-        guard let targetName = try? container.decode(String?.self) else {
+        guard let name = try? container.decode(String?.self) else {
             let platforms = try container.decode(Platforms.self)
             self = .platforms(platforms)
             return
         }
 
-        self = .byName(targetName)
+        self = .name(name)
     }
 }
 
-public extension PackageContent.Target.Dependency.Target {
+public extension PackageContent.Target.Dependency.Content {
     var name: String? {
-        guard case let .byName(targetName) = self else { return nil }
-        return targetName
+        guard case let .name(name) = self else { return nil }
+        return name
     }
 }
 
@@ -181,12 +181,12 @@ public extension PackageContent.Target.Dependency {
 
     var product: String? {
         guard case let .product(products) = self else { return nil }
-        return products[safeIndex: 1]
+        return products[safeIndex: 1]?.name
     }
 
     var byName: String? {
         guard case let .byName(names) = self else { return nil }
-        return names.first
+        return names.first?.name
     }
 }
 
