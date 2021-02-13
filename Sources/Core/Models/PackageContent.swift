@@ -43,9 +43,9 @@ public struct PackageContent: Decodable, Equatable {
         }
     }
 
-    public struct Dependency: Decodable, Equatable {
-        public struct Requirement: Equatable {
-            public struct Range: Decodable, Equatable {
+    public struct Dependency: Decodable, Equatable, Hashable {
+        public struct Requirement: Equatable, Hashable {
+            public struct Range: Decodable, Equatable, Hashable {
                 public let lowerBound: Version
                 public let upperBound: Version
             }

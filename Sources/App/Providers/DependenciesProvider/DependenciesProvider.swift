@@ -55,7 +55,7 @@ public struct DependenciesProvider {
                         hasLineBreakAfter: false
                     ),
                     .init(
-                        text: "v. \(dependency.requirement.range.first?.lowerBound ?? "")",
+                        text: " v. \(dependency.requirement.range.first?.lowerBound ?? "")",
                         hasLineBreakAfter: false
                     )
                 ]
@@ -102,13 +102,11 @@ public struct DependenciesProvider {
         let potentialExternalDependenciesNames = targetDependencies.compactMap(\.byName)
 
         let allTargetsNames = packageContent.targets.map(\.name)
-
         var otherTargetsDependenciesNames = targetDependencies.compactMap(\.target)
-        otherTargetsDependenciesNames += potentialExternalDependenciesNames.filter { allTargetsNames.contains($0) }
+        otherTargetsDependenciesNames += potentialExternalDependenciesNames
+            .filter { allTargetsNames.contains($0) }
 
         var externalDependenciesFromOtherTargets: [PackageContent.Dependency] = []
-
-
         if otherTargetsDependenciesNames.isEmpty == false {
             externalDependenciesFromOtherTargets = getExternalDependencies(
                 forTargetNames: otherTargetsDependenciesNames,
@@ -121,6 +119,9 @@ public struct DependenciesProvider {
                 || potentialExternalDependenciesNames.contains($0.name)
         }
 
-        return externalDependencies + externalDependenciesFromOtherTargets
+        let allDependencies = externalDependencies + externalDependenciesFromOtherTargets
+
+        return Array(Set(allDependencies))
+            .sorted(by: { $0.name < $1.name })
     }
 }
