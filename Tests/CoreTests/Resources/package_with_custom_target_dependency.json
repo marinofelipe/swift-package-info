@@ -1,0 +1,42 @@
+{
+  "cLanguageStandard" : null,
+  "cxxLanguageStandard" : null,
+  "dependencies" : [],
+  "name" : "SomePackage",
+  "pkgConfig" : null,
+  "platforms" : [],
+  "products" : [],
+  "providers" : null,
+  "swiftLanguageVersions" : [],
+  "targets" : [
+      {
+        "dependencies" : [
+          {
+            "target" : [
+              "Target2",
+              {
+                  "platformNames": [
+                      "ios"
+                  ]
+              }
+            ]
+          }
+        ],
+        "exclude" : [
+
+        ],
+        "name" : "Target1",
+        "path" : "Path1",
+        "resources" : [
+
+        ],
+        "settings" : [
+
+        ],
+        "type" : "regular"
+      }
+  ],
+  "toolsVersion" : {
+    "_version" : "5.0.0"
+  }
+}

@@ -94,8 +94,17 @@ final class PackageContentTests: XCTestCase {
                 .init(
                     name: "Target3",
                     dependencies: [
-                        .product(["ArgumentParser", "swift-argument-parser"]),
-                        .target(["Target1"])
+                        .product(
+                            [
+                                "ArgumentParser",
+                                "swift-argument-parser"
+                            ]
+                        ),
+                        .target(
+                            [
+                                .byName("Target1")
+                            ]
+                        )
                     ],
                     kind: .test
                 )
@@ -213,6 +222,47 @@ final class PackageContentTests: XCTestCase {
                 )
             ],
             targets: [],
+            swiftLanguageVersions: []
+        )
+
+        XCTAssertEqual(
+            packageContent,
+            expectedPackageContent
+        )
+    }
+
+    func testWhenTargetDependencyIsOfTypeTargetWithNestedPlatforms() throws {
+        let fixtureData = try dataFromJSON(
+            named: "package_with_custom_target_dependency",
+            bundle: .module
+        )
+        let packageContent = try jsonDecoder.decode(PackageContent.self, from: fixtureData)
+
+        let expectedPackageContent = PackageContent(
+            name: "SomePackage",
+            platforms: [],
+            products: [],
+            dependencies: [],
+            targets: [
+                .init(
+                    name: "Target1",
+                    dependencies: [
+                        .target(
+                            [
+                                .byName("Target2"),
+                                .platforms(
+                                    .init(
+                                        platformNames: [
+                                            "ios"
+                                        ]
+                                    )
+                                )
+                            ]
+                        )
+                    ],
+                    kind: .regular
+                )
+            ],
             swiftLanguageVersions: []
         )
 

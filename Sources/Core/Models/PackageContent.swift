@@ -73,7 +73,16 @@ public struct PackageContent: Decodable, Equatable {
 
     public struct Target: Decodable, Equatable {
         public enum Dependency: Equatable {
-            case target([String])
+            public enum Target: Equatable {
+                public struct Platforms: Decodable, Equatable {
+                    let platformNames: [String]
+                }
+
+                case byName(_ name: String)
+                case platforms(_ platforms: Platforms)
+            }
+
+            case target([Target])
             case product([String])
             case byName([String])
         }
@@ -130,22 +139,43 @@ extension PackageContent.Target.Dependency: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        if let targets = try container.decodeIfPresent([String?].self, forKey: .target)?.compactMap({ $0 }) {
+        if let targets = try container.decodeIfPresent([Target?].self, forKey: .target)?.compactMap({ $0 }) {
             self = .target(targets)
         } else if let products = try container.decodeIfPresent([String?].self, forKey: .product)?.compactMap({ $0 }) {
             self = .product(products)
         } else if let dependenciesNames = try container.decodeIfPresent([String?].self, forKey: .byName)?.compactMap({ $0 }) {
             self = .byName(dependenciesNames)
-        }  else {
+        } else {
             throw PackageContentError.failedToDecodeTargetDependencyType
         }
+    }
+}
+
+extension PackageContent.Target.Dependency.Target: Decodable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+
+        guard let targetName = try? container.decode(String?.self) else {
+            let platforms = try container.decode(Platforms.self)
+            self = .platforms(platforms)
+            return
+        }
+
+        self = .byName(targetName)
+    }
+}
+
+public extension PackageContent.Target.Dependency.Target {
+    var name: String? {
+        guard case let .byName(targetName) = self else { return nil }
+        return targetName
     }
 }
 
 public extension PackageContent.Target.Dependency {
     var target: String? {
         guard case let .target(targets) = self else { return nil }
-        return targets.first
+        return targets.first(where: { $0.name != nil })?.name
     }
 
     var product: String? {
