@@ -88,6 +88,7 @@ public struct PackageContent: Decodable, Equatable {
         }
 
         public enum Kind: String, Decodable, Equatable {
+            case binary
             case regular
             case test
         }

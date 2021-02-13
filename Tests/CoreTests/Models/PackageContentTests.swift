@@ -89,7 +89,7 @@ final class PackageContentTests: XCTestCase {
                     dependencies: [
                         .byName(["Target1"])
                     ],
-                    kind: .regular
+                    kind: .binary
                 ),
                 .init(
                     name: "Target3",
