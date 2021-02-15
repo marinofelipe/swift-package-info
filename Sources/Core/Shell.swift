@@ -72,13 +72,14 @@ public extension Shell {
         workingDirectory: String? = FileManager.default.currentDirectoryPath,
         repositoryURLString: String,
         branchOrTag: String,
-        verbose: Bool
+        verbose: Bool,
+        timeout: TimeInterval? = 15
     ) throws -> Output {
         try Shell.run(
             "git clone --branch \(branchOrTag) --depth 1 \(repositoryURLString)",
             workingDirectory: workingDirectory,
             verbose: verbose,
-            timeout: 5
+            timeout: timeout
         )
     }
 }

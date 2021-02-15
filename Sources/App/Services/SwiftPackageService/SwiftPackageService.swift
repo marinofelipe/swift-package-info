@@ -150,7 +150,8 @@ public final class SwiftPackageService {
             workingDirectory: fileManager.temporaryDirectory.path,
             repositoryURLString: swiftPackage.repositoryURL.absoluteString,
             branchOrTag: version,
-            verbose: verbose
+            verbose: verbose,
+            timeout: 60
         )
         guard fetchOutput.succeeded else {
             let errorMessage = String(data: fetchOutput.errorData, encoding: .utf8) ?? ""

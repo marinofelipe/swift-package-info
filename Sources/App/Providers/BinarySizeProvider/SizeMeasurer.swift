@@ -27,7 +27,7 @@ final class SizeMeasurer {
         self.verbose = verbose
     }
 
-    private static let stepsCount = 7
+    private static let stepsCount = 6
     private var currentStep = 1
     private static let second: Double = 1_000_000
 
@@ -37,21 +37,15 @@ final class SizeMeasurer {
     ) throws -> String {
         console.lineBreak()
 
-        do {
-            let emptyAppSize = try measureEmptyAppSize()
-            let appSizeWithDependencyAdded = try measureAppSize(
-                with: swiftPackage,
-                isDynamic: isDynamic
-            )
-            try cleanup()
+        let emptyAppSize = try measureEmptyAppSize()
+        let appSizeWithDependencyAdded = try measureAppSize(
+            with: swiftPackage,
+            isDynamic: isDynamic
+        )
 
-            let increasedSize = appSizeWithDependencyAdded.amount - emptyAppSize.amount
-            return URL.fileByteCountFormatter
-                .string(for: increasedSize) ?? "\(increasedSize)"
-        } catch {
-            try? cleanup()
-            throw error
-        }
+        let increasedSize = appSizeWithDependencyAdded.amount - emptyAppSize.amount
+        return URL.fileByteCountFormatter
+            .string(for: increasedSize) ?? "\(increasedSize)"
     }
 }
 
@@ -105,13 +99,6 @@ private extension SizeMeasurer {
         try appManager.generateArchive()
         if verbose == false { showOrUpdateLoading(withText: "Calculating updated binary size...") }
         return try appManager.calculateBinarySize()
-    }
-    
-    func cleanup() throws {
-        if verbose == false { showOrUpdateLoading(withText: "Reseting and cleaning up empty app...") }
-        try appManager.cleanupClonedApp()
-
-        completeLoading()
     }
 
     func showOrUpdateLoading(withText text: String) {
