@@ -73,7 +73,7 @@ public extension Shell {
         repositoryURLString: String,
         branchOrTag: String,
         verbose: Bool,
-        timeout: TimeInterval? = 5
+        timeout: TimeInterval? = 15
     ) throws -> Output {
         try Shell.run(
             "git clone --branch \(branchOrTag) --depth 1 \(repositoryURLString)",
