@@ -24,7 +24,8 @@ fileprivate enum Constants {
 /// Provides API to work with the `measurement app`.
 /// Can `generate archive`, `calculate its binary size` and `mutate the project` with a given Swift Package dependency`.
 final class AppManager {
-    private lazy var appPath: String = fileManager.currentDirectoryPath
+    private lazy var appPath: String = fileManager.temporaryDirectory
+        .path
         .appending("/")
         .appending(Constants.xcodeProjPath)
 
@@ -53,6 +54,7 @@ final class AppManager {
     func cloneEmptyApp() throws {
         do {
             try Shell.performShallowGitClone(
+                workingDirectory: fileManager.temporaryDirectory.path,
                 repositoryURLString: "https://github.com/marinofelipe/swift-package-info",
                 branchOrTag: "main",
                 verbose: verbose
@@ -68,8 +70,7 @@ final class AppManager {
         archive \
         -project \(Constants.xcodeProjPath) \
         -scheme \(Constants.appName) \
-        -archivePath \(fileManager.temporaryDirectory.path)/\(Constants.archiveName) \
-        -derivedDataPath \(fileManager.temporaryDirectory.path) \
+        -archivePath \(Constants.archiveName) \
         -configuration Release \
         -arch arm64 \
         CODE_SIGNING_REQUIRED=NO \
@@ -83,6 +84,7 @@ final class AppManager {
 
         let output = try Shell.run(
             command.text,
+            workingDirectory: fileManager.temporaryDirectory.path,
             verbose: verbose,
             timeout: nil
         )
@@ -139,13 +141,6 @@ final class AppManager {
 
             try xcodeProj.write(path: .init(appPath))
         }
-    }
-
-    func cleanupClonedApp() throws {
-        try Shell.run(
-            "rm -rf swift-package-info",
-            verbose: verbose
-        )
     }
 }
 
