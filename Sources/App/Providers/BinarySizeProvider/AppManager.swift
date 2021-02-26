@@ -29,6 +29,11 @@ final class AppManager {
         .appending("/")
         .appending(Constants.xcodeProjPath)
 
+    private lazy var emptyAppDirectoryPath: String = fileManager.temporaryDirectory
+        .path
+        .appending("/")
+        .appending(Constants.clonedRepoName)
+
     private var archivedProductPath: String {
         fileManager.temporaryDirectory
             .path
@@ -53,6 +58,15 @@ final class AppManager {
 
     func cloneEmptyApp() throws {
         do {
+            if fileManager.fileExists(atPath: emptyAppDirectoryPath) {
+                if verbose {
+                    console.lineBreakAndWrite(
+                        "Removing existing EmptyApp directory: \(emptyAppDirectoryPath)"
+                    )
+                }
+                try fileManager.removeItem(atPath: emptyAppDirectoryPath)
+            }
+
             try Shell.performShallowGitClone(
                 workingDirectory: fileManager.temporaryDirectory.path,
                 repositoryURLString: "https://github.com/marinofelipe/swift-package-info",
