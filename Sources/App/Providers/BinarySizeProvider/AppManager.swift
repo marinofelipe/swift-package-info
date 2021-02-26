@@ -58,15 +58,6 @@ final class AppManager {
 
     func cloneEmptyApp() throws {
         do {
-            if fileManager.fileExists(atPath: emptyAppDirectoryPath) {
-                if verbose {
-                    console.lineBreakAndWrite(
-                        "Removing existing EmptyApp directory: \(emptyAppDirectoryPath)"
-                    )
-                }
-                try fileManager.removeItem(atPath: emptyAppDirectoryPath)
-            }
-
             try Shell.performShallowGitClone(
                 workingDirectory: fileManager.temporaryDirectory.path,
                 repositoryURLString: "https://github.com/marinofelipe/swift-package-info",
@@ -75,6 +66,12 @@ final class AppManager {
             )
         } catch {
             throw BinarySizeProviderError.unableToCloneEmptyApp(errorMessage: error.localizedDescription)
+        }
+    }
+
+    func cleanupEmptyAppDirectory() throws {
+        if fileManager.fileExists(atPath: emptyAppDirectoryPath) {
+            try fileManager.removeItem(atPath: emptyAppDirectoryPath)
         }
     }
 
