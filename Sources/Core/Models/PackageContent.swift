@@ -91,6 +91,7 @@ public struct PackageContent: Decodable, Equatable {
             case binary
             case regular
             case test
+            case system
         }
 
         public let name: String

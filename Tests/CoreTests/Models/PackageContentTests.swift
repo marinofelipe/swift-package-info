@@ -115,6 +115,11 @@ final class PackageContentTests: XCTestCase {
                         )
                     ],
                     kind: .test
+                ),
+                .init(
+                    name: "Target4",
+                    dependencies: [],
+                    kind: .system
                 )
             ],
             swiftLanguageVersions: [
