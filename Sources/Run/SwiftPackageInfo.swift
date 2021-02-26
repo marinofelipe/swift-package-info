@@ -70,9 +70,9 @@ struct AllArguments: ParsableArguments {
             .customLong("product-named"),
             .customLong("product-name")
         ],
-        help: "Name of the product to be checked."
+        help: "Name of the product to be checked. If not passed in the first available product is used."
     )
-    var product: String
+    var product: String?
 
     @Flag(
         name: .long,
@@ -101,7 +101,7 @@ extension ParsableCommand {
         .init(
             repositoryURL: arguments.repositoryURL,
             version: arguments.packageVersion ?? "Undefined",
-            product: arguments.product
+            product: arguments.product ?? "Undefined"
         )
     }
 
@@ -128,14 +128,22 @@ extension ParsableCommand {
             swiftPackage.version = latestTag
         }
 
-        guard packageResponse.isProductValid else {
-            throw CleanExit.message(
-                """
-                Error: Invalid argument '--product <product>'
-                Usage: The product should match one of the declared products on \(swiftPackage.repositoryURL).
-                Found available products: \(packageResponse.availableProducts).
-                """
-            )
+        if packageResponse.isProductValid == false {
+            if let firstProduct = packageResponse.packageContent.products.first?.name,
+               swiftPackage.product == "Undefined" {
+                Console.default.lineBreakAndWrite("Invalid product: \(swiftPackage.product)")
+                Console.default.lineBreakAndWrite("Using first found product instead: \(firstProduct)")
+
+                swiftPackage.product = firstProduct
+            } else {
+                throw CleanExit.message(
+                    """
+                    Error: Invalid argument '--product <product>'
+                    Usage: The product should match one of the declared products on \(swiftPackage.repositoryURL).
+                    Found available products: \(packageResponse.availableProducts).
+                    """
+                )
+            }
         }
 
         return packageResponse.packageContent

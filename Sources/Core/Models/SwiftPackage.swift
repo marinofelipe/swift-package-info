@@ -10,7 +10,7 @@ import struct Foundation.URL
 public struct SwiftPackage: Equatable, CustomStringConvertible {
     public let repositoryURL: URL
     public var version: String
-    public let product: String
+    public var product: String
 
     public init(
         repositoryURL: URL,
