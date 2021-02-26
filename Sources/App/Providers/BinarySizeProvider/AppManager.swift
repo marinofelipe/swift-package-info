@@ -29,6 +29,11 @@ final class AppManager {
         .appending("/")
         .appending(Constants.xcodeProjPath)
 
+    private lazy var emptyAppDirectoryPath: String = fileManager.temporaryDirectory
+        .path
+        .appending("/")
+        .appending(Constants.clonedRepoName)
+
     private var archivedProductPath: String {
         fileManager.temporaryDirectory
             .path
@@ -61,6 +66,12 @@ final class AppManager {
             )
         } catch {
             throw BinarySizeProviderError.unableToCloneEmptyApp(errorMessage: error.localizedDescription)
+        }
+    }
+
+    func cleanupEmptyAppDirectory() throws {
+        if fileManager.fileExists(atPath: emptyAppDirectoryPath) {
+            try fileManager.removeItem(atPath: emptyAppDirectoryPath)
         }
     }
 
