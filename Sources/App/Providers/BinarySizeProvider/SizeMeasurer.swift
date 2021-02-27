@@ -27,7 +27,7 @@ final class SizeMeasurer {
         self.verbose = verbose
     }
 
-    private static let stepsCount = 6
+    private static let stepsCount = 7
     private var currentStep = 1
     private static let second: Double = 1_000_000
 
@@ -43,6 +43,7 @@ final class SizeMeasurer {
             isDynamic: isDynamic
         )
 
+        completeLoading()
         let increasedSize = appSizeWithDependencyAdded.amount - emptyAppSize.amount
         return URL.fileByteCountFormatter
             .string(for: increasedSize) ?? "\(increasedSize)"
@@ -53,6 +54,9 @@ final class SizeMeasurer {
 
 private extension SizeMeasurer {
     func measureEmptyAppSize() throws -> SizeOnDisk {
+        if verbose == false { showOrUpdateLoading(withText: "Cleaning up empty app directory...") }
+        try appManager.cleanupEmptyAppDirectory()
+
         if verbose {
             console.lineBreakAndWrite("Cloning empty app")
         } else {
@@ -75,7 +79,7 @@ private extension SizeMeasurer {
         if verbose == false { showOrUpdateLoading(withText: "Calculating binary size...") }
         return try appManager.calculateBinarySize()
     }
-    
+
     func measureAppSize(
         with swiftPackage: SwiftPackage,
         isDynamic: Bool
