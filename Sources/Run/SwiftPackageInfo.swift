@@ -129,20 +129,13 @@ extension ParsableCommand {
         }
 
         if packageResponse.isProductValid == false {
-            if let firstProduct = packageResponse.packageContent.products.first?.name,
-               swiftPackage.product == "Undefined" {
+            if let firstProduct = packageResponse.availableProducts.first {
                 Console.default.lineBreakAndWrite("Invalid product: \(swiftPackage.product)")
                 Console.default.lineBreakAndWrite("Using first found product instead: \(firstProduct)")
 
                 swiftPackage.product = firstProduct
             } else {
-                throw CleanExit.message(
-                    """
-                    Error: Invalid argument '--product <product>'
-                    Usage: The product should match one of the declared products on \(swiftPackage.repositoryURL).
-                    Found available products: \(packageResponse.availableProducts).
-                    """
-                )
+                throw CleanExit.message("Error: \(swiftPackage.repositoryURL) doesn't contain any product declared on Package.swift")
             }
         }
 
