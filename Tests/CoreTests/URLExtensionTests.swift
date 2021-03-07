@@ -154,7 +154,7 @@ final class URLExtensionTests: XCTestCase {
         )
     }
 
-    // MARK: Tests - isValid
+    // MARK: Tests - Is valid
 
     func testIsValidRemote() throws {
         var url = try XCTUnwrap(

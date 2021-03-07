@@ -12,18 +12,33 @@ import Foundation
 // MARK: - Size on disk
 
 extension URL {
+    // MARK: Public
+
     public static let fileByteCountFormatter: ByteCountFormatter = {
         let byteCountFormatter = ByteCountFormatter()
         byteCountFormatter.countStyle = .file
         return byteCountFormatter
     }()
 
-    func totalFileAllocatedSize() throws -> Int {
-        try resourceValues(forKeys: [.totalFileAllocatedSizeKey]).totalFileAllocatedSize ?? 0
+    public func isDirectory() throws -> Bool {
+        try resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true
     }
 
-    func isDirectory() throws -> Bool {
-        try resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true
+    public func sizeOnDisk() throws -> SizeOnDisk {
+        let size = try isDirectory()
+            ? try directoryTotalAllocatedSize(includingSubfolders: true)
+            : try totalFileAllocatedSize()
+
+        guard let formattedByteCount = URL.fileByteCountFormatter.string(for: size) else {
+            throw URLSizeReadingError.unableToCountCountBytes(filePath: self.path)
+        }
+        return .init(amount: size, formatted: formattedByteCount)
+    }
+
+    // MARK: Internal
+
+    func totalFileAllocatedSize() throws -> Int {
+        try resourceValues(forKeys: [.totalFileAllocatedSizeKey]).totalFileAllocatedSize ?? 0
     }
 
     func directoryTotalAllocatedSize(
@@ -44,17 +59,6 @@ extension URL {
 
         return try allocatedSizeWithoutSubfolders()
     }
-
-    public func sizeOnDisk() throws -> SizeOnDisk {
-        let size = try isDirectory()
-            ? try directoryTotalAllocatedSize(includingSubfolders: true)
-            : try totalFileAllocatedSize()
-
-        guard let formattedByteCount = URL.fileByteCountFormatter.string(for: size) else {
-            throw URLSizeReadingError.unableToCountCountBytes(filePath: self.path)
-        }
-        return .init(amount: size, formatted: formattedByteCount)
-    }
 }
 
 enum URLSizeReadingError: LocalizedError {
@@ -74,7 +78,7 @@ extension Array where Element == URL {
     }
 }
 
-// MARK: - Extension: IsValid
+// MARK: - Extension: Is valid remote
 
 public extension URL {
     static let isValidURLRegex = "^(https?://)?(www\\.)?([-a-z0-9]{1,63}\\.)*?[a-z0-9][-a-z0-9]{0,61}[a-z0-9]\\.[a-z]{2,6}(/[-\\w@\\+\\.~#\\?&/=%]*)?$"
