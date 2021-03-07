@@ -153,6 +153,30 @@ final class URLExtensionTests: XCTestCase {
             .init(amount: 503808, formatted: "504 KB")
         )
     }
+
+    // MARK: Tests - isValid
+
+    func testIsValidRemote() throws {
+        var url = try XCTUnwrap(
+            URL(string: "https://www.bla.bla")
+        )
+        XCTAssertTrue(url.isValidRemote)
+
+        url = try XCTUnwrap(
+            URL(string: "http://bla.bla")
+        )
+        XCTAssertTrue(url.isValidRemote)
+
+        url = try XCTUnwrap(
+            URL(string: "htt://bla.bla")
+        )
+        XCTAssertFalse(url.isValidRemote)
+
+        url = try XCTUnwrap(
+            URL(string: "https://bla")
+        )
+        XCTAssertFalse(url.isValidRemote)
+    }
 }
 
 // MARK: - Helpers
