@@ -7,7 +7,7 @@
 
 import Foundation
 
-@testable import Core
+import Core
 
 public extension Fixture {
     static func makeSwiftPackage(
