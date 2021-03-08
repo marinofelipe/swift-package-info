@@ -49,18 +49,21 @@ struct AllArguments: ParsableArguments {
             .customLong("for"),
             .customLong("package"),
             .customLong("repo-url"),
-            .customLong("url")
+            .customLong("path"),
+            .customLong("local-path"),
         ],
-        help: "URL containing the Swift Package / `Package.swift` that contains the product you want to run analyzes for."
+        help: """
+        Either a valid git repository URL or a local directory path that contains a `Package.swift`
+        """
     )
-    var repositoryURL: URL
+    var url: URL
 
     @Option(
         name: [
             .long,
             .customShort("v")
         ],
-        help: "Semantic version of the Swift Package. If not passed in the latest release is used."
+        help: "Semantic version of the Swift Package. If not passed in the latest release is used"
     )
     var packageVersion: String?
 
@@ -70,7 +73,7 @@ struct AllArguments: ParsableArguments {
             .customLong("product-named"),
             .customLong("product-name")
         ],
-        help: "Name of the product to be checked. If not passed in the first available product is used."
+        help: "Name of the product to be checked. If not passed in the first available product is used"
     )
     var product: String?
 
@@ -85,13 +88,18 @@ struct AllArguments: ParsableArguments {
 
 extension ParsableCommand {
     func runArgumentsValidation(arguments: AllArguments) throws {
-        guard CommandLine.argc > 1 else { throw CleanExit.helpRequest() }
+        guard CommandLine.argc > 0 else { throw CleanExit.helpRequest() }
 
-        guard arguments.repositoryURL.isValid else {
+        let isValidRemoteURL = arguments.url.isValidRemote
+        let isValidLocalDirectory = try? arguments.url.isLocalDirectoryContainingPackageDotSwift()
+
+        guard isValidRemoteURL || isValidLocalDirectory == true else {
             throw CleanExit.message(
                 """
-                Error: Invalid argument '--repository-url <repository-url>'
-                Usage: The URL must be a valid git repository URL that contains a `Package.swift`, e.g. `https://github.com/Alamofire/Alamofire`.
+                Error: Invalid argument '--url <url>'
+                Usage: The URL must be either:
+                - A valid git repository URL that contains a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`; or
+                - A local directory path that has a `Package.swift`, e.g. `../other-dir/my-project`
                 """
             )
         }
@@ -99,7 +107,8 @@ extension ParsableCommand {
 
     func makeSwiftPackage(from arguments: AllArguments) -> SwiftPackage {
         .init(
-            repositoryURL: arguments.repositoryURL,
+            url: arguments.url,
+            isLocal: arguments.url.isValidRemote ? false : true,
             version: arguments.packageVersion ?? "Undefined",
             product: arguments.product ?? "Undefined"
         )
@@ -107,36 +116,47 @@ extension ParsableCommand {
 
     func validate(
         swiftPackage: inout SwiftPackage,
-        arguments: AllArguments
+        verbose: Bool
     ) throws -> PackageContent {
         let swiftPackageService = SwiftPackageService()
-        let packageResponse = try swiftPackageService.validate(swiftPackage: swiftPackage, verbose: arguments.verbose)
+        let packageResponse = try swiftPackageService.validate(
+            swiftPackage: swiftPackage,
+            verbose: verbose
+        )
 
-        guard packageResponse.isRepositoryValid else {
+        switch packageResponse.sourceInformation {
+        case let .remote(isRepositoryValid, isTagValid, latestTag):
+            guard isRepositoryValid else {
+                throw CleanExit.message(
+                    """
+                    Error: Invalid argument '--url <url>'
+                    Usage: The URL must be a valid git repository URL that contains
+                    a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`
+                    """
+                )
+            }
+
+            if isTagValid == false, let latestTag = latestTag {
+                Console.default.lineBreakAndWrite("Invalid version: \(swiftPackage.version)")
+                Console.default.lineBreakAndWrite("Using latest found tag instead: \(latestTag)")
+
+                swiftPackage.version = latestTag
+            }
+        case .local:
+            break
+        }
+
+        guard let firstProduct = packageResponse.availableProducts.first else {
             throw CleanExit.message(
-                """
-                Error: Invalid argument '--repository-url <repository-url>'
-                Usage: The URL must be a valid git repository URL that contains a `Package.swift`, e.g. `https://github.com/Alamofire/Alamofire`.
-                """
+                "Error: \(swiftPackage.url) doesn't contain any product declared on Package.swift"
             )
         }
 
-        if packageResponse.isTagValid == false, let latestTag = packageResponse.latestTag {
-            Console.default.lineBreakAndWrite("Invalid version: \(swiftPackage.version)")
-            Console.default.lineBreakAndWrite("Using latest found tag instead: \(latestTag)")
-
-            swiftPackage.version = latestTag
-        }
-
         if packageResponse.isProductValid == false {
-            if let firstProduct = packageResponse.availableProducts.first {
-                Console.default.lineBreakAndWrite("Invalid product: \(swiftPackage.product)")
-                Console.default.lineBreakAndWrite("Using first found product instead: \(firstProduct)")
+            Console.default.lineBreakAndWrite("Invalid product: \(swiftPackage.product)")
+            Console.default.lineBreakAndWrite("Using first found product instead: \(firstProduct)")
 
-                swiftPackage.product = firstProduct
-            } else {
-                throw CleanExit.message("Error: \(swiftPackage.repositoryURL) doesn't contain any product declared on Package.swift")
-            }
+            swiftPackage.product = firstProduct
         }
 
         return packageResponse.packageContent

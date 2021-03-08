@@ -25,6 +25,22 @@ enum SwiftPackageServiceError: LocalizedError, Equatable {
     }
 }
 
+public struct SwiftPackageValidationResult: Equatable {
+    public enum SourceInformation: Equatable {
+        case local
+        case remote(
+                isRepositoryValid: Bool,
+                isTagValid: Bool,
+                latestTag: String?
+             )
+    }
+
+    public let sourceInformation: SourceInformation
+    public let isProductValid: Bool
+    public let availableProducts: [String]
+    public let packageContent: PackageContent
+}
+
 public final class SwiftPackageService {
     private let httpClient: CombineHTTPClient
     private let gitHubRequestBuilder: HTTPRequestBuilder
@@ -54,15 +70,6 @@ public final class SwiftPackageService {
         )
     }
 
-    public struct SwiftPackageValidationResult: Equatable {
-        public let isRepositoryValid: Bool
-        public let isTagValid: Bool
-        public let latestTag: String?
-        public let isProductValid: Bool
-        public let availableProducts: [String]
-        public let packageContent: PackageContent
-    }
-
     deinit {
         fetchToken?.cancel()
     }
@@ -71,6 +78,55 @@ public final class SwiftPackageService {
 
     public func validate(
         swiftPackage: SwiftPackage,
+        verbose: Bool
+    ) throws -> SwiftPackageValidationResult {
+        if swiftPackage.isLocal {
+            return try runLocalValidation(for: swiftPackage, verbose: verbose)
+        } else {
+            return try runRemoteValidation(for: swiftPackage, verbose: verbose)
+        }
+    }
+
+    // MARK: - Local
+
+    private func runLocalValidation(
+        for swiftPackage: SwiftPackage,
+        verbose: Bool
+    ) throws -> SwiftPackageValidationResult {
+        let packageContent = try fetchLocalPackageContent(
+            atPath: swiftPackage.url.path,
+            verbose: verbose
+        )
+
+        return .init(
+            sourceInformation: .local,
+            isProductValid: packageContent.products
+                .contains(where: \.name == swiftPackage.product),
+            availableProducts: packageContent.products.map(\.name),
+            packageContent: packageContent
+        )
+    }
+
+    private func fetchLocalPackageContent(
+        atPath path: String,
+        verbose: Bool
+    ) throws -> PackageContent {
+        if fileManager.fileExists(atPath: path) {
+            return try dumpPackageContent(
+                atPath: path,
+                verbose: verbose
+            )
+        }
+
+        throw SwiftPackageServiceError.unableToDumpPackageContent(
+            errorMessage: "Package.swift does not exist on local path: \(path)"
+        )
+    }
+
+    // MARK: - Remote
+
+    private func runRemoteValidation(
+        for swiftPackage: SwiftPackage,
         verbose: Bool
     ) throws -> SwiftPackageValidationResult {
         let repositoryRequest = try gitHubRequestBuilder
@@ -119,23 +175,26 @@ public final class SwiftPackageService {
         semaphore.wait()
 
         let version = isTagValid ? swiftPackage.version : latestTag ?? ""
-        let packageContent = try fetchPackageContent(
+        let packageContent = try fetchRemotePackageContent(
             for: swiftPackage,
             version: version,
             verbose: verbose
         )
 
         return .init(
-            isRepositoryValid: isRepositoryValid,
-            isTagValid: isTagValid,
-            latestTag: latestTag,
-            isProductValid: packageContent.products.contains(where: \.name == swiftPackage.product),
+            sourceInformation: .remote(
+                isRepositoryValid: isRepositoryValid,
+                isTagValid: isTagValid,
+                latestTag: latestTag
+            ),
+            isProductValid: packageContent.products
+                .contains(where: \.name == swiftPackage.product),
             availableProducts: packageContent.products.map(\.name),
             packageContent: packageContent
         )
     }
 
-    private func fetchPackageContent(
+    private func fetchRemotePackageContent(
         for swiftPackage: SwiftPackage,
         version: String,
         verbose: Bool
@@ -148,7 +207,7 @@ public final class SwiftPackageService {
 
         let fetchOutput = try Shell.performShallowGitClone(
             workingDirectory: fileManager.temporaryDirectory.path,
-            repositoryURLString: swiftPackage.repositoryURL.absoluteString,
+            repositoryURLString: swiftPackage.url.absoluteString,
             branchOrTag: version,
             verbose: verbose,
             timeout: 60
@@ -158,9 +217,21 @@ public final class SwiftPackageService {
             throw SwiftPackageServiceError.unableToFetchPackageContent(errorMessage: errorMessage)
         }
 
+        return try dumpPackageContent(
+            atPath: repositoryTemporaryPath,
+            verbose: verbose
+        )
+    }
+
+    // MARK: - Common
+
+    private func dumpPackageContent(
+        atPath path: String,
+        verbose: Bool
+    ) throws -> PackageContent {
         let dumpOutput = try Shell.run(
             "swift package dump-package",
-            workingDirectory: repositoryTemporaryPath,
+            workingDirectory: path,
             verbose: verbose
         )
 
