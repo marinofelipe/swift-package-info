@@ -191,7 +191,8 @@ private extension PBXProject {
         targetName: String = Constants.appName
     ) throws -> XCSwiftPackageProductDependency {
         try addLocalSwiftPackage(
-            path: .init(swiftPackage.url.path),
+            // Relative path is adjusted for the location of the cloned MeasurementApp
+            path: .init("../\(swiftPackage.url.path)"),
             productName: swiftPackage.product,
             targetName: targetName
         )
