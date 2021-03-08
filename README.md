@@ -29,8 +29,23 @@ SUBCOMMANDS:
   See 'swift-package-info help <subcommand>' for detailed help.
 ```
 
-### Example
-- To run a full analyzes
+### Examples
+- Run a full analyzes
+```
+swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product RxSwift
+```
+
+- Check supported platforms (sub command)
+```
+swift-package-info platforms --for https://github.com/krzyzanowskim/CryptoSwift -v 1.3.8 --product CryptoSwift
+```
+
+- See binary size of a local pacakge (e.g. under development framework)
+```
+swift-package-info binary-size --path ../project/my-framework
+```
+
+### Report
 ```
 swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product RxSwift
 ```
@@ -47,23 +62,6 @@ swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product
 | Dependencies | No third-party dependencies :)  |
 +--------------+---------------------------------+
 > Total of 3 providers used.
-```
-
-- To check supported platforms (sub command)
-```
-swift-package-info platforms --for https://github.com/krzyzanowskim/CryptoSwift -v 1.3.8 --product CryptoSwift
-```
-```
-+----------------------------------------------------------------------+
-|                          Swift Package Info                          |
-|                                                                      |
-|                          CryptoSwift, 1.3.8                          |
-+-----------+----------------------------------------------------------+
-| Provider  | Results                                                  |
-+-----------+----------------------------------------------------------+
-| Platforms | macos from v. 10.12 | ios from v. 9.0 | tvos from v. 9.0 |
-+-----------+----------------------------------------------------------+
-> Total of 1 provider used.
 ```
 
 ## Installation
