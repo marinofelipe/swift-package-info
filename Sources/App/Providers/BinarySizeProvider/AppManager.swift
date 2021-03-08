@@ -138,16 +138,27 @@ final class AppManager {
             throw BinarySizeProviderError.unableToRetrieveAppProject(atPath: appPath)
         }
 
-        let xcSwiftPackageReference = try appProject.add(swiftPackage: swiftPackage)
-        xcodeProj.pbxproj.add(object: xcSwiftPackageReference)
+        if swiftPackage.isLocal {
+            let packageReference = try appProject.addLocal(swiftPackage: swiftPackage)
+            xcodeProj.pbxproj.add(object: packageReference)
+        } else {
+            let packageReference = try appProject.addRemote(swiftPackage: swiftPackage)
+            xcodeProj.pbxproj.add(object: packageReference)
+        }
 
         try xcodeProj.write(path: .init(appPath))
 
         if isDynamic {
-            let packageDependency = appProject.targets.first?.packageProductDependencies.first
+            let packageDependency = appProject.targets
+                .first?
+                .packageProductDependencies
+                .first
             let packageBuildFile = PBXBuildFile(product: packageDependency)
 
-            let embedFrameworksBuildPhase = appProject.targets.first?.embedFrameworksBuildPhases().first
+            let embedFrameworksBuildPhase = appProject.targets
+                .first?
+                .embedFrameworksBuildPhases()
+                .first
             embedFrameworksBuildPhase?.files?.append(packageBuildFile)
 
             try xcodeProj.write(path: .init(appPath))
@@ -158,9 +169,12 @@ final class AppManager {
 // MARK: - PBXProject: add(swiftPackage:targetName:)
 
 private extension PBXProject {
-    func add(swiftPackage: SwiftPackage, targetName: String = Constants.appName) throws -> XCRemoteSwiftPackageReference {
+    func addRemote(
+        swiftPackage: SwiftPackage,
+        targetName: String = Constants.appName
+    ) throws -> XCRemoteSwiftPackageReference {
         try addSwiftPackage(
-            repositoryURL: swiftPackage.repositoryURL.absoluteString,
+            repositoryURL: swiftPackage.url.absoluteString,
             productName: swiftPackage.product,
             versionRequirement: .upToNextMinorVersion(
                 swiftPackage.version
@@ -168,6 +182,17 @@ private extension PBXProject {
                         in: CharacterSet.decimalDigits.inverted
                     )
             ),
+            targetName: targetName
+        )
+    }
+
+    func addLocal(
+        swiftPackage: SwiftPackage,
+        targetName: String = Constants.appName
+    ) throws -> XCSwiftPackageProductDependency {
+        try addLocalSwiftPackage(
+            path: .init(swiftPackage.url.path),
+            productName: swiftPackage.product,
             targetName: targetName
         )
     }

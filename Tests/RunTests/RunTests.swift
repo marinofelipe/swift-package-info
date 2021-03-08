@@ -10,11 +10,28 @@ import Foundation
 
 @available(macOS 10.13, *)
 final class RunTests: XCTestCase {
-    func testWithInvalidRepositoryURL() throws {
+    func testWithInvalidRemoteURL() throws {
         try runToolProcessAndAssert(
-            command: "--repository-url somethingElse --package-version 6.0.0 --product RxSwift",
+            command: "--url somethingElse --package-version 6.0.0 --product RxSwift",
             expectedOutput: """
-            Error: Invalid argument \'--repository-url <repository-url>\'\nUsage: The URL must be a valid git repository URL that contains a `Package.swift`, e.g. `https://github.com/Alamofire/Alamofire`.
+            Error: Invalid argument '--url <url>'
+            Usage: The URL must be either:
+            - A valid git repository URL that contains a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`; or
+            - A local directory path that has a `Package.swift`, e.g. `../other-dir/my-project`
+
+            """,
+            expectedError: ""
+        )
+    }
+
+    func testWithInvalidLocalURL() throws {
+        try runToolProcessAndAssert(
+            command: "--url ../path",
+            expectedOutput: """
+            Error: Invalid argument '--url <url>'
+            Usage: The URL must be either:
+            - A valid git repository URL that contains a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`; or
+            - A local directory path that has a `Package.swift`, e.g. `../other-dir/my-project`
 
             """,
             expectedError: ""

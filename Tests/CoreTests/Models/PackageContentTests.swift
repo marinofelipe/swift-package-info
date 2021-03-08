@@ -6,7 +6,8 @@
 //
 
 import XCTest
-import TestSupport
+import CoreTestSupport
+
 @testable import Core
 
 final class PackageContentTests: XCTestCase {

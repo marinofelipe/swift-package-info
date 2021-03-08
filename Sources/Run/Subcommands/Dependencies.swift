@@ -30,7 +30,10 @@ extension SwiftPackageInfo {
             var swiftPackage = makeSwiftPackage(from: allArguments)
             swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
 
-            let packageContent = try validate(swiftPackage: &swiftPackage, arguments: allArguments)
+            let packageContent = try validate(
+                swiftPackage: &swiftPackage,
+                verbose: allArguments.verbose
+            )
 
             let report = Report(swiftPackage: swiftPackage)
 

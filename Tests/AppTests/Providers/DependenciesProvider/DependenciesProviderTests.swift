@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import CoreTestSupport
 
 @testable import App
 @testable import Core
@@ -18,11 +19,7 @@ final class DependenciesProviderTests: XCTestCase {
     /// to define a Target dependency when it's name doesn't match with any of available Package dependencies names.
     func testProvidedInfoWhenHasExternalDependencyDeclaredByNameThatDoesNotMatch() throws {
         let result = DependenciesProvider.fetchInformation(
-            for: SwiftPackage(
-                repositoryURL: URL(string: "https://www.apple.com")!,
-                version: "1.0.0",
-                product: "Some"
-            ),
+            for: Fixture.makeSwiftPackage(),
             packageContent: PackageContent(
                 name: "Package",
                 platforms: [],
@@ -112,11 +109,7 @@ final class DependenciesProviderTests: XCTestCase {
 
     func testProvidedInfo() throws {
         let result = DependenciesProvider.fetchInformation(
-            for: SwiftPackage(
-                repositoryURL: URL(string: "https://www.apple.com")!,
-                version: "1.0.0",
-                product: "Some"
-            ),
+            for: Fixture.makeSwiftPackage(),
             packageContent: PackageContent(
                 name: "Package",
                 platforms: [],
@@ -256,11 +249,7 @@ final class DependenciesProviderTests: XCTestCase {
 
     func testProvidedInfoWithManyNestedAndIndirectDependencies() throws {
         let result = DependenciesProvider.fetchInformation(
-            for: SwiftPackage(
-                repositoryURL: URL(string: "https://www.apple.com")!,
-                version: "1.0.0",
-                product: "Some"
-            ),
+            for: Fixture.makeSwiftPackage(),
             packageContent: PackageContent(
                 name: "Package",
                 platforms: [],
