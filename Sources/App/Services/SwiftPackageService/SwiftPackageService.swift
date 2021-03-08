@@ -41,6 +41,22 @@ public struct SwiftPackageValidationResult: Equatable {
     public let packageContent: PackageContent
 }
 
+extension SwiftPackageValidationResult {
+    init(
+        from packageContent: PackageContent,
+        product: String,
+        sourceInformation: SourceInformation
+    ) {
+        self.init(
+            sourceInformation: sourceInformation,
+            isProductValid: packageContent.products
+                .contains(where: \.name == product),
+            availableProducts: packageContent.products.map(\.name),
+            packageContent: packageContent
+        )
+    }
+}
+
 public final class SwiftPackageService {
     private let httpClient: CombineHTTPClient
     private let gitHubRequestBuilder: HTTPRequestBuilder
@@ -93,17 +109,13 @@ public final class SwiftPackageService {
         for swiftPackage: SwiftPackage,
         verbose: Bool
     ) throws -> SwiftPackageValidationResult {
-        let packageContent = try fetchLocalPackageContent(
-            atPath: swiftPackage.url.path,
-            verbose: verbose
-        )
-
-        return .init(
-            sourceInformation: .local,
-            isProductValid: packageContent.products
-                .contains(where: \.name == swiftPackage.product),
-            availableProducts: packageContent.products.map(\.name),
-            packageContent: packageContent
+        .init(
+            from: try fetchLocalPackageContent(
+                atPath: swiftPackage.url.path,
+                verbose: verbose
+            ),
+            product: swiftPackage.product,
+            sourceInformation: .local
         )
     }
 
@@ -174,23 +186,20 @@ public final class SwiftPackageService {
 
         semaphore.wait()
 
-        let version = isTagValid ? swiftPackage.version : latestTag ?? ""
-        let packageContent = try fetchRemotePackageContent(
-            for: swiftPackage,
-            version: version,
-            verbose: verbose
-        )
-
         return .init(
+            from: try fetchRemotePackageContent(
+                for: swiftPackage,
+                version: isTagValid
+                    ? swiftPackage.version
+                    : latestTag ?? "",
+                verbose: verbose
+            ),
+            product: swiftPackage.product,
             sourceInformation: .remote(
                 isRepositoryValid: isRepositoryValid,
                 isTagValid: isTagValid,
                 latestTag: latestTag
-            ),
-            isProductValid: packageContent.products
-                .contains(where: \.name == swiftPackage.product),
-            availableProducts: packageContent.products.map(\.name),
-            packageContent: packageContent
+            )
         )
     }
 

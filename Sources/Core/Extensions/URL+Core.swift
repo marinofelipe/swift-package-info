@@ -78,7 +78,7 @@ extension Array where Element == URL {
     }
 }
 
-// MARK: - Extension: Is valid remote
+// MARK: - Extension - Local & remote
 
 public extension URL {
     static let isValidURLRegex = "^(https?://)?(www\\.)?([-a-z0-9]{1,63}\\.)*?[a-z0-9][-a-z0-9]{0,61}[a-z0-9]\\.[a-z]{2,6}(/[-\\w@\\+\\.~#\\?&/=%]*)?$"
