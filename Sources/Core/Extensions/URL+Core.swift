@@ -20,10 +20,6 @@ extension URL {
         return byteCountFormatter
     }()
 
-    public func isDirectory() throws -> Bool {
-        try resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true
-    }
-
     public func sizeOnDisk() throws -> SizeOnDisk {
         let size = try isDirectory()
             ? try directoryTotalAllocatedSize(includingSubfolders: true)
@@ -59,6 +55,10 @@ extension URL {
 
         return try allocatedSizeWithoutSubfolders()
     }
+
+    func isDirectory() throws -> Bool {
+        try resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true
+    }
 }
 
 enum URLSizeReadingError: LocalizedError {
@@ -86,6 +86,12 @@ public extension URL {
     var isValidRemote: Bool {
         NSPredicate(format:"SELF MATCHES %@", Self.isValidURLRegex)
             .evaluate(with: absoluteString)
+    }
+
+    func isLocalDirectoryContainingPackageDotSwift(
+        fileManager: FileManager = .default
+    ) throws -> Bool {
+        try fileManager.contentsOfDirectory(atPath: path).contains("Package.swift")
     }
 }
 

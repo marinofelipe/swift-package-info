@@ -154,7 +154,53 @@ final class URLExtensionTests: XCTestCase {
         )
     }
 
-    // MARK: Tests - Is valid
+    // MARK: Tests - isValidLocalDirectory
+
+    func testIsValidLocalDirectoryWhenDoesNotContainPackageDotSwift() throws {
+        let subDirectoryURL = URL(
+            fileURLWithPath: fileManager.currentDirectoryPath
+                .appending("/directory")
+        )
+
+        // Create subdirectory
+        try fileManager.createDirectory(atPath: subDirectoryURL.path)
+
+        // Then
+        let relativeURL = URL(string: "directory")!
+        XCTAssertFalse(try relativeURL.isLocalDirectoryContainingPackageDotSwift())
+
+        // Clean up subdirectory
+        if fileManager.fileExists(atPath: subDirectoryURL.path) {
+            try fileManager.removeItem(atPath: subDirectoryURL.path)
+        }
+    }
+
+    func testIsValidLocalDirectoryWhenContainsPackageDotSwift() throws {
+        let subDirectoryURL = URL(
+            fileURLWithPath: fileManager.currentDirectoryPath
+                .appending("/directory")
+        )
+
+        // Create a subdirectory
+        try fileManager.createDirectory(atPath: subDirectoryURL.path)
+
+        // Create a Package.swift file on it
+        try fileManager.createFile(
+            atPath: subDirectoryURL.path + "/Package.swift",
+            content: "some-data".data(using: .utf8)!
+        )
+
+        // Then
+        let relativeURL = URL(string: "directory")!
+        XCTAssertTrue(try relativeURL.isLocalDirectoryContainingPackageDotSwift())
+
+        // Clean up subdirectory
+        if fileManager.fileExists(atPath: subDirectoryURL.path) {
+            try fileManager.removeItem(atPath: subDirectoryURL.path)
+        }
+    }
+
+    // MARK: Tests - isValidRemote
 
     func testIsValidRemote() throws {
         var url = try XCTUnwrap(
