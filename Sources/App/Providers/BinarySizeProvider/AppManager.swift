@@ -124,7 +124,9 @@ final class AppManager {
 
             return appSize
         } catch {
-            throw BinarySizeProviderError.unableToGetBinarySizeOnDisk(underlyingError: error as NSError)
+            throw BinarySizeProviderError.unableToGetBinarySizeOnDisk(
+                underlyingError: error as NSError
+            )
         }
     }
 
