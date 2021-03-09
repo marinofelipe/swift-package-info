@@ -31,6 +31,10 @@ final class SizeMeasurer {
     private var currentStep = 1
     private static let second: Double = 1_000_000
 
+    deinit {
+        try? appManager.cleanUp()
+    }
+
     public func formattedBinarySize(
         for swiftPackage: SwiftPackage,
         isDynamic: Bool
@@ -55,7 +59,7 @@ final class SizeMeasurer {
 private extension SizeMeasurer {
     func measureEmptyAppSize() throws -> SizeOnDisk {
         if verbose == false { showOrUpdateLoading(withText: "Cleaning up empty app directory...") }
-        try appManager.cleanupEmptyAppDirectory()
+        try appManager.cleanUp()
 
         if verbose {
             console.lineBreakAndWrite("Cloning empty app")

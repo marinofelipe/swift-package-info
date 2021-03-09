@@ -24,23 +24,24 @@ fileprivate enum Constants {
 /// Provides API to work with the `measurement app`.
 /// Can `generate archive`, `calculate its binary size` and `mutate the project` with a given Swift Package dependency`.
 final class AppManager {
-    private lazy var appPath: String = fileManager.temporaryDirectory
-        .path
+    private lazy var appPath: String = fileManager.currentDirectoryPath
         .appending("/")
         .appending(Constants.xcodeProjPath)
 
-    private lazy var emptyAppDirectoryPath: String = fileManager.temporaryDirectory
-        .path
+    private lazy var emptyAppDirectoryPath: String = fileManager.currentDirectoryPath
         .appending("/")
         .appending(Constants.clonedRepoName)
 
-    private var archivedProductPath: String {
-        fileManager.temporaryDirectory
-            .path
-            .appending("/")
-            .appending(Constants.archiveName)
-            .appending("/Products/Applications/MeasurementApp.app")
-    }
+    private lazy var archivedPath: String = fileManager.temporaryDirectory
+        .path
+        .appending("/")
+        .appending(Constants.archiveName)
+
+    private lazy var archivedProductPath: String = fileManager.temporaryDirectory
+        .path
+        .appending("/")
+        .appending(Constants.archiveName)
+        .appending("/Products/Applications/MeasurementApp.app")
 
     private let fileManager: FileManager
     private let console: Console
@@ -59,7 +60,7 @@ final class AppManager {
     func cloneEmptyApp() throws {
         do {
             try Shell.performShallowGitClone(
-                workingDirectory: fileManager.temporaryDirectory.path,
+                workingDirectory: fileManager.currentDirectoryPath,
                 repositoryURLString: "https://github.com/marinofelipe/swift-package-info",
                 branchOrTag: "main",
                 verbose: verbose
@@ -69,19 +70,19 @@ final class AppManager {
         }
     }
 
-    func cleanupEmptyAppDirectory() throws {
+    func cleanUp() throws {
         if fileManager.fileExists(atPath: emptyAppDirectoryPath) {
             try fileManager.removeItem(atPath: emptyAppDirectoryPath)
         }
     }
-
+    
     func generateArchive() throws {
         let command: ConsoleMessage = """
         xcodebuild \
         archive \
         -project \(Constants.xcodeProjPath) \
         -scheme \(Constants.appName) \
-        -archivePath \(Constants.archiveName) \
+        -archivePath \(archivedPath) \
         -configuration Release \
         -arch arm64 \
         CODE_SIGNING_REQUIRED=NO \
@@ -95,7 +96,7 @@ final class AppManager {
 
         let output = try Shell.run(
             command.text,
-            workingDirectory: fileManager.temporaryDirectory.path,
+            workingDirectory: fileManager.currentDirectoryPath,
             verbose: verbose,
             timeout: nil
         )
