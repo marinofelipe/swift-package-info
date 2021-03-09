@@ -53,7 +53,8 @@ struct AllArguments: ParsableArguments {
             .customLong("local-path"),
         ],
         help: """
-        Either a valid git repository URL or a local directory path that contains a `Package.swift`
+        Either a valid git repository URL or a relative local directory path that contains a `Package.swift`
+        - Note: For local packages full paths are discouraged and unsupported.
         """
     )
     var url: URL
@@ -93,13 +94,22 @@ extension ParsableCommand {
         let isValidRemoteURL = arguments.url.isValidRemote
         let isValidLocalDirectory = try? arguments.url.isLocalDirectoryContainingPackageDotSwift()
 
+        guard arguments.url.absoluteString.first != "/" else {
+            throw CleanExit.message(
+                """
+                Error: Invalid argument '--url <url>'
+                Usage: Absolute paths aren't supported! Please pass a relative path to your local package.
+                """
+            )
+        }
+
         guard isValidRemoteURL || isValidLocalDirectory == true else {
             throw CleanExit.message(
                 """
                 Error: Invalid argument '--url <url>'
                 Usage: The URL must be either:
                 - A valid git repository URL that contains a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`; or
-                - A local directory path that has a `Package.swift`, e.g. `../other-dir/my-project`
+                - A relative local directory path that has a `Package.swift`, e.g. `../other-dir/my-project`
                 """
             )
         }

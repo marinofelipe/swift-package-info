@@ -13,7 +13,7 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
     case unableToCloneEmptyApp(errorMessage: String)
     case unableToGetBinarySizeOnDisk(underlyingError: NSError)
     case unableToRetrieveAppProject(atPath: String)
-    case unexpectedError
+    case unexpectedError(underlyingError: NSError, isVerbose: Bool)
 
     var errorDescription: String? {
         let step: String
@@ -31,9 +31,12 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
             case let .unableToRetrieveAppProject(path):
                 step = "Read measurement app project"
                 message = "Failed to get MeasurementApp project from XcodeProj at path: \(path)"
-            case .unexpectedError:
+            case let .unexpectedError(underlyingError, isVerboseOn):
                 step = "Undefined"
-                message = "Unexpected failure. Please run with --verbose enabled for more details."
+                message = """
+                Unexpected failure. \(underlyingError.description).
+                \(isVerboseOn ? "" : "Please run with --verbose enabled for more details.")
+                """
         }
 
         return """
@@ -68,7 +71,12 @@ public struct BinarySizeProvider {
             )
         } catch {
             return .failure(
-                .init(localizedError: BinarySizeProviderError.unexpectedError)
+                .init(
+                    localizedError: BinarySizeProviderError.unexpectedError(
+                        underlyingError: error as NSError,
+                        isVerbose: verbose
+                    )
+                )
             )
         }
 

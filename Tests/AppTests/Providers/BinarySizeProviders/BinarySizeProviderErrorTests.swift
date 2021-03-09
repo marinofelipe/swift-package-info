@@ -57,14 +57,34 @@ final class BinarySizeProviderTests: XCTestCase {
         )
     }
 
-    func testUnexpectedErrorLocalizedMessage() {
-        let error = BinarySizeProviderError.unexpectedError
+    func testUnexpectedErrorLocalizedMessageWhenVerboseTrue() {
+        let error = BinarySizeProviderError.unexpectedError(
+            underlyingError: URLError(.badURL) as NSError,
+            isVerbose: true
+        )
         XCTAssertEqual(
             error.localizedDescription,
             """
             Failed to measure binary size
             Step: Undefined
-            Error: Unexpected failure. Please run with --verbose enabled for more details.
+            Error: Unexpected failure. Error Domain=NSURLErrorDomain Code=-1000 "(null)".
+
+            """
+        )
+    }
+
+    func testUnexpectedErrorLocalizedMessageWhenVerboseFalse() {
+        let error = BinarySizeProviderError.unexpectedError(
+            underlyingError: URLError(.badURL) as NSError,
+            isVerbose: false
+        )
+        XCTAssertEqual(
+            error.localizedDescription,
+            """
+            Failed to measure binary size
+            Step: Undefined
+            Error: Unexpected failure. Error Domain=NSURLErrorDomain Code=-1000 "(null)".
+            Please run with --verbose enabled for more details.
             """
         )
     }
