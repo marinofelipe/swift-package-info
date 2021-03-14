@@ -36,6 +36,10 @@ final class PlatformsProviderTests: XCTestCase {
         )
 
         let providedInfo = try result.get()
+        XCTAssertEqual(
+            providedInfo.providerName,
+            "Platforms"
+        )
 
         let expectedPlatformMessage: (String) -> ConsoleMessage = { contentText in
             ConsoleMessage(

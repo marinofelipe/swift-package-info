@@ -20,9 +20,7 @@ final class DependenciesProviderTests: XCTestCase {
     func testProvidedInfoWhenHasExternalDependencyDeclaredByNameThatDoesNotMatch() throws {
         let result = DependenciesProvider.fetchInformation(
             for: Fixture.makeSwiftPackage(),
-            packageContent: PackageContent(
-                name: "Package",
-                platforms: [],
+            packageContent: Fixture.makePackageContent(
                 products: [
                     .init(
                         name: "Some",
@@ -86,33 +84,43 @@ final class DependenciesProviderTests: XCTestCase {
                         ],
                         kind: .regular
                     )
-                ],
-                swiftLanguageVersions: []
+                ]
             ),
             verbose: true
         )
 
         let providedInfo = try result.get()
         XCTAssertEqual(
-            providedInfo,
-            .init(
-                providerName: "Dependencies",
-                messages: [
-                    .init(
-                        text: "No third-party dependencies :)",
-                        hasLineBreakAfter: false
-                    )
-                ]
-            )
+            providedInfo.providerName,
+            "Dependencies"
+        )
+
+        XCTAssertEqual(
+            providedInfo.messages,
+            [
+                .init(
+                    text: "No third-party dependencies :)",
+                    hasLineBreakAfter: false
+                )
+            ]
+        )
+
+        let encodedProvidedInfo = try JSONEncoder().encode(providedInfo)
+        let encodedProvidedInfoString = String(
+            data: encodedProvidedInfo,
+            encoding: .utf8
+        )
+
+        XCTAssertEqual(
+            encodedProvidedInfoString,
+            "[]"
         )
     }
 
     func testProvidedInfo() throws {
         let result = DependenciesProvider.fetchInformation(
             for: Fixture.makeSwiftPackage(),
-            packageContent: PackageContent(
-                name: "Package",
-                platforms: [],
+            packageContent: Fixture.makePackageContent(
                 products: [
                     .init(
                         name: "Some",
@@ -210,49 +218,59 @@ final class DependenciesProviderTests: XCTestCase {
                         ],
                         kind: .regular
                     )
-                ],
-                swiftLanguageVersions: []
+                ]
             ),
             verbose: true
         )
 
         let providedInfo = try result.get()
         XCTAssertEqual(
-            providedInfo,
-            .init(
-                providerName: "Dependencies",
-                messages: [
-                    .init(
-                        text: "dependency-1",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: " v. 1.0.0",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: " | ",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: "dependency-2",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: " v. 1.0.0",
-                        hasLineBreakAfter: false
-                    )
-                ]
-            )
+            providedInfo.providerName,
+            "Dependencies"
+        )
+
+        XCTAssertEqual(
+            providedInfo.messages,
+            [
+                .init(
+                    text: "dependency-1",
+                    hasLineBreakAfter: false
+                ),
+                .init(
+                    text: " v. 1.0.0",
+                    hasLineBreakAfter: false
+                ),
+                .init(
+                    text: " | ",
+                    hasLineBreakAfter: false
+                ),
+                .init(
+                    text: "dependency-2",
+                    hasLineBreakAfter: false
+                ),
+                .init(
+                    text: " v. 1.0.0",
+                    hasLineBreakAfter: false
+                )
+            ]
+        )
+
+        let encodedProvidedInfo = try JSONEncoder().encode(providedInfo)
+        let encodedProvidedInfoString = String(
+            data: encodedProvidedInfo,
+            encoding: .utf8
+        )
+
+        XCTAssertEqual(
+            encodedProvidedInfoString,
+            #"[{"name":"dependency-1","version":"1.0.0"},{"name":"dependency-2","version":"1.0.0"}]"#
         )
     }
 
     func testProvidedInfoWithManyNestedAndIndirectDependencies() throws {
         let result = DependenciesProvider.fetchInformation(
             for: Fixture.makeSwiftPackage(),
-            packageContent: PackageContent(
-                name: "Package",
-                platforms: [],
+            packageContent: Fixture.makePackageContent(
                 products: [
                     .init(
                         name: "Some",
@@ -369,52 +387,64 @@ final class DependenciesProviderTests: XCTestCase {
                         ],
                         kind: .regular
                     )
-                ],
-                swiftLanguageVersions: []
+                ]
             ),
             verbose: true
         )
 
         let providedInfo = try result.get()
         XCTAssertEqual(
-            providedInfo,
-            .init(
-                providerName: "Dependencies",
-                messages: [
-                    .init(
-                        text: "dependency-1",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: " v. 1.0.0",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: " | ",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: "dependency-2",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: " v. 1.0.0",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: " | ",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: "dependency-3",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: " v. 1.0.0",
-                        hasLineBreakAfter: false
-                    )
-                ]
-            )
+            providedInfo.providerName,
+            "Dependencies"
+        )
+
+        XCTAssertEqual(
+            providedInfo.messages,
+            [
+                .init(
+                    text: "dependency-1",
+                    hasLineBreakAfter: false
+                ),
+                .init(
+                    text: " v. 1.0.0",
+                    hasLineBreakAfter: false
+                ),
+                .init(
+                    text: " | ",
+                    hasLineBreakAfter: false
+                ),
+                .init(
+                    text: "dependency-2",
+                    hasLineBreakAfter: false
+                ),
+                .init(
+                    text: " v. 1.0.0",
+                    hasLineBreakAfter: false
+                ),
+                .init(
+                    text: " | ",
+                    hasLineBreakAfter: false
+                ),
+                .init(
+                    text: "dependency-3",
+                    hasLineBreakAfter: false
+                ),
+                .init(
+                    text: " v. 1.0.0",
+                    hasLineBreakAfter: false
+                )
+            ]
+        )
+
+        let encodedProvidedInfo = try JSONEncoder().encode(providedInfo)
+        let encodedProvidedInfoString = String(
+            data: encodedProvidedInfo,
+            encoding: .utf8
+        )
+
+        XCTAssertEqual(
+            encodedProvidedInfoString,
+            #"[{"name":"dependency-1","version":"1.0.0"},{"name":"dependency-2","version":"1.0.0"},{"name":"dependency-3","version":"1.0.0"}]"#
         )
     }
 }
