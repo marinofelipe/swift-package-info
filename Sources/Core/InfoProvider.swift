@@ -29,12 +29,28 @@ public typealias InfoProvider = (
     _ verbose: Bool
 ) -> Result<ProvidedInfo, InfoProviderError>
 
-public struct ProvidedInfo: Equatable, CustomConsoleMessagesConvertible {
+public struct ProvidedInfo: Encodable, CustomConsoleMessagesConvertible {
     public let providerName: String
-    public var messages: [ConsoleMessage]
+    public var messages: [ConsoleMessage] {
+        informationMessagesConvertible.messages
+    }
 
-    public init(providerName: String, messages: [ConsoleMessage]) {
+    private let informationEncoder: (Encoder) throws -> Void
+    private let informationMessagesConvertible: CustomConsoleMessagesConvertible
+
+    public init<T>(
+        providerName: String,
+        information: T
+    ) where T: Encodable, T: CustomConsoleMessagesConvertible {
         self.providerName = providerName
-        self.messages = messages
+        self.informationMessagesConvertible = information
+        self.informationEncoder = { encoder in
+            var container = encoder.singleValueContainer()
+            try container.encode(information)
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        try informationEncoder(encoder)
     }
 }
