@@ -10,6 +10,6 @@ import Core
 protocol Reporting {
     var swiftPackage: SwiftPackage { get }
 
-    func generate(for _: ProvidedInfo)
-    func generate(for _: [ProvidedInfo])
+    func generate(for _: ProvidedInfo, format: ReportFormat)
+    func generate(for _: [ProvidedInfo], format: ReportFormat)
 }

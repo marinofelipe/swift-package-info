@@ -51,7 +51,7 @@ extension SwiftPackageInfo {
                 packageContent: packageContent,
                 verbose: allArguments.verbose
             )
-            .onSuccess(report.generate(for:))
+            .onSuccess { report.generate(for: $0, format: .consoleMessage) } // FIXME: Pass format from user arguments
             .onFailure { Console.default.write($0.message) }
         }
     }
