@@ -53,17 +53,17 @@ public struct BinarySizeProvider {
         packageContent: PackageContent,
         verbose: Bool
     ) -> Result<ProvidedInfo, InfoProviderError> {
-        let sizeMeasurer = SizeMeasurer(verbose: verbose)
-        var formattedPackageBinarySize: String = ""
+        let sizeMeasurer = defaultSizeMeasurer(verbose)
+        var binarySize: SizeOnDisk = .zero
 
         let isProductDynamicLibrary = packageContent.products
             .first{ $0.name == swiftPackage.product }?
             .isDynamicLibrary ?? false
 
         do {
-            formattedPackageBinarySize = try sizeMeasurer.formattedBinarySize(
-                for: swiftPackage,
-                isDynamic: isProductDynamicLibrary
+            binarySize = try sizeMeasurer(
+                swiftPackage,
+                isProductDynamicLibrary
             )
         } catch let error as LocalizedError {
             return .failure(
@@ -80,27 +80,57 @@ public struct BinarySizeProvider {
             )
         }
 
-        let firstPartMessage = ConsoleMessage(
-            text: "Binary size increases by ",
-            color: .noColor,
-            isBold: false,
-            hasLineBreakAfter: false
-        )
-        let secondPartMessage = ConsoleMessage(
-            text: formattedPackageBinarySize,
-            color: .yellow,
-            isBold: true,
-            hasLineBreakAfter: false
-        )
-
         return .success(
             .init(
                 providerName: "Binary Size",
-                messages: [
-                    firstPartMessage,
-                    secondPartMessage
-                ]
+                information: BinarySizeInformation(
+                    binarySize: binarySize
+                )
             )
         )
     }
 }
+
+struct BinarySizeInformation: Equatable, Encodable, CustomConsoleMessagesConvertible {
+    private let amount: Int
+    private let formatted: String
+
+    var messages: [ConsoleMessage] { buildConsoleMessages() }
+
+    init(binarySize: SizeOnDisk) {
+        self.amount = binarySize.amount
+        self.formatted = binarySize.formatted
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case amount
+        case formatted
+    }
+
+    private func buildConsoleMessages() -> [ConsoleMessage] {
+        [
+            .init(
+                text: "Binary size increases by ",
+                color: .noColor,
+                isBold: false,
+                hasLineBreakAfter: false
+            ),
+            .init(
+                text: formatted,
+                color: .yellow,
+                isBold: true,
+                hasLineBreakAfter: false
+            )
+        ]
+    }
+}
+
+#if DEBUG
+var defaultSizeMeasurer: (Bool) -> SizeMeasuring = { verbose in
+    SizeMeasurer(verbose: verbose).binarySize
+}
+#else
+let defaultSizeMeasurer: (Bool) -> SizeMeasuring = { verbose in
+    SizeMeasurer(verbose: verbose).formattedBinarySize
+}
+#endif

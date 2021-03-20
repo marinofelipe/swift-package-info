@@ -8,6 +8,11 @@
 import Foundation
 import Core
 
+typealias SizeMeasuring = (
+    _ swiftPackage: SwiftPackage,
+    _ isDynamic: Bool
+) throws -> SizeOnDisk
+
 final class SizeMeasurer {
     private var appManager: AppManager
     private let console: Console
@@ -35,10 +40,10 @@ final class SizeMeasurer {
         try? appManager.cleanUp()
     }
 
-    public func formattedBinarySize(
+    public func binarySize(
         for swiftPackage: SwiftPackage,
         isDynamic: Bool
-    ) throws -> String {
+    ) throws -> SizeOnDisk {
         console.lineBreak()
 
         let emptyAppSize = try measureEmptyAppSize()
@@ -48,9 +53,9 @@ final class SizeMeasurer {
         )
 
         completeLoading()
-        let increasedSize = appSizeWithDependencyAdded.amount - emptyAppSize.amount
-        return URL.fileByteCountFormatter
-            .string(for: increasedSize) ?? "\(increasedSize)"
+        let increasedSize = appSizeWithDependencyAdded - emptyAppSize
+
+        return increasedSize
     }
 }
 

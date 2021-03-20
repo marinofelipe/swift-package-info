@@ -12,13 +12,14 @@ import Core
 public extension Fixture {
     static func makeSwiftPackage(
         url: URL = URL(string: "https://www.apple.com")!,
-        isLocal: Bool = false
+        isLocal: Bool = false,
+        product: String = "some"
     ) -> SwiftPackage {
         .init(
             url: url,
             isLocal: isLocal,
             version: "1.0.0",
-            product: "Some"
+            product: product
         )
     }
 }
