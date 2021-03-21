@@ -1,12 +1,3 @@
-//
-//  Report.swift
-//
-//  Acknowledgement: This piece of code is inspired by Raycast's script-commands repository:
-//  https://github.com/unnamedd/script-commands/blob/Toolkit/Improvements/Tools/Toolkit/Sources/ToolkitLibrary/Core/Report/Report.swift
-
-//  Created by Marino Felipe on 01.01.21.
-//
-
 import TSCBasic
 import Core
 
