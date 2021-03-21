@@ -56,7 +56,10 @@ extension SwiftPackageInfo {
                 .onSuccess { providedInfos.append($0) }
                 .onFailure { Console.default.write($0.message) }
             }
-            try report.generate(for: providedInfos, format: .jsonDump) // FIXME: Pass format from user arguments
+            try report.generate(
+                for: providedInfos,
+                format: allArguments.report
+            )
         }
     }
 }

@@ -7,7 +7,7 @@
 
 import Core
 
-public enum ReportFormat {
+public enum ReportFormat: String, CaseIterable {
     case consoleMessage
     case jsonDump
 }

@@ -52,8 +52,11 @@ extension SwiftPackageInfo {
                 verbose: allArguments.verbose
             )
             .onSuccess {
-                try report.generate(for: $0, format: .jsonDump)
-            } // FIXME: Pass format from user arguments
+                try report.generate(
+                    for: $0,
+                    format: allArguments.report
+                )
+            }
             .onFailure { Console.default.write($0.message) }
         }
     }
