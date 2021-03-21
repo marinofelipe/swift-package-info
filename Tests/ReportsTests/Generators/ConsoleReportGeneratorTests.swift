@@ -58,7 +58,7 @@ final class ConsoleReportGeneratorTests: XCTestCase {
                 "|",
                 "|",
                 "         ",
-                "some, 1.0.0",
+                "Some, 1.0.0",
                 "        ",
                 "|",
                 "+----------+-----------------+",

@@ -132,6 +132,6 @@ var defaultSizeMeasurer: (Bool) -> SizeMeasuring = { verbose in
 }
 #else
 let defaultSizeMeasurer: (Bool) -> SizeMeasuring = { verbose in
-    SizeMeasurer(verbose: verbose).formattedBinarySize
+    SizeMeasurer(verbose: verbose).binarySize
 }
 #endif
