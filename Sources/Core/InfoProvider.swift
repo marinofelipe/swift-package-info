@@ -23,6 +23,12 @@ public struct InfoProviderError: Error, CustomConsoleMessageConvertible {
     }
 }
 
+public enum ProviderKind: String, CodingKey {
+    case binarySize
+    case dependencies
+    case platforms
+}
+
 public typealias InfoProvider = (
     _ swiftPackage: SwiftPackage,
     _ packageContent: PackageContent,
@@ -31,6 +37,7 @@ public typealias InfoProvider = (
 
 public struct ProvidedInfo: Encodable, CustomConsoleMessagesConvertible {
     public let providerName: String
+    public let providerKind: ProviderKind
     public var messages: [ConsoleMessage] {
         informationMessagesConvertible.messages
     }
@@ -40,9 +47,11 @@ public struct ProvidedInfo: Encodable, CustomConsoleMessagesConvertible {
 
     public init<T>(
         providerName: String,
+        providerKind: ProviderKind,
         information: T
     ) where T: Encodable, T: CustomConsoleMessagesConvertible {
         self.providerName = providerName
+        self.providerKind = providerKind
         self.informationMessagesConvertible = information
         self.informationEncoder = { encoder in
             var container = encoder.singleValueContainer()

@@ -42,6 +42,7 @@ public struct DependenciesProvider {
         return .success(
             .init(
                 providerName: "Dependencies",
+                providerKind: .dependencies,
                 information: DependenciesInformation(externalDependencies: externalDependencies)
             )
         )

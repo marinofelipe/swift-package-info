@@ -17,9 +17,8 @@ extension ReportFormat {
         switch self {
         case .consoleMessage:
             return ConsoleReportGenerator(console: console).renderReport
-        default:
-            // FIXME: Add generator for other formats
-            return ConsoleReportGenerator(console: console).renderReport
+        case .jsonDump:
+            return JSONDumpReportGenerator(console: console).renderDump
         }
     }
 }

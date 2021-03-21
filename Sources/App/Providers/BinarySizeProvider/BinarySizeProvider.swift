@@ -83,6 +83,7 @@ public struct BinarySizeProvider {
         return .success(
             .init(
                 providerName: "Binary Size",
+                providerKind: .binarySize,
                 information: BinarySizeInformation(
                     binarySize: binarySize
                 )

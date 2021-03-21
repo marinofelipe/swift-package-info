@@ -59,6 +59,10 @@ final class BinarySizeProviderTests: XCTestCase {
             providedInfo.providerName,
             "Binary Size"
         )
+        XCTAssertEqual(
+            providedInfo.providerKind,
+            .binarySize
+        )
 
         XCTAssertEqual(
             defaultSizeMeasurerCallsCount,

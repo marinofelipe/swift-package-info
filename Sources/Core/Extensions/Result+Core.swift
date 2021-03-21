@@ -29,5 +29,18 @@ public extension Result {
         action(error)
         return self
     }
-}
 
+    @discardableResult
+    func onSuccess(_ action: (Success) throws -> Void) rethrows -> Result<Success, Failure> {
+        guard case let .success(value) = self else { return self }
+        try action(value)
+        return self
+    }
+
+    @discardableResult
+    func onFailure(_ action: (Failure) throws -> Void) rethrows -> Result<Success, Failure> {
+        guard case let .failure(error) = self else { return self }
+        try action(error)
+        return self
+    }
+}

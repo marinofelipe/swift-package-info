@@ -31,6 +31,7 @@ final class ConsoleReportGeneratorTests: XCTestCase {
             providedInfos: [
                 ProvidedInfo.init(
                     providerName: "Name",
+                    providerKind: .binarySize,
                     information: Fixture.makeProvidedInfoInformation()
                 )
             ]

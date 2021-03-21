@@ -397,6 +397,10 @@ final class DependenciesProviderTests: XCTestCase {
             providedInfo.providerName,
             "Dependencies"
         )
+        XCTAssertEqual(
+            providedInfo.providerKind,
+            .dependencies
+        )
 
         XCTAssertEqual(
             providedInfo.messages,

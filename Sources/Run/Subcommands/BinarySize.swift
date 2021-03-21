@@ -46,12 +46,14 @@ extension SwiftPackageInfo {
 
             let report = Report(swiftPackage: swiftPackage)
 
-            BinarySizeProvider.fetchInformation(
+            try BinarySizeProvider.fetchInformation(
                 for: swiftPackage,
                 packageContent: packageContent,
                 verbose: allArguments.verbose
             )
-            .onSuccess { report.generate(for: $0, format: .consoleMessage) } // FIXME: Pass format from user arguments
+            .onSuccess {
+                try report.generate(for: $0, format: .jsonDump)
+            } // FIXME: Pass format from user arguments
             .onFailure { Console.default.write($0.message) }
         }
     }

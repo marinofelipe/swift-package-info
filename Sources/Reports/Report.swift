@@ -25,8 +25,8 @@ public final class Report: Reporting {
     public func generate(
         for providedInfo: ProvidedInfo,
         format: ReportFormat
-    ) {
-        generate(
+    ) throws {
+        try generate(
             for: [providedInfo],
             format: format
         )
@@ -35,9 +35,9 @@ public final class Report: Reporting {
     public func generate(
         for providedInfos: [ProvidedInfo],
         format: ReportFormat
-    ) {
+    ) throws {
         let reportGenerator = format.makeReportGenerator()
-        reportGenerator(
+        try reportGenerator(
             swiftPackage,
             providedInfos
         )
@@ -56,22 +56,3 @@ extension SwiftPackage: CustomConsoleMessageConvertible {
         )
     }
 }
-
-// TODO:
-// Define argument and values for report format
-
-// Inside Reports //
-// There's a Encodable wrapper structure for the final json and logic to combine messages into a console report
-
-// For Reports thingys
-//extension Encodable {
-//  func asDictionary(
-//    encoder: JSONEncoder = .init()
-//  ) throws -> [String: Any] {
-//    let data = try encoder.encode(self)
-//    guard let dictionary = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else {
-//      throw NSError()
-//    }
-//    return dictionary
-//  }
-//}

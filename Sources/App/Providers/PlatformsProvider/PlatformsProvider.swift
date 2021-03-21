@@ -16,6 +16,7 @@ public struct PlatformsProvider {
         .success(
             .init(
                 providerName: "Platforms",
+                providerKind: .platforms,
                 information: PlatformsInformation(
                     platforms: packageContent.platforms
                 )

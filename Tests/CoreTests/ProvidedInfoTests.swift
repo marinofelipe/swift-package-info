@@ -21,6 +21,7 @@ final class ProvidedInfoTests: XCTestCase {
     func testConsoleMessages() {
         let sut = ProvidedInfo(
             providerName: "name",
+            providerKind: .binarySize,
             information: ProvidedContent(binarySize: 300)
         )
 
@@ -35,6 +36,7 @@ final class ProvidedInfoTests: XCTestCase {
     func testProviderName() {
         let sut = ProvidedInfo(
             providerName: "name",
+            providerKind: .binarySize,
             information: ProvidedContent(binarySize: 300)
         )
 
@@ -47,6 +49,7 @@ final class ProvidedInfoTests: XCTestCase {
     func testEncodedValue() throws {
         let sut = ProvidedInfo(
             providerName: "name",
+            providerKind: .binarySize,
             information: ProvidedContent(binarySize: 300)
         )
 

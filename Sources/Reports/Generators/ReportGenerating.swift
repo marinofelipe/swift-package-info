@@ -10,4 +10,4 @@ import Core
 typealias ReportGenerating = (
     _ swiftPackage: SwiftPackage,
     _ providedInfos: [ProvidedInfo]
-) -> Void
+) throws -> Void
