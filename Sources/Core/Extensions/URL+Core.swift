@@ -94,15 +94,3 @@ public extension URL {
         try fileManager.contentsOfDirectory(atPath: path).contains("Package.swift")
     }
 }
-
-// MARK: - Extension: ExpressibleByArgument
-
-import ArgumentParser
-
-extension URL: ExpressibleByArgument {
-    public init?(argument: String) {
-        self.init(string: argument)
-    }
-
-    public var defaultValueDescription: String { "https://github.com/Alamofire/Alamofire" }
-}

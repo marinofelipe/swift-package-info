@@ -56,7 +56,10 @@ extension SwiftPackageInfo {
                 .onSuccess { providedInfos.append($0) }
                 .onFailure { Console.default.write($0.message) }
             }
-            report.generate(for: providedInfos)
+            try report.generate(
+                for: providedInfos,
+                format: allArguments.report
+            )
         }
     }
 }

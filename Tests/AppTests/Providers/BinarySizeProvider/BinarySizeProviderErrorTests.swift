@@ -8,7 +8,7 @@
 import XCTest
 @testable import App
 
-final class BinarySizeProviderTests: XCTestCase {
+final class BinarySizeProviderErrorTests: XCTestCase {
     func testUnableToGenerateArchiveLocalizedMessage() {
         let error = BinarySizeProviderError.unableToGenerateArchive(errorMessage: "some")
         XCTAssertEqual(

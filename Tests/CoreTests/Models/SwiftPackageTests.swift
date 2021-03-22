@@ -12,7 +12,9 @@ import CoreTestSupport
 
 final class SwiftPackageTests: XCTestCase {
     func testDescriptionWhenLocal() {
-        let sut = Fixture.makeSwiftPackage(isLocal: true)
+        let sut = Fixture.makeSwiftPackage(
+            isLocal: true
+        )
         XCTAssertEqual(
             sut.description,
             """

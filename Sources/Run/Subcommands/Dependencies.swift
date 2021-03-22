@@ -37,12 +37,17 @@ extension SwiftPackageInfo {
 
             let report = Report(swiftPackage: swiftPackage)
 
-            DependenciesProvider.fetchInformation(
+            try DependenciesProvider.fetchInformation(
                 for: swiftPackage,
                 packageContent: packageContent,
                 verbose: allArguments.verbose
             )
-            .onSuccess(report.generate(for:))
+            .onSuccess {
+                try report.generate(
+                    for: $0,
+                    format: allArguments.report
+                )
+            }
             .onFailure { Console.default.write($0.message) }
         }
     }

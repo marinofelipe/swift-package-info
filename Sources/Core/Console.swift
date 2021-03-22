@@ -38,6 +38,31 @@ private extension ConsoleColor {
     }
 }
 
+// MARK: - TerminalControlling
+
+public protocol TerminalControlling {
+    func endLine()
+    func write(
+        _ string: String,
+        inColor _: ConsoleColor,
+        bold: Bool
+    )
+}
+
+extension TerminalController: TerminalControlling {
+    public func write(
+        _ string: String,
+        inColor color: ConsoleColor,
+        bold: Bool
+    ) {
+        write(
+            string,
+            inColor: color.terminalColor,
+            bold: bold
+        )
+    }
+}
+
 // MARK: - ConsoleMessage
 
 public struct ConsoleMessage: Equatable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
@@ -90,12 +115,12 @@ public protocol CustomConsoleMessagesConvertible {
 
 public final class Console {
     private var isOutputColored: Bool
-    private let terminalController: TerminalController?
-    private let progressAnimation: ProgressAnimationProtocol?
+    private let terminalController: TerminalControlling?
+    private let progressAnimation: ProgressAnimationProtocol
 
     public init(
         isOutputColored: Bool,
-        terminalController: TerminalController? = TerminalController(stream: stdoutStream),
+        terminalController: TerminalControlling? = TerminalController(stream: stdoutStream),
         progressAnimation: ProgressAnimationProtocol = NinjaProgressAnimation(stream: stdoutStream)
     ) {
         self.isOutputColored = isOutputColored
@@ -106,7 +131,7 @@ public final class Console {
     public func write(_ message: ConsoleMessage) {
         write(
             message: message.text,
-            color: isOutputColored ? message.color.terminalColor : .noColor,
+            color: isOutputColored ? message.color : .noColor,
             bold: message.isBold,
             addLineBreakAfter: message.hasLineBreakAfter
         )
@@ -116,7 +141,7 @@ public final class Console {
         lineBreak()
         write(
             message: message.text,
-            color: isOutputColored ? message.color.terminalColor : .noColor,
+            color: isOutputColored ? message.color : .noColor,
             bold: message.isBold,
             addLineBreakAfter: message.hasLineBreakAfter
         )
@@ -135,7 +160,7 @@ public extension Console {
         total: Int = 10,
         text: String
     ) {
-        progressAnimation?.update(
+        progressAnimation.update(
             step: step,
             total: total,
             text: text
@@ -143,7 +168,7 @@ public extension Console {
     }
 
     func completeLoading(success: Bool) {
-        progressAnimation?.complete(success: success)
+        progressAnimation.complete(success: success)
     }
 }
 
@@ -152,7 +177,7 @@ public extension Console {
 private extension Console {
     func write(
         message: String,
-        color: TerminalController.Color,
+        color: ConsoleColor,
         bold: Bool,
         addLineBreakAfter: Bool
     ) {
@@ -163,7 +188,7 @@ private extension Console {
 
 #if DEBUG
 extension Console {
-    public static let `default` = Console(isOutputColored: true)
+    public static var `default` = Console(isOutputColored: false)
 }
 #else
 extension Console {

@@ -39,49 +39,11 @@ public struct DependenciesProvider {
             packageContent: packageContent
         )
 
-        let messages: [ConsoleMessage]
-        if externalDependencies.isEmpty {
-            messages = [
-                .init(
-                    text: "No third-party dependencies :)",
-                    hasLineBreakAfter: false
-                )
-            ]
-        } else {
-            messages = externalDependencies.map { dependency -> [ConsoleMessage] in
-                var messages: [ConsoleMessage] = [
-                    .init(
-                        text: "\(dependency.name)",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: " v. \(dependency.requirement.range.first?.lowerBound ?? "")",
-                        hasLineBreakAfter: false
-                    )
-                ]
-
-                let isLast = dependency == externalDependencies.last
-                if isLast == false {
-                    messages.append(
-                        .init(
-                            text: " | ",
-                            hasLineBreakAfter: false
-                        )
-                    )
-                }
-
-                return messages
-            }
-            .reduce(
-                [],
-                +
-            )
-        }
-
         return .success(
             .init(
                 providerName: "Dependencies",
-                messages: messages
+                providerKind: .dependencies,
+                information: DependenciesInformation(externalDependencies: externalDependencies)
             )
         )
     }
@@ -123,5 +85,82 @@ public struct DependenciesProvider {
 
         return Array(Set(allDependencies))
             .sorted(by: { $0.name < $1.name })
+    }
+}
+
+struct DependenciesInformation: Equatable, CustomConsoleMessagesConvertible {
+    struct Dependency: Equatable, Encodable {
+        let name: String
+        let version: String?
+        let branch: String?
+        let revision: String?
+    }
+
+    let externalDependencies: [PackageContent.Dependency]
+    let dependencies: [Dependency]
+
+    var messages: [ConsoleMessage] { buildConsoleMessages() }
+
+    init(externalDependencies: [PackageContent.Dependency]) {
+        self.externalDependencies = externalDependencies
+        self.dependencies = externalDependencies.map(Dependency.init(from:))
+    }
+
+    private func buildConsoleMessages() -> [ConsoleMessage] {
+        if externalDependencies.isEmpty {
+            return [
+                .init(
+                    text: "No third-party dependencies :)",
+                    hasLineBreakAfter: false
+                )
+            ]
+        } else {
+            return externalDependencies.map { dependency -> [ConsoleMessage] in
+                var messages: [ConsoleMessage] = [
+                    .init(
+                        text: "\(dependency.name)",
+                        hasLineBreakAfter: false
+                    ),
+                    .init(
+                        text: " v. \(dependency.requirement.range.first?.lowerBound ?? "")",
+                        hasLineBreakAfter: false
+                    )
+                ]
+
+                let isLast = dependency == externalDependencies.last
+                if isLast == false {
+                    messages.append(
+                        .init(
+                            text: " | ",
+                            hasLineBreakAfter: false
+                        )
+                    )
+                }
+
+                return messages
+            }
+            .reduce(
+                [],
+                +
+            )
+        }
+    }
+}
+
+extension DependenciesInformation: Encodable {
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(dependencies)
+    }
+}
+
+extension DependenciesInformation.Dependency {
+    init(from dependency: PackageContent.Dependency) {
+        self.init(
+            name: dependency.name,
+            version: dependency.requirement.range.first?.lowerBound.description,
+            branch: dependency.requirement.branch.first,
+            revision: dependency.requirement.revision.first
+        )
     }
 }

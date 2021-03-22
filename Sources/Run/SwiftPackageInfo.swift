@@ -78,6 +78,17 @@ struct AllArguments: ParsableArguments {
     )
     var product: String?
 
+    @Option(
+        name: [
+            .long,
+            .customLong("report-format"),
+            .customLong("output"),
+            .customLong("output-format")
+        ],
+        help: "Report format. Default value is `consoleMessage`"
+    )
+    var report: ReportFormat = .consoleMessage
+
     @Flag(
         name: .long,
         help: "Increase verbosity of informational output"

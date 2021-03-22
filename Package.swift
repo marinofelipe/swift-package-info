@@ -42,8 +42,14 @@ let package = Package(
                 .target(name: "App"),
                 .target(name: "Reports"),
                 .target(name: "Core"),
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                .product(name: "SwiftToolsSupport-auto", package: "swift-tools-support-core")
+                .product(
+                    name: "ArgumentParser",
+                    package: "swift-argument-parser"
+                ),
+                .product(
+                    name: "SwiftToolsSupport-auto",
+                    package: "swift-tools-support-core"
+                )
             ]
         ),
         .testTarget(
@@ -55,8 +61,14 @@ let package = Package(
         .target(
             name: "App",
             dependencies: [
-                .product(name: "XcodeProj", package: "XcodeProj"),
-                .product(name: "CombineHTTPClient", package: "HTTPClient"),
+                .product(
+                    name: "XcodeProj",
+                    package: "XcodeProj"
+                ),
+                .product(
+                    name: "CombineHTTPClient",
+                    package: "HTTPClient"
+                ),
                 .target(name: "Core")
             ]
         ),
@@ -70,21 +82,31 @@ let package = Package(
         .target(
             name: "Reports",
             dependencies: [
-                .product(name: "SwiftToolsSupport-auto", package: "swift-tools-support-core"),
+                .product(
+                    name: "SwiftToolsSupport-auto",
+                    package: "swift-tools-support-core"
+                ),
                 .target(name: "Core")
             ]
         ),
         .testTarget(
             name: "ReportsTests",
             dependencies: [
-                .target(name: "Reports")
+                .target(name: "Reports"),
+                .target(name: "CoreTestSupport")
             ]
         ),
         .target(
             name: "Core",
             dependencies: [
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                .product(name: "SwiftToolsSupport-auto", package: "swift-tools-support-core")
+                .product(
+                    name: "ArgumentParser",
+                    package: "swift-argument-parser"
+                ),
+                .product(
+                    name: "SwiftToolsSupport-auto",
+                    package: "swift-tools-support-core"
+                )
             ]
         ),
         .testTarget(
