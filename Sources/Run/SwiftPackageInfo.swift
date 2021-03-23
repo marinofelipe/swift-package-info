@@ -85,7 +85,14 @@ struct AllArguments: ParsableArguments {
             .customLong("output"),
             .customLong("output-format")
         ],
-        help: "Report format. Default value is `consoleMessage`"
+        help: """
+        Define the report output format/strategy. Supported values are:
+        - \(
+            ReportFormat.allCases.map(\.rawValue)
+                .joined(separator: "\n- ")
+        )
+
+        """
     )
     var report: ReportFormat = .consoleMessage
 

@@ -20,4 +20,3 @@ extension ReportFormat: ExpressibleByArgument {
         ReportFormat.allCases.map(\.rawValue)
     }
 }
-

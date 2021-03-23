@@ -64,6 +64,25 @@ swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product
 > Total of 3 providers used.
 ```
 
+A custom report strategy can be passed via the `report` argument _(check --help for supported values)_
+```
+swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product RxSwift --report jsonDump
+```
+```JSON
+{
+  "binarySize" : {
+    "amount" : 962560,
+    "formatted" : "963 KB"
+  },
+  "dependencies" : [
+
+  ],
+  "platforms" : {
+
+  }
+}
+```
+
 ## Installation
 * Install [mint](https://github.com/yonaskolb/Mint).
 * Run: `mint install marinofelipe/swift-package-info`
