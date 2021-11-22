@@ -27,7 +27,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/apple/swift-tools-support-core.git",
-            .upToNextMinor(from: "0.1.11")
+            .upToNextMinor(from: "0.2.4")
         ),
         .package(
             name: "HTTPClient",
