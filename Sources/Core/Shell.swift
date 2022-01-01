@@ -8,7 +8,10 @@
 import Foundation
 
 public enum Shell {
-    static let pipeReadingQueue = DispatchQueue(label: "Core.Shell.pipeReadingQueue")
+    static let pipeReadingQueue = DispatchQueue(
+        label: "Core.Shell.pipeReadingQueue",
+        qos: .userInteractive
+    )
 
     public struct Output: Equatable {
         public let succeeded: Bool
@@ -163,7 +166,12 @@ private extension Shell {
     ) {
         pipe.fileHandleForReading.readabilityHandler = { fileHandle in
             pipeReadingQueue.async {
-                let data = fileHandle.availableData
+
+                // readData(ofLength:) is used here to avoid unwanted performance side effects,
+                // as described in the findings from:
+                // https://stackoverflow.com/questions/49184623/nstask-race-condition-with-readabilityhandler-block
+                let data = fileHandle.readData(ofLength: .max)
+
                 if data.isEmpty == false {
                     String(data: data, encoding: .utf8).map {
                         availableDataHandler?(data)
