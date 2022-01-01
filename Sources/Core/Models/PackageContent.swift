@@ -10,11 +10,14 @@ import struct TSCUtility.Version
 
 public enum PackageContentError: LocalizedError {
     case failedToDecodeTargetDependencyType
+    case failedToDecodeDependenciesFromSwift5Dot5Toolchain
 
     public var errorDescription: String? {
         switch self {
             case .failedToDecodeTargetDependencyType:
                 return "Failed to decode target dependency type when evaluating Package.swift content"
+        case .failedToDecodeDependenciesFromSwift5Dot5Toolchain:
+            return "Failed to decode package dependencies from Package.swift generated using the Swift 5.5 toolchain"
         }
     }
 }
@@ -43,7 +46,7 @@ public struct PackageContent: Decodable, Equatable {
         }
     }
 
-    public struct Dependency: Decodable, Equatable, Hashable {
+    public struct Dependency: Equatable, Hashable {
         public struct Requirement: Equatable, Hashable {
             public struct Range: Decodable, Equatable, Hashable {
                 public let lowerBound: Version
@@ -58,12 +61,6 @@ public struct PackageContent: Decodable, Equatable {
         public let name: String
         public let urlString: String
         public let requirement: Requirement
-
-        private enum CodingKeys: String, CodingKey {
-            case name
-            case urlString = "url"
-            case requirement
-        }
     }
 
     public struct Platform: Decodable, Equatable {
@@ -216,5 +213,37 @@ extension PackageContent.Dependency.Requirement: Decodable {
 
         let branch = try container.decodeIfPresent([String].self, forKey: .branch)
         self.branch = branch ?? []
+    }
+}
+
+extension PackageContent.Dependency: Decodable {
+    private enum CodingKeys: String, CodingKey {
+        case name
+        case urlString = "url"
+        case location
+        case requirement
+        // custom inner object present when generated from Swift 5.5
+        case scm
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        if container.contains(CodingKeys.scm) {
+            let scmInnerDependencies = try container.decode(
+                [PackageContent.Dependency].self,
+                forKey: .scm
+            )
+            guard let firstSCMInnerDependency = scmInnerDependencies.first else {
+                throw PackageContentError.failedToDecodeDependenciesFromSwift5Dot5Toolchain
+            }
+
+            self = firstSCMInnerDependency
+        } else {
+            self.name = try container.decode(String.self, forKey: .name)
+            self.urlString = try container.decodeIfPresent(String.self, forKey: .urlString)
+                ?? container.decode(String.self, forKey: .location)
+            self.requirement = try container.decode(Requirement.self, forKey: .requirement)
+        }
     }
 }
