@@ -19,11 +19,11 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/apple/swift-argument-parser",
-            .upToNextMinor(from: "0.3.0")
+            .upToNextMinor(from: "1.0.2")
         ),
         .package(
             url: "https://github.com/tuist/XcodeProj.git",
-            .upToNextMinor(from: "7.18.0")
+            .upToNextMinor(from: "8.7.1")
         ),
         .package(
             url: "https://github.com/apple/swift-tools-support-core.git",
@@ -118,7 +118,8 @@ let package = Package(
             resources: [
                 .copy("Resources/package_full.json"),
                 .copy("Resources/package_with_multiple_dependencies.json"),
-                .copy("Resources/package_with_custom_target_dependency.json")
+                .copy("Resources/package_with_custom_target_dependency.json"),
+                .copy("Resources/package_full_swift_5_5.json")
             ]
         ),
         .target(
