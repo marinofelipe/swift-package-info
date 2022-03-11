@@ -219,6 +219,7 @@ extension PackageContent.Dependency.Requirement: Decodable {
 extension PackageContent.Dependency: Decodable {
     private enum CodingKeys: String, CodingKey {
         case name
+        case identity
         case urlString = "url"
         case location
         case requirement
@@ -240,9 +241,12 @@ extension PackageContent.Dependency: Decodable {
 
             self = firstSCMInnerDependency
         } else {
-            self.name = try container.decode(String.self, forKey: .name)
+            self.name = try container.decodeIfPresent(String.self, forKey: .name)
+            ?? container.decode(String.self, forKey: .identity)
+
             self.urlString = try container.decodeIfPresent(String.self, forKey: .urlString)
-                ?? container.decode(String.self, forKey: .location)
+            ?? container.decode(String.self, forKey: .location)
+
             self.requirement = try container.decode(Requirement.self, forKey: .requirement)
         }
     }

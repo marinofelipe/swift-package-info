@@ -223,6 +223,20 @@ final class PackageContentTests: XCTestCase {
             .defaultExpectedFullPackage
         )
     }
+
+    func testWhenPackageDependencyHasIdentityOnly() throws {
+        let fixtureData = try dataFromJSON(
+            named: "package_identity_dependency",
+            bundle: .module
+        )
+        let packageContent = try jsonDecoder.decode(PackageContent.self, from: fixtureData)
+
+        XCTAssertEqual(
+            packageContent,
+            .defaultExpectedFullPackage,
+            "Package should be decoded correctly when dependency has identity over name"
+        )
+    }
 }
 
 // MARK: - Fixtures
