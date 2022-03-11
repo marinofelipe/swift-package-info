@@ -23,7 +23,7 @@ import TSCUtility
 
 extension TSCUtility.Version: ExpressibleByArgument {
     public init?(argument: String) {
-        self.init(string: argument)
+        self.init(argument)
     }
 
     public var defaultValueDescription: String { "1.2.12" }
