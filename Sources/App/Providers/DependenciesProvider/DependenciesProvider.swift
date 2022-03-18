@@ -135,7 +135,7 @@ struct DependenciesInformation: Equatable, CustomConsoleMessagesConvertible {
                         hasLineBreakAfter: false
                     ),
                     .init(
-                        text: " v. \(dependency.requirement.range.first?.lowerBound ?? "")",
+                        text: " v. \(dependency.requirement?.range.first?.lowerBound ?? "")",
                         hasLineBreakAfter: false
                     )
                 ]
@@ -171,9 +171,9 @@ extension DependenciesInformation.Dependency {
     init(from dependency: PackageContent.Dependency) {
         self.init(
             name: dependency.name,
-            version: dependency.requirement.range.first?.lowerBound.description,
-            branch: dependency.requirement.branch.first,
-            revision: dependency.requirement.revision.first
+            version: dependency.requirement?.range.first?.lowerBound.description,
+            branch: dependency.requirement?.branch.first,
+            revision: dependency.requirement?.revision.first
         )
     }
 }

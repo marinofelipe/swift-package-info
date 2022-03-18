@@ -24,6 +24,7 @@ import struct TSCUtility.Version
 public enum PackageContentError: LocalizedError {
     case failedToDecodeTargetDependencyType
     case failedToDecodeDependenciesFromSwift5Dot5Toolchain
+    case failedToDecodeDependenciesFromSwift5Dot6Toolchain
 
     public var errorDescription: String? {
         switch self {
@@ -31,6 +32,8 @@ public enum PackageContentError: LocalizedError {
                 return "Failed to decode target dependency type when evaluating Package.swift content"
         case .failedToDecodeDependenciesFromSwift5Dot5Toolchain:
             return "Failed to decode package dependencies from Package.swift generated using the Swift 5.5 toolchain"
+        case .failedToDecodeDependenciesFromSwift5Dot6Toolchain:
+            return "Failed to decode package dependencies from Package.swift generated using the Swift 5.6 toolchain"
         }
     }
 }
@@ -70,10 +73,13 @@ public struct PackageContent: Decodable, Equatable {
             public let revision: [String]
             public let branch: [String]
         }
+        public struct Location: Decodable, Equatable, Hashable {
+            public let remote: [String]
+        }
 
         public let name: String
         public let urlString: String
-        public let requirement: Requirement
+        public let requirement: Requirement?
     }
 
     public struct Platform: Decodable, Equatable {
@@ -238,12 +244,16 @@ extension PackageContent.Dependency: Decodable {
         case requirement
         // custom inner object present when generated from Swift 5.5
         case scm
+        // custom inner object and properties present when generated from Swift 5.6
+        case sourceControl
+        case path
+        case fileSystem
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        if container.contains(CodingKeys.scm) {
+        if container.contains(.scm) {
             let scmInnerDependencies = try container.decode(
                 [PackageContent.Dependency].self,
                 forKey: .scm
@@ -253,14 +263,42 @@ extension PackageContent.Dependency: Decodable {
             }
 
             self = firstSCMInnerDependency
+        } else if container.contains(.sourceControl) {
+            let sourceControlInnerDependencies = try container.decode(
+                [PackageContent.Dependency].self,
+                forKey: .sourceControl
+            )
+            guard let firstSourceControlInnerDependency = sourceControlInnerDependencies.first else {
+                throw PackageContentError.failedToDecodeDependenciesFromSwift5Dot6Toolchain
+            }
+
+            self = firstSourceControlInnerDependency
+        } else if container.contains(.fileSystem) {
+            let fileSystemInnerDependencies = try container.decode(
+                [PackageContent.Dependency].self,
+                forKey: .fileSystem
+            )
+            guard let firsFileSystemInnerDependency = fileSystemInnerDependencies.first else {
+                throw PackageContentError.failedToDecodeDependenciesFromSwift5Dot6Toolchain
+            }
+
+            self = firsFileSystemInnerDependency
         } else {
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             ?? container.decode(String.self, forKey: .identity)
 
-            self.urlString = try container.decodeIfPresent(String.self, forKey: .urlString)
-            ?? container.decode(String.self, forKey: .location)
+            if
+                let location = try? container.decode(Location.self, forKey: .location),
+                let remote = location.remote.first
+            {
+                self.urlString = remote
+            } else {
+                self.urlString = try container.decodeIfPresent(String.self, forKey: .urlString)
+                ?? container.decodeIfPresent(String.self, forKey: .path)
+                ?? container.decode(String.self, forKey: .location)
+            }
 
-            self.requirement = try container.decode(Requirement.self, forKey: .requirement)
+            self.requirement = try container.decodeIfPresent(Requirement.self, forKey: .requirement)
         }
     }
 }
