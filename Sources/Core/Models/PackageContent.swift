@@ -1,9 +1,22 @@
+//  Copyright (c) 2022 Felipe Marino
 //
-//  PackageContent.swift
-//  
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
 //
-//  Created by Marino Felipe on 23.01.21.
+//  The above copyright notice and this permission notice shall be included in all
+//  copies or substantial portions of the Software.
 //
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//  SOFTWARE.
 
 import Foundation
 import struct TSCUtility.Version
@@ -11,6 +24,7 @@ import struct TSCUtility.Version
 public enum PackageContentError: LocalizedError {
     case failedToDecodeTargetDependencyType
     case failedToDecodeDependenciesFromSwift5Dot5Toolchain
+    case failedToDecodeDependenciesFromSwift5Dot6Toolchain
 
     public var errorDescription: String? {
         switch self {
@@ -18,6 +32,8 @@ public enum PackageContentError: LocalizedError {
                 return "Failed to decode target dependency type when evaluating Package.swift content"
         case .failedToDecodeDependenciesFromSwift5Dot5Toolchain:
             return "Failed to decode package dependencies from Package.swift generated using the Swift 5.5 toolchain"
+        case .failedToDecodeDependenciesFromSwift5Dot6Toolchain:
+            return "Failed to decode package dependencies from Package.swift generated using the Swift 5.6 toolchain"
         }
     }
 }
@@ -57,10 +73,13 @@ public struct PackageContent: Decodable, Equatable {
             public let revision: [String]
             public let branch: [String]
         }
+        public struct Location: Decodable, Equatable, Hashable {
+            public let remote: [String]
+        }
 
         public let name: String
         public let urlString: String
-        public let requirement: Requirement
+        public let requirement: Requirement?
     }
 
     public struct Platform: Decodable, Equatable {
@@ -219,17 +238,22 @@ extension PackageContent.Dependency.Requirement: Decodable {
 extension PackageContent.Dependency: Decodable {
     private enum CodingKeys: String, CodingKey {
         case name
+        case identity
         case urlString = "url"
         case location
         case requirement
         // custom inner object present when generated from Swift 5.5
         case scm
+        // custom inner object and properties present when generated from Swift 5.6
+        case sourceControl
+        case path
+        case fileSystem
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        if container.contains(CodingKeys.scm) {
+        if container.contains(.scm) {
             let scmInnerDependencies = try container.decode(
                 [PackageContent.Dependency].self,
                 forKey: .scm
@@ -239,11 +263,42 @@ extension PackageContent.Dependency: Decodable {
             }
 
             self = firstSCMInnerDependency
+        } else if container.contains(.sourceControl) {
+            let sourceControlInnerDependencies = try container.decode(
+                [PackageContent.Dependency].self,
+                forKey: .sourceControl
+            )
+            guard let firstSourceControlInnerDependency = sourceControlInnerDependencies.first else {
+                throw PackageContentError.failedToDecodeDependenciesFromSwift5Dot6Toolchain
+            }
+
+            self = firstSourceControlInnerDependency
+        } else if container.contains(.fileSystem) {
+            let fileSystemInnerDependencies = try container.decode(
+                [PackageContent.Dependency].self,
+                forKey: .fileSystem
+            )
+            guard let firsFileSystemInnerDependency = fileSystemInnerDependencies.first else {
+                throw PackageContentError.failedToDecodeDependenciesFromSwift5Dot6Toolchain
+            }
+
+            self = firsFileSystemInnerDependency
         } else {
-            self.name = try container.decode(String.self, forKey: .name)
-            self.urlString = try container.decodeIfPresent(String.self, forKey: .urlString)
+            self.name = try container.decodeIfPresent(String.self, forKey: .name)
+            ?? container.decode(String.self, forKey: .identity)
+
+            if
+                let location = try? container.decode(Location.self, forKey: .location),
+                let remote = location.remote.first
+            {
+                self.urlString = remote
+            } else {
+                self.urlString = try container.decodeIfPresent(String.self, forKey: .urlString)
+                ?? container.decodeIfPresent(String.self, forKey: .path)
                 ?? container.decode(String.self, forKey: .location)
-            self.requirement = try container.decode(Requirement.self, forKey: .requirement)
+            }
+
+            self.requirement = try container.decodeIfPresent(Requirement.self, forKey: .requirement)
         }
     }
 }

@@ -20,7 +20,7 @@ public enum ConsoleColor {
     case cyan
     case white
     case black
-    case grey
+    case gray
 }
 
 private extension ConsoleColor {
@@ -29,7 +29,7 @@ private extension ConsoleColor {
             case .black: return .black
             case .cyan: return .cyan
             case .green: return .green
-            case .grey: return .grey
+            case .gray: return .gray
             case .noColor: return .noColor
             case .red: return .red
             case .white: return .white

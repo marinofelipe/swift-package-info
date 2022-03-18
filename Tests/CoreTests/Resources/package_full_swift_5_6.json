@@ -1,27 +1,44 @@
 {
     "cLanguageStandard" : null,
     "cxxLanguageStandard" : null,
-    "dependencies": [
+    "dependencies" : [
         {
-            "scm": [
+            "sourceControl" : [
                 {
                     "identity": "swift-argument-parser",
-                    "location": "https://github.com/apple/swift-argument-parser",
-                    "name": "swift-argument-parser",
-                    "productFilter": null,
-                    "requirement": {
-                        "range": [
+                    "location" : {
+                        "remote" : [
+                            "https://github.com/apple/swift-argument-parser"
+                        ]
+                    },
+                    "productFilter" : null,
+                    "requirement" : {
+                        "range" : [
                             {
-                                "lowerBound": "0.3.0",
-                                "upperBound": "0.4.0"
+                                "lowerBound" : "0.3.0",
+                                "upperBound" : "0.4.0"
                             }
                         ]
                     }
+                }
+            ],
+        },
+        {
+            "fileSystem" : [
+                {
+                    "identity" : "packages",
+                    "path" : "path/Packages",
+                    "productFilter" : null
                 }
             ]
         }
     ],
     "name" : "SomePackage",
+    "packageKind" : {
+        "root" : [
+            "path/swift-argument-parser"
+        ]
+    },
     "pkgConfig" : null,
     "platforms" : [
         {
@@ -182,6 +199,6 @@
         }
     ],
     "toolsVersion" : {
-        "_version" : "5.0.0"
+        "_version" : "5.3.0"
     }
 }

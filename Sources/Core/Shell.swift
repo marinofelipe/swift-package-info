@@ -1,18 +1,26 @@
+//  Copyright (c) 2022 Felipe Marino
 //
-//  Shell.swift
-//  
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
 //
-//  Created by Marino Felipe on 27.12.20.
+//  The above copyright notice and this permission notice shall be included in all
+//  copies or substantial portions of the Software.
 //
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//  SOFTWARE.
 
 import Foundation
 
 public enum Shell {
-    static let pipeReadingQueue = DispatchQueue(
-        label: "Core.Shell.pipeReadingQueue",
-        qos: .userInteractive
-    )
-
     public struct Output: Equatable {
         public let succeeded: Bool
         public let data: Data
@@ -118,29 +126,40 @@ private extension Shell {
         var outputData = Data()
         var errorData = Data()
 
+        let dispatchGroup = DispatchGroup()
+
+        dispatchGroup.enter()
         readData(
             from: outputPipe,
             isError: false,
-            verbose: verbose
-        ) { availableData in
-            outputData.append(availableData)
-        }
+            verbose: verbose,
+            availableDataHandler: { availableData in
+                outputData.append(availableData)
+            },
+            hasFinishedHandler: {
+                dispatchGroup.leave()
+            }
+        )
+
+        dispatchGroup.enter()
         readData(
             from: errorPipe,
             isError: true,
-            verbose: verbose
-        ) { availableData in
-            errorData.append(availableData)
-        }
-
-        timeout.map {
-            DispatchQueue.main.asyncAfter(deadline: .now() + $0) {
-                if process.isRunning { process.terminate() }
+            verbose: verbose,
+            availableDataHandler: { availableData in
+                errorData.append(availableData)
+            },
+            hasFinishedHandler: {
+                dispatchGroup.leave()
             }
-        }
+        )
+
+        // TODO: Move to async await and re-implement timeout
 
         try process.run()
         process.waitUntilExit()
+
+        dispatchGroup.wait()
 
         if verbose {
             Console.default.lineBreakAndWrite(
@@ -162,35 +181,39 @@ private extension Shell {
         from pipe: Pipe,
         isError: Bool,
         verbose: Bool,
-        availableDataHandler: ((Data) -> Void)?
+        availableDataHandler: ((Data) -> Void)?,
+        hasFinishedHandler: (() -> Void)?
     ) {
         pipe.fileHandleForReading.readabilityHandler = { fileHandle in
-            pipeReadingQueue.async {
+            // readData(ofLength:) is used here to avoid unwanted performance side effects,
+            // as described in the findings from:
+            // https://stackoverflow.com/questions/49184623/nstask-race-condition-with-readabilityhandler-block
+            let data = fileHandle.readData(ofLength: .max)
 
-                // readData(ofLength:) is used here to avoid unwanted performance side effects,
-                // as described in the findings from:
-                // https://stackoverflow.com/questions/49184623/nstask-race-condition-with-readabilityhandler-block
-                let data = fileHandle.readData(ofLength: .max)
+            if data.isEmpty == false {
+                String(data: data, encoding: .utf8).map {
+                    availableDataHandler?(data)
+                    guard verbose else { return }
 
-                if data.isEmpty == false {
-                    String(data: data, encoding: .utf8).map {
-                        availableDataHandler?(data)
-                        guard verbose else { return }
-
-                        if isError {
-                            Console.default.lineBreakAndWrite(
-                                .init(
-                                    text: $0,
-                                    color: .red
-                                )
+                    if isError {
+                        Console.default.lineBreakAndWrite(
+                            .init(
+                                text: $0,
+                                color: .red
                             )
-                        } else {
-                            Console.default.write(.init(text: $0, hasLineBreakAfter: false))
-                        }
+                        )
+                    } else {
+                        Console.default.write(
+                            .init(
+                                text: $0,
+                                hasLineBreakAfter: false
+                            )
+                        )
                     }
-                } else {
-                    pipe.fileHandleForReading.readabilityHandler = nil
                 }
+            } else {
+                pipe.fileHandleForReading.readabilityHandler = nil
+                hasFinishedHandler?()
             }
         }
     }
@@ -210,6 +233,7 @@ extension Process {
         process.arguments = arguments
         process.standardError = errorPipe
         process.standardOutput = outputPipe
+        process.qualityOfService = .userInteractive
         if let workingDirectory = workingDirectory {
             process.currentDirectoryPath = workingDirectory
         }

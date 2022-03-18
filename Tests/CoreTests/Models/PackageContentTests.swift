@@ -1,9 +1,22 @@
+//  Copyright (c) 2022 Felipe Marino
 //
-//  PackageContentTests.swift
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
 //
+//  The above copyright notice and this permission notice shall be included in all
+//  copies or substantial portions of the Software.
 //
-//  Created by Marino Felipe on 29.12.20.
-//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//  SOFTWARE.
 
 import XCTest
 import CoreTestSupport
@@ -19,7 +32,7 @@ final class PackageContentTests: XCTestCase {
 
         XCTAssertEqual(
             packageContent,
-            .defaultExpectedFullPackage
+            .defaultExpectedFullPackage()
         )
     }
 
@@ -220,7 +233,56 @@ final class PackageContentTests: XCTestCase {
 
         XCTAssertEqual(
             packageContent,
-            .defaultExpectedFullPackage
+            .defaultExpectedFullPackage()
+        )
+    }
+
+    func testWhenPackageContentIsGeneratedFromSwift5Dot6Toolchain() throws {
+        let fixtureData = try dataFromJSON(
+            named: "package_full_swift_5_6",
+            bundle: .module
+        )
+        let packageContent = try jsonDecoder.decode(PackageContent.self, from: fixtureData)
+
+        XCTAssertEqual(
+            packageContent,
+            .defaultExpectedFullPackage(
+                dependencies: [
+                    .init(
+                        name: "swift-argument-parser",
+                        urlString: "https://github.com/apple/swift-argument-parser",
+                        requirement: .init(
+                            range: [
+                                .init(
+                                    lowerBound: "0.3.0",
+                                    upperBound: "0.4.0"
+                                )
+                            ],
+                            revision: [],
+                            branch: []
+                        )
+                    ),
+                    .init(
+                        name: "packages",
+                        urlString: "path/Packages",
+                        requirement: nil
+                    )
+                ]
+            )
+        )
+    }
+
+    func testWhenPackageDependencyHasIdentityOnly() throws {
+        let fixtureData = try dataFromJSON(
+            named: "package_identity_dependency",
+            bundle: .module
+        )
+        let packageContent = try jsonDecoder.decode(PackageContent.self, from: fixtureData)
+
+        XCTAssertEqual(
+            packageContent,
+            .defaultExpectedFullPackage(),
+            "Package should be decoded correctly when dependency has identity over name"
         )
     }
 }
@@ -228,7 +290,24 @@ final class PackageContentTests: XCTestCase {
 // MARK: - Fixtures
 
 private extension PackageContent {
-    static let defaultExpectedFullPackage: Self = {
+    static func defaultExpectedFullPackage(
+        dependencies: [PackageContent.Dependency] = [
+            .init(
+                name: "swift-argument-parser",
+                urlString: "https://github.com/apple/swift-argument-parser",
+                requirement: .init(
+                    range: [
+                        .init(
+                            lowerBound: "0.3.0",
+                            upperBound: "0.4.0"
+                        )
+                    ],
+                    revision: [],
+                    branch: []
+                )
+            )
+        ]
+    ) -> Self {
         .init(
             name: "SomePackage",
             platforms: [
@@ -273,22 +352,7 @@ private extension PackageContent {
                     kind: .library(.dynamic)
                 )
             ],
-            dependencies: [
-                .init(
-                    name: "swift-argument-parser",
-                    urlString: "https://github.com/apple/swift-argument-parser",
-                    requirement: .init(
-                        range: [
-                            .init(
-                                lowerBound: "0.3.0",
-                                upperBound: "0.4.0"
-                            )
-                        ],
-                        revision: [],
-                        branch: []
-                    )
-                )
-            ],
+            dependencies: dependencies,
             targets: [
                 .init(
                     name: "Target1",
@@ -339,5 +403,5 @@ private extension PackageContent {
                 "5"
             ]
         )
-    }()
+    }
 }

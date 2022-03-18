@@ -116,10 +116,7 @@ let package = Package(
                 .target(name: "CoreTestSupport")
             ],
             resources: [
-                .copy("Resources/package_full.json"),
-                .copy("Resources/package_with_multiple_dependencies.json"),
-                .copy("Resources/package_with_custom_target_dependency.json"),
-                .copy("Resources/package_full_swift_5_5.json")
+                .process("Resources")
             ]
         ),
         .target(

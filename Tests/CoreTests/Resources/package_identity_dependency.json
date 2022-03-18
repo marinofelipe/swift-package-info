@@ -7,7 +7,6 @@
                 {
                     "identity": "swift-argument-parser",
                     "location": "https://github.com/apple/swift-argument-parser",
-                    "name": "swift-argument-parser",
                     "productFilter": null,
                     "requirement": {
                         "range": [
