@@ -19,7 +19,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/apple/swift-argument-parser",
-            .upToNextMinor(from: "1.0.2")
+            .upToNextMinor(from: "1.2.1")
         ),
         .package(
             url: "https://github.com/tuist/XcodeProj.git",
@@ -27,7 +27,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/apple/swift-tools-support-core.git",
-            .upToNextMinor(from: "0.2.4")
+            .upToNextMinor(from: "0.4.0")
         ),
         .package(
             name: "HTTPClient",
