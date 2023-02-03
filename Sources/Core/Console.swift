@@ -63,6 +63,15 @@ extension TerminalController: TerminalControlling {
     }
 }
 
+class PrintController: TerminalControlling {
+    func endLine() {}
+
+    func write(_ string: String, inColor _: ConsoleColor, bold: Bool) {
+        print(string)
+    }
+
+}
+
 // MARK: - ConsoleMessage
 
 public struct ConsoleMessage: Equatable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
@@ -115,7 +124,7 @@ public protocol CustomConsoleMessagesConvertible {
 
 public final class Console {
     private var isOutputColored: Bool
-    private let terminalController: TerminalControlling?
+    private let terminalController: TerminalControlling
     private let progressAnimation: ProgressAnimationProtocol
 
     public init(
@@ -124,7 +133,11 @@ public final class Console {
         progressAnimation: ProgressAnimationProtocol = NinjaProgressAnimation(stream: stdoutStream)
     ) {
         self.isOutputColored = isOutputColored
-        self.terminalController = terminalController
+        if let terminalController = terminalController {
+            self.terminalController = terminalController
+        } else {
+            self.terminalController = PrintController()
+        }
         self.progressAnimation = progressAnimation
     }
 
@@ -148,7 +161,7 @@ public final class Console {
     }
 
     public func lineBreak() {
-        terminalController?.endLine()
+        terminalController.endLine()
     }
 }
 
@@ -181,7 +194,7 @@ private extension Console {
         bold: Bool,
         addLineBreakAfter: Bool
     ) {
-        terminalController?.write(message, inColor: color, bold: bold)
+        terminalController.write(message, inColor: color, bold: bold)
         if addLineBreakAfter { self.lineBreak() }
     }
 }
