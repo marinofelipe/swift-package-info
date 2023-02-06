@@ -63,8 +63,10 @@ extension TerminalController: TerminalControlling {
     }
 }
 
-class PrintController: TerminalControlling {
-    func endLine() {}
+final class PrintController: TerminalControlling {
+    func endLine() {
+        print()
+    }
 
     func write(_ string: String, inColor _: ConsoleColor, bold: Bool) {
         print(string)
@@ -161,7 +163,7 @@ public final class Console {
     }
 }
 
-public class TerminalControllerFactory {
+public final class TerminalControllerFactory {
     public static func make(stream: WritableByteStream = stdoutStream) -> TerminalControlling {
         if let controller = TerminalController(stream: stream) {
             return controller
