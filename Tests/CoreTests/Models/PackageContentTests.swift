@@ -224,6 +224,7 @@ final class PackageContentTests: XCTestCase {
         )
     }
 
+    #if compiler(>=5.5)
     func testWhenPackageContentIsGeneratedFromSwift5Dot5Toolchain() throws {
         let fixtureData = try dataFromJSON(
             named: "package_full_swift_5_5",
@@ -236,7 +237,10 @@ final class PackageContentTests: XCTestCase {
             .defaultExpectedFullPackage()
         )
     }
+    #endif
 
+  
+    #if compiler(<5.7)
     func testWhenPackageContentIsGeneratedFromSwift5Dot6Toolchain() throws {
         let fixtureData = try dataFromJSON(
             named: "package_full_swift_5_6",
@@ -271,6 +275,44 @@ final class PackageContentTests: XCTestCase {
             )
         )
     }
+    #endif
+
+    #if compiler(>=5.9)
+    func testWhenPackageContentIsGeneratedFromSwift5Dot9Toolchain() throws {
+        let fixtureData = try dataFromJSON(
+            named: "package_full_swift_5_9",
+            bundle: .module
+        )
+        let packageContent = try jsonDecoder.decode(PackageContent.self, from: fixtureData)
+
+        XCTAssertEqual(
+            packageContent,
+            .defaultExpectedFullPackage(
+                dependencies: [
+                    .init(
+                        name: "swift-argument-parser",
+                        urlString: "https://github.com/apple/swift-argument-parser",
+                        requirement: .init(
+                            range: [
+                                .init(
+                                    lowerBound: "0.3.0",
+                                    upperBound: "0.4.0"
+                                )
+                            ],
+                            revision: [],
+                            branch: []
+                        )
+                    ),
+                    .init(
+                        name: "packages",
+                        urlString: "path/Packages",
+                        requirement: nil
+                    )
+                ]
+            )
+        )
+    }
+    #endif
 
     func testWhenPackageDependencyHasIdentityOnly() throws {
         let fixtureData = try dataFromJSON(
