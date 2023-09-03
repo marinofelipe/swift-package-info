@@ -73,9 +73,20 @@ public struct PackageContent: Decodable, Equatable {
             public let revision: [String]
             public let branch: [String]
         }
+
+      #if compiler(<5.9)
         public struct Location: Decodable, Equatable, Hashable {
             public let remote: [String]
         }
+      #else
+        public struct Location: Decodable, Hashable {
+          public struct RemoteURL: Decodable, Hashable {
+            let urlString: String
+          }
+
+          public let remote: [RemoteURL]
+        }
+      #endif
 
         public let name: String
         public let urlString: String
@@ -291,7 +302,11 @@ extension PackageContent.Dependency: Decodable {
                 let location = try? container.decode(Location.self, forKey: .location),
                 let remote = location.remote.first
             {
+              #if compiler(<5.9)
                 self.urlString = remote
+              #else
+                self.urlString = remote.urlString
+              #endif
             } else {
                 self.urlString = try container.decodeIfPresent(String.self, forKey: .urlString)
                 ?? container.decodeIfPresent(String.self, forKey: .path)
