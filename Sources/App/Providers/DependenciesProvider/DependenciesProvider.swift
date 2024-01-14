@@ -120,6 +120,12 @@ struct DependenciesInformation: Equatable, CustomConsoleMessagesConvertible {
   }
 
   let dependencies: [Dependency]
+  private let consoleDependencies: [Dependency]
+
+  init(dependencies: [Dependency]) {
+    self.dependencies = dependencies
+    self.consoleDependencies = Array(dependencies.prefix(3))
+  }
 
   var messages: [ConsoleMessage] { buildConsoleMessages() }
 
@@ -132,19 +138,34 @@ struct DependenciesInformation: Equatable, CustomConsoleMessagesConvertible {
         )
       ]
     } else {
-      return dependencies.map { dependency -> [ConsoleMessage] in
+      return consoleDependencies.enumerated().map { index, dependency -> [ConsoleMessage] in
         var messages: [ConsoleMessage] = [
           .init(
-            text: "\(dependency.product); \(dependency.package)",
+            text: "\(dependency.product)",
             hasLineBreakAfter: false
           ),
         ]
 
-        let isLast = dependency == dependencies.last
+        let isLast = index == consoleDependencies.count - 1
         if isLast == false {
           messages.append(
             .init(
               text: " | ",
+              hasLineBreakAfter: false
+            )
+          )
+        }
+
+        if isLast && dependencies.count > 3 {
+          messages.append(
+            .init(
+              text: " | ",
+              hasLineBreakAfter: false
+            )
+          )
+          messages.append(
+            .init(
+              text: "Use `--report jsonDump` to see all..",
               hasLineBreakAfter: false
             )
           )

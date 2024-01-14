@@ -162,4 +162,138 @@ final class DependenciesProviderTests: XCTestCase {
       """#
     )
   }
+
+  func testWithMoreThan3ExternalDependencies() throws {
+    let productName = "Some"
+
+    let target = PackageWrapper.Target(
+      name: "Target1",
+      dependencies: [
+        .product(
+          .init(
+            name: "dependency-1",
+            package: "dependency-1",
+            isDynamicLibrary: false,
+            targets: []
+          )
+        ),
+        .product(
+          .init(
+            name: "dependency-2",
+            package: "dependency-2",
+            isDynamicLibrary: false,
+            targets: []
+          )
+        ),
+        .product(
+          .init(
+            name: "dependency-3",
+            package: "dependency-3",
+            isDynamicLibrary: false,
+            targets: []
+          )
+        ),
+        .product(
+          .init(
+            name: "dependency-4",
+            package: "dependency-4",
+            isDynamicLibrary: false,
+            targets: []
+          )
+        ),
+      ]
+    )
+
+    let result = DependenciesProvider.fetchInformation(
+      for: Fixture.makeSwiftPackage(
+        product: productName
+      ),
+      package: Fixture.makePackageWrapper(
+        products: [
+          .init(
+            name: productName,
+            package: nil,
+            isDynamicLibrary: nil,
+            targets: [
+              target
+            ]
+          )
+        ],
+        targets: [
+          target
+        ]
+      ),
+      verbose: true
+    )
+
+    let providedInfo = try result.get()
+    XCTAssertEqual(
+      providedInfo.providerName,
+      "Dependencies"
+    )
+
+    XCTAssertEqual(
+      providedInfo.messages,
+      [
+        .init(
+          text: "dependency-1",
+          hasLineBreakAfter: false
+        ),
+        .init(
+          text: " | ",
+          hasLineBreakAfter: false
+        ),
+        .init(
+          text: "dependency-2",
+          hasLineBreakAfter: false
+        ),
+        .init(
+          text: " | ",
+          hasLineBreakAfter: false
+        ),
+        .init(
+          text: "dependency-3",
+          hasLineBreakAfter: false
+        ),
+        .init(
+          text: " | ",
+          hasLineBreakAfter: false
+        ),
+        .init(
+          text: "Use `--report jsonDump` to see all..",
+          hasLineBreakAfter: false
+        ),
+      ]
+    )
+
+    let encodedProvidedInfo = try JSONEncoder.sortedAndPrettyPrinted.encode(providedInfo)
+    let encodedProvidedInfoString = String(
+      data: encodedProvidedInfo,
+      encoding: .utf8
+    )
+
+    XCTAssertEqual(
+      encodedProvidedInfoString,
+      #"""
+      [
+        {
+          "package" : "dependency-1",
+          "product" : "dependency-1"
+        },
+        {
+          "package" : "dependency-2",
+          "product" : "dependency-2"
+        },
+        {
+          "package" : "dependency-3",
+          "product" : "dependency-3"
+        },
+        {
+          "package" : "dependency-4",
+          "product" : "dependency-4"
+        }
+      ]
+      """#
+    )
+  }
 }
