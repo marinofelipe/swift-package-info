@@ -24,21 +24,12 @@ import CombineHTTPClient
 import Foundation
 import HTTPClientCore
 
-enum SwiftPackageServiceError: LocalizedError, Equatable {
-    case unableToDumpPackageContent(errorMessage: String)
-    case unableToFetchPackageContent(errorMessage: String)
+import Basics
+import PackageModel
+import SourceControl
+import TSCBasic
 
-    var errorDescription: String? {
-        switch self {
-            case let .unableToDumpPackageContent(errorMessage):
-                return "Failed to dump package content with error: \(errorMessage)"
-            case let .unableToFetchPackageContent(errorMessage):
-                return "Failed to fetch package content with error: \(errorMessage)"
-        }
-    }
-}
-
-public struct SwiftPackageValidationResult: Equatable {
+public struct SwiftPackageValidationResult {
     public enum SourceInformation: Equatable {
         case local
         case remote(
@@ -51,68 +42,51 @@ public struct SwiftPackageValidationResult: Equatable {
     public let sourceInformation: SourceInformation
     public let isProductValid: Bool
     public let availableProducts: [String]
-    public let packageContent: PackageContent
+    public let package: Package
 }
 
 extension SwiftPackageValidationResult {
     init(
-        from packageContent: PackageContent,
+        from package: Package,
         product: String,
         sourceInformation: SourceInformation
     ) {
         self.init(
             sourceInformation: sourceInformation,
-            isProductValid: packageContent.products
-                .contains(where: \.name == product),
-            availableProducts: packageContent.products.map(\.name),
-            packageContent: packageContent
+            isProductValid: package.products.contains(where: \.name == product),
+            availableProducts: package.products.map(\.name),
+            package: package
         )
     }
 }
 
 public final class SwiftPackageService {
-    private let httpClient: CombineHTTPClient
-    private let gitHubRequestBuilder: HTTPRequestBuilder
-    private let console: Console
     private let fileManager: FileManager
-    private let jsonDecoder: JSONDecoder
+    private let packageLoader: PackageLoader
+    private let repositoryProvider: RepositoryProvider
 
     init(
-        httpClient: CombineHTTPClient = .default,
-        gitHubRequestBuilder: HTTPRequestBuilder = .gitHub,
-        console: Console = .default,
         fileManager: FileManager = .default,
-        jsonDecoder: JSONDecoder = .default
+        packageLoader: PackageLoader = .live,
+        repositoryProvider: RepositoryProvider
     ) {
-        self.httpClient = httpClient
-        self.gitHubRequestBuilder = gitHubRequestBuilder
-        self.console = console
         self.fileManager = fileManager
-        self.jsonDecoder = jsonDecoder
+        self.packageLoader = packageLoader
+        self.repositoryProvider = repositoryProvider
     }
 
     public convenience init() {
-        self.init(
-            httpClient: .default,
-            gitHubRequestBuilder: .gitHub,
-            jsonDecoder: .default
-        )
+        self.init(repositoryProvider: GitRepositoryProvider())
     }
-
-    deinit {
-        fetchToken?.cancel()
-    }
-
-    private var fetchToken: AnyCancellable?
 
     public func validate(
         swiftPackage: SwiftPackage,
         verbose: Bool
-    ) throws -> SwiftPackageValidationResult {
+    ) async throws -> SwiftPackageValidationResult {
         if swiftPackage.isLocal {
-            return try runLocalValidation(for: swiftPackage, verbose: verbose)
+            return try await runLocalValidation(for: swiftPackage, verbose: verbose)
         } else {
-            return try runRemoteValidation(for: swiftPackage, verbose: verbose)
+            return try await runRemoteValidation(for: swiftPackage, verbose: verbose)
         }
     }
 
@@ -121,181 +95,91 @@ public final class SwiftPackageService {
     private func runLocalValidation(
         for swiftPackage: SwiftPackage,
         verbose: Bool
-    ) throws -> SwiftPackageValidationResult {
+    ) async throws -> SwiftPackageValidationResult {
         .init(
-            from: try fetchLocalPackageContent(
-                atPath: swiftPackage.url.path,
-                verbose: verbose
-            ),
+            from: try await fetchLocalPackage(atPath: swiftPackage.url.path),
             product: swiftPackage.product,
             sourceInformation: .local
         )
     }
 
-    private func fetchLocalPackageContent(
-        atPath path: String,
-        verbose: Bool
-    ) throws -> PackageContent {
-        if fileManager.fileExists(atPath: path) {
-            return try dumpPackageContent(
-                atPath: path,
-                verbose: verbose
-            )
-        }
-
-        throw SwiftPackageServiceError.unableToDumpPackageContent(
-            errorMessage: "Package.swift does not exist on local path: \(path)"
-        )
+    private func fetchLocalPackage(atPath path: String) async throws -> Package {
+        let absolutePath = AbsolutePath.currentDir.appending(path)
+        return try await packageLoader.load(absolutePath)
     }
 
     // MARK: - Remote
 
+  // SPM Package ToolsVersion.current
+
     private func runRemoteValidation(
         for swiftPackage: SwiftPackage,
         verbose: Bool
-    ) throws -> SwiftPackageValidationResult {
-        let repositoryRequest = try gitHubRequestBuilder
-            .path("/repos/\(swiftPackage.accountName)/\(swiftPackage.repositoryName)")
-            .build()
+    ) async throws -> SwiftPackageValidationResult {
+      return try await withTemporaryDirectory(prefix: "spm-package-info-run-") { tempDirPath in
+        let repositoryManager = RepositoryManager(
+          fileSystem: localFileSystem,
+          path: tempDirPath,
+          provider: repositoryProvider,
+          initializationWarningHandler: { s in
+            print(s)
+          }
+        )
 
-        let tagsRequest = try gitHubRequestBuilder
-            .path("/repos/\(swiftPackage.accountName)/\(swiftPackage.repositoryName)/git/refs/tags")
-            .build()
+        let repositoryHandle = try await fetchRepository(
+          repositoryManager: repositoryManager,
+          swiftPackage: swiftPackage
+        )
 
-        let repositoryRequestPublisher: AnyPublisher<
-            HTTPResponse<EmptyBody, EmptyBody>,
-            HTTPResponseError
-        > = httpClient.run(repositoryRequest, receiveOn: .global(qos: .userInteractive))
-        let tagsRequestPublisher: AnyPublisher<
-            HTTPResponse<TagsResponse, EmptyBody>,
-            HTTPResponseError
-        > = httpClient.run(tagsRequest, receiveOn: .global(qos: .userInteractive))
+        let cloneDirPath = tempDirPath.appending(swiftPackage.repositoryName)
 
-        let semaphore = DispatchSemaphore(value: 0)
+        let workingCopy = try repositoryHandle.createWorkingCopy(
+          at: cloneDirPath,
+          editable: false
+        )
 
-        var isRepositoryValid = false
-        var isTagValid = false
-        var latestTag: String?
+        let tags = try workingCopy.getTags()
+        try workingCopy.checkout(tag: tags.last ?? "")
 
-        fetchToken = Publishers.Zip(repositoryRequestPublisher, tagsRequestPublisher)
-            .sink { [weak console] completion in
-                semaphore.signal()
-                if case let .failure(error) = completion, verbose {
-                    console?.lineBreakAndWrite(.init(text: error.localizedDescription, color: .red))
-                }
-            } receiveValue: { repositoryResponse, tagsResponse in
-                isRepositoryValid = repositoryResponse.isSuccess
+        let isVersionPassedValid = tags.contains(swiftPackage.version)
+//        let resolvedTag = isVersionPassedValid ? swiftPackage.version : tags.last
 
-                if case let .success(response) = tagsResponse.value {
-                    let tags = response.tags.normalized
-
-                    isTagValid = tags
-                        .map(\.name)
-                        .contains(swiftPackage.version)
-                    latestTag = tags.last?.name
-                }
-                semaphore.signal()
-            }
-
-        semaphore.wait()
+        let package = try await packageLoader.load(cloneDirPath)
 
         return .init(
-            from: try fetchRemotePackageContent(
-                for: swiftPackage,
-                version: isTagValid
-                    ? swiftPackage.version
-                    : latestTag ?? "",
-                verbose: verbose
-            ),
+            from: package,
             product: swiftPackage.product,
             sourceInformation: .remote(
-                isRepositoryValid: isRepositoryValid,
-                isTagValid: isTagValid,
-                latestTag: latestTag
+                isRepositoryValid: true,
+                isTagValid: isVersionPassedValid,
+                latestTag: tags.last
             )
         )
-    }
+      }
+  }
 
-    private func fetchRemotePackageContent(
-        for swiftPackage: SwiftPackage,
-        version: String,
-        verbose: Bool
-    ) throws -> PackageContent {
-        let repositoryTemporaryPath = "\(fileManager.temporaryDirectory.path)/\(swiftPackage.repositoryName)"
+  private func fetchRepository(
+    repositoryManager: RepositoryManager,
+    swiftPackage: SwiftPackage
+  ) async throws -> RepositoryManager.RepositoryHandle {
+    let observability = ObservabilitySystem { print("\($0): \($1)") }
 
-        if fileManager.fileExists(atPath: repositoryTemporaryPath) {
-            try fileManager.removeItem(atPath: repositoryTemporaryPath)
+    return try await withCheckedThrowingContinuation { continuation in
+      repositoryManager.lookup(
+        package: PackageIdentity(url: "\(swiftPackage.url)"),
+        repository: RepositorySpecifier(url: "\(swiftPackage.url)"),
+        skipUpdate: false,
+        observabilityScope: observability.topScope,
+        delegateQueue: .main,
+        callbackQueue: .main
+      ) { result in
+          switch result {
+          case let .success(handle):
+            continuation.resume(returning: handle)
+          case let .failure(error):
+            continuation.resume(throwing: error)
+          }
         }
-
-        let fetchOutput = try Shell.performShallowGitClone(
-            workingDirectory: fileManager.temporaryDirectory.path,
-            repositoryURLString: swiftPackage.url.absoluteString,
-            branchOrTag: version,
-            verbose: verbose,
-            timeout: 60
-        )
-        guard fetchOutput.succeeded else {
-            let errorMessage = String(data: fetchOutput.errorData, encoding: .utf8) ?? ""
-            throw SwiftPackageServiceError.unableToFetchPackageContent(errorMessage: errorMessage)
-        }
-
-        return try dumpPackageContent(
-            atPath: repositoryTemporaryPath,
-            verbose: verbose
-        )
     }
-
-    // MARK: - Common
-
-    private func dumpPackageContent(
-        atPath path: String,
-        verbose: Bool
-    ) throws -> PackageContent {
-        let dumpOutput = try Shell.run(
-            "swift package dump-package",
-            workingDirectory: path,
-            verbose: verbose
-        )
-
-        guard dumpOutput.succeeded else {
-            let errorMessage = String(data: dumpOutput.errorData, encoding: .utf8) ?? ""
-            throw SwiftPackageServiceError.unableToDumpPackageContent(errorMessage: errorMessage)
-        }
-
-        return try jsonDecoder.decode(PackageContent.self, from: dumpOutput.data)
-    }
-}
-
-// MARK: - Extensions
-
-extension HTTPRequestBuilder {
-    static let gitHub: HTTPRequestBuilder = .init(scheme: .https, host: "api.github.com")
-}
-
-extension CombineHTTPClient {
-    static let `default`: CombineHTTPClient = .init(session: URLSession(configuration: .default))
-}
-
-extension JSONDecoder {
-    static let `default`: JSONDecoder = .init()
-}
-
-// MARK: - Extensions - Tags
-
-private extension Array where Element == TagsResponse.Tag {
-    var normalized: Self {
-        map(\.normalized)
-    }
-}
-
-private extension TagsResponse.Tag {
-    var normalized: Self {
-        .init(
-            name: self.name
-                .replacingOccurrences(
-                    of: "refs/tags/",
-                    with: ""
-                )
-        )
-    }
+  }
 }

@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2024 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -18,21 +18,33 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-struct TagsResponse: Equatable {
-    struct Tag: Decodable, Equatable {
-        let name: String
+import Basics
+import PackageModel
+import TSCBasic
+import Workspace
 
-        enum CodingKeys: String, CodingKey {
-            case name = "ref"
-        }
-    }
-
-    let tags: [Tag]
+/// Loads the content of a Package.swift, the dependency graph included
+///
+/// The ``PackageLoader`` uses the SPM library to load the package representation
+public struct PackageLoader {
+  /// Loads a Package.swift at a given `packagePath`
+  public var load: (AbsolutePath) async throws -> Package
 }
 
-extension TagsResponse: Decodable {
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        tags = try container.decode([Tag].self)
-    }
+extension PackageLoader {
+  /// Makes a **Live** ``PackageLoader`` instance
+  public static let live: Self = {
+    .init(
+      load: { packagePath in
+        let observability = ObservabilitySystem { print("\($0): \($1)") }
+
+        let workspace = try Workspace(forRootPackage: packagePath)
+
+        return try await workspace.loadRootPackage(
+          at: packagePath,
+          observabilityScope: observability.topScope
+        )
+      }
+    )
+  }()
 }

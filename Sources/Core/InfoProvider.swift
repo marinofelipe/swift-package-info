@@ -44,7 +44,7 @@ public enum ProviderKind: String, CodingKey {
 
 public typealias InfoProvider = (
     _ swiftPackage: SwiftPackage,
-    _ packageContent: PackageContent,
+    _ packageContent: PackageWrapper,
     _ verbose: Bool
 ) -> Result<ProvidedInfo, InfoProviderError>
 

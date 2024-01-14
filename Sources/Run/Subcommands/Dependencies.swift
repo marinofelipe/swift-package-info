@@ -24,44 +24,46 @@ import App
 import Reports
 
 extension SwiftPackageInfo {
-    public struct Dependencies: ParsableCommand {
-        public static var configuration = CommandConfiguration(
-            abstract: "List dependencies of a Package product.",
-            discussion: """
+  public struct Dependencies: AsyncParsableCommand {
+    public static var configuration = CommandConfiguration(
+      abstract: "List dependencies of a Package product.",
+      discussion: """
             Show direct and indirect dependencies of a product, listing
             all dependencies that are linked to its binary.
             """,
-            version: "1.3.4"
+      version: "1.3.4"
+    )
+
+    @OptionGroup var allArguments: AllArguments
+
+    public init() {}
+
+    public func run() async throws {
+      try runArgumentsValidation(arguments: allArguments)
+      var swiftPackage = makeSwiftPackage(from: allArguments)
+      swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+
+      let package = try await validate(
+        swiftPackage: &swiftPackage,
+        verbose: allArguments.verbose
+      )
+
+      let report = Report(swiftPackage: swiftPackage)
+
+      let packageWrapper = PackageWrapper(from: package)
+
+      try DependenciesProvider.fetchInformation(
+        for: swiftPackage,
+        package: packageWrapper,
+        verbose: allArguments.verbose
+      )
+      .onSuccess {
+        try report.generate(
+          for: $0,
+          format: allArguments.report
         )
-
-        @OptionGroup var allArguments: AllArguments
-
-        public init() {}
-
-        public func run() throws {
-            try runArgumentsValidation(arguments: allArguments)
-            var swiftPackage = makeSwiftPackage(from: allArguments)
-            swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
-
-            let packageContent = try validate(
-                swiftPackage: &swiftPackage,
-                verbose: allArguments.verbose
-            )
-
-            let report = Report(swiftPackage: swiftPackage)
-
-            try DependenciesProvider.fetchInformation(
-                for: swiftPackage,
-                packageContent: packageContent,
-                verbose: allArguments.verbose
-            )
-            .onSuccess {
-                try report.generate(
-                    for: $0,
-                    format: allArguments.report
-                )
-            }
-            .onFailure { Console.default.write($0.message) }
-        }
+      }
+      .onFailure { Console.default.write($0.message) }
     }
+  }
 }
