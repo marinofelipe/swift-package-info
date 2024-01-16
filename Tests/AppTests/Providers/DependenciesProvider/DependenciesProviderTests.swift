@@ -114,7 +114,7 @@ final class DependenciesProviderTests: XCTestCase {
       providedInfo.messages,
       [
         .init(
-          text: "dependency-1; dependency-1",
+          text: "dependency-1",
           hasLineBreakAfter: false
         ),
         .init(
@@ -122,7 +122,7 @@ final class DependenciesProviderTests: XCTestCase {
           hasLineBreakAfter: false
         ),
         .init(
-          text: "dependency-2; dependency-2",
+          text: "dependency-2",
           hasLineBreakAfter: false
         ),
         .init(
@@ -130,7 +130,7 @@ final class DependenciesProviderTests: XCTestCase {
           hasLineBreakAfter: false
         ),
         .init(
-          text: "dependency-3; dependency-3",
+          text: "dependency-3",
           hasLineBreakAfter: false
         ),
       ]
