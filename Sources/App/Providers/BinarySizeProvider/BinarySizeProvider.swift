@@ -63,13 +63,13 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
 public struct BinarySizeProvider {
     public static func fetchInformation(
         for swiftPackage: SwiftPackage,
-        packageContent: PackageContent,
+        package: PackageWrapper,
         verbose: Bool
     ) -> Result<ProvidedInfo, InfoProviderError> {
         let sizeMeasurer = defaultSizeMeasurer(verbose)
         var binarySize: SizeOnDisk = .zero
 
-        let isProductDynamicLibrary = packageContent.products
+        let isProductDynamicLibrary = package.products
             .first{ $0.name == swiftPackage.product }?
             .isDynamicLibrary ?? false
 

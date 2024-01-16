@@ -24,44 +24,46 @@ import App
 import Reports
 
 extension SwiftPackageInfo {
-    public struct Platforms: ParsableCommand {
-        public static var configuration = CommandConfiguration(
-            abstract: "Shows platforms supported b a Package product.",
-            discussion: """
+  public struct Platforms: AsyncParsableCommand {
+    public static var configuration = CommandConfiguration(
+      abstract: "Shows platforms supported b a Package product.",
+      discussion: """
             Informs supported platforms by a given Package.swift and its products,
             e.g 'iOS with 9.0 minimum deployment target'.
             """,
-            version: "1.0"
+      version: "1.3.4"
+    )
+
+    @OptionGroup var allArguments: AllArguments
+
+    public init() {}
+
+    public func run() async throws {
+      try runArgumentsValidation(arguments: allArguments)
+      var swiftPackage = makeSwiftPackage(from: allArguments)
+      swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+
+      let package = try await validate(
+        swiftPackage: &swiftPackage,
+        verbose: allArguments.verbose
+      )
+
+      let report = Report(swiftPackage: swiftPackage)
+
+      let packageWrapper = PackageWrapper(from: package)
+
+      try PlatformsProvider.fetchInformation(
+        for: swiftPackage,
+        package: packageWrapper,
+        verbose: allArguments.verbose
+      )
+      .onSuccess {
+        try report.generate(
+          for: $0,
+          format: allArguments.report
         )
-
-        @OptionGroup var allArguments: AllArguments
-
-        public init() {}
-
-        public func run() throws {
-            try runArgumentsValidation(arguments: allArguments)
-            var swiftPackage = makeSwiftPackage(from: allArguments)
-            swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
-
-            let packageContent = try validate(
-                swiftPackage: &swiftPackage,
-                verbose: allArguments.verbose
-            )
-
-            let report = Report(swiftPackage: swiftPackage)
-
-            try PlatformsProvider.fetchInformation(
-                for: swiftPackage,
-                packageContent: packageContent,
-                verbose: allArguments.verbose
-            )
-            .onSuccess {
-                try report.generate(
-                    for: $0,
-                    format: allArguments.report
-                )
-            }
-            .onFailure { Console.default.write($0.message) }
-        }
+      }
+      .onFailure { Console.default.write($0.message) }
     }
+  }
 }

@@ -24,9 +24,12 @@ import Core
 import App
 import Reports
 
+import PackageModel
+
 // MARK: - Main parsable command
 
-public struct SwiftPackageInfo: ParsableCommand {
+@main
+public struct SwiftPackageInfo: AsyncParsableCommand {
     public static var configuration = CommandConfiguration(
         abstract: "A tool for analyzing Swift Packages",
         discussion: """
@@ -34,7 +37,7 @@ public struct SwiftPackageInfo: ParsableCommand {
         that can be used in your favor when deciding whether to
         adopt or not a Swift Package as a dependency on your app.
         """,
-        version: "1.1.0",
+        version: "1.3.4",
         subcommands: [
             BinarySize.self,
             Platforms.self,
@@ -45,9 +48,9 @@ public struct SwiftPackageInfo: ParsableCommand {
     )
 
     static var subcommandsProviders: [InfoProvider] = [
-        BinarySizeProvider.fetchInformation(for:packageContent:verbose:),
-        PlatformsProvider.fetchInformation(for:packageContent:verbose:),
-        DependenciesProvider.fetchInformation(for:packageContent:verbose:)
+        BinarySizeProvider.fetchInformation(for:package:verbose:),
+        PlatformsProvider.fetchInformation(for:package:verbose:),
+        DependenciesProvider.fetchInformation(for:package:verbose:)
     ]
 
     public init() {}
@@ -158,9 +161,9 @@ extension ParsableCommand {
     func validate(
         swiftPackage: inout SwiftPackage,
         verbose: Bool
-    ) throws -> PackageContent {
+    ) async throws -> Package {
         let swiftPackageService = SwiftPackageService()
-        let packageResponse = try swiftPackageService.validate(
+        let packageResponse = try await swiftPackageService.validate(
             swiftPackage: swiftPackage,
             verbose: verbose
         )
@@ -200,6 +203,6 @@ extension ParsableCommand {
             swiftPackage.product = firstProduct
         }
 
-        return packageResponse.packageContent
+        return packageResponse.package
     }
 }

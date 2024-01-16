@@ -22,158 +22,179 @@ import Core
 import Foundation
 
 enum DependenciesProviderError: LocalizedError, Equatable {
-    case failedToMatchProduct
+  case failedToMatchProduct
 
-    var errorDescription: String? {
-        switch self {
-            case .failedToMatchProduct:
-                return "Failed to match product when evaluating dependencies"
-        }
+  var errorDescription: String? {
+    switch self {
+    case .failedToMatchProduct:
+      return "Failed to match product when evaluating dependencies"
     }
+  }
 }
 
 public struct DependenciesProvider {
-    public static func fetchInformation(
-        for swiftPackage: SwiftPackage,
-        packageContent: PackageContent,
-        verbose: Bool
-    ) -> Result<ProvidedInfo, InfoProviderError> {
-        guard let product = packageContent.products.first(where: { $0.name == swiftPackage.product }) else {
-            return .failure(
-                .init(
-                    localizedError: DependenciesProviderError.failedToMatchProduct
-                )
-            )
-        }
-
-        let productTargetNames = product.targets
-        let externalDependencies = getExternalDependencies(
-            forTargetNames: productTargetNames,
-            packageContent: packageContent
+  public static func fetchInformation(
+    for swiftPackage: SwiftPackage,
+    package: PackageWrapper,
+    verbose: Bool
+  ) -> Result<ProvidedInfo, InfoProviderError> {
+    guard let product = package.products.first(where: { $0.name == swiftPackage.product }) else {
+      return .failure(
+        .init(
+          localizedError: DependenciesProviderError.failedToMatchProduct
         )
-
-        return .success(
-            .init(
-                providerName: "Dependencies",
-                providerKind: .dependencies,
-                information: DependenciesInformation(externalDependencies: externalDependencies)
-            )
-        )
+      )
     }
 
-    private static func getExternalDependencies(
-        forTargetNames targetNames: [String],
-        packageContent: PackageContent
-    ) -> [PackageContent.Dependency] {
-        let targets = packageContent.targets.filter { targetNames.contains($0.name) }
-        let targetDependencies = targets
-            .map(\.dependencies)
-            .reduce(
-                [],
-                +
-            )
+    let productTargets = product.targets
+    let externalDependencies = getExternalDependencies(
+      forTargets: productTargets,
+      package: package
+    )
 
-        let externalDependenciesNames = targetDependencies.compactMap(\.product)
-        let potentialExternalDependenciesNames = targetDependencies.compactMap(\.byName)
+    return .success(
+      .init(
+        providerName: "Dependencies",
+        providerKind: .dependencies,
+        information: DependenciesInformation(dependencies: externalDependencies)
+      )
+    )
+  }
 
-        let allTargetsNames = packageContent.targets.map(\.name)
-        var otherTargetsDependenciesNames = targetDependencies.compactMap(\.target)
-        otherTargetsDependenciesNames += potentialExternalDependenciesNames
-            .filter { allTargetsNames.contains($0) }
+  private static func getExternalDependencies(
+    forTargets targets: [PackageWrapper.Target],
+    package: PackageWrapper
+  ) -> [DependenciesInformation.Dependency] {
+    let externalDependencies = targets
+      .map(\.productDependencies)
+      .reduce(
+        [],
+        +
+      )
 
-        var externalDependenciesFromOtherTargets: [PackageContent.Dependency] = []
-        if otherTargetsDependenciesNames.isEmpty == false {
-            externalDependenciesFromOtherTargets = getExternalDependencies(
-                forTargetNames: otherTargetsDependenciesNames,
-                packageContent: packageContent
-            )
-        }
+    let transitiveExternalDependencies = targets
+      .map(\.allTransitiveProductDependencies)
+      .reduce([], +)
 
-        let externalDependencies = packageContent.dependencies.filter {
-            externalDependenciesNames.contains($0.name)
-                || potentialExternalDependenciesNames.contains($0.name)
-        }
+    let allExternalDependencies = externalDependencies + transitiveExternalDependencies
 
-        let allDependencies = externalDependencies + externalDependenciesFromOtherTargets
+    let dependencies = allExternalDependencies.map(DependenciesInformation.Dependency.init)
 
-        return Array(Set(allDependencies))
-            .sorted(by: { $0.name < $1.name })
+    return dependencies.sorted(by: { $0.product < $1.product })
+  }
+}
+
+private extension PackageWrapper.Target {
+  var productDependencies: [PackageWrapper.Product] {
+    dependencies.compactMap(\.product)
+  }
+
+  var targetDependencies: [PackageWrapper.Target] {
+    dependencies.compactMap(\.target)
+  }
+
+  var allTransitiveProductDependencies: [PackageWrapper.Product] {
+    mapTransitiveProducts(targets: targetDependencies)
+  }
+
+  private func mapTransitiveProducts(targets: [PackageWrapper.Target]) -> [PackageWrapper.Product] {
+    let productDependencies = targets.map(\.dependencies)
+      .reduce([], +)
+      .compactMap(\.product)
+
+    let targetDependencies = targets.map(\.targetDependencies)
+      .reduce([], +)
+
+    if targetDependencies.isEmpty == false {
+      return mapTransitiveProducts(targets: targetDependencies)
+    } else {
+      return productDependencies
     }
+  }
 }
 
 struct DependenciesInformation: Equatable, CustomConsoleMessagesConvertible {
-    struct Dependency: Equatable, Encodable {
-        let name: String
-        let version: String?
-        let branch: String?
-        let revision: String?
-    }
+  struct Dependency: Equatable, Encodable {
+    let product: String
+    let package: String
+  }
 
-    let externalDependencies: [PackageContent.Dependency]
-    let dependencies: [Dependency]
+  let dependencies: [Dependency]
+  private let consoleDependencies: [Dependency]
 
-    var messages: [ConsoleMessage] { buildConsoleMessages() }
+  init(dependencies: [Dependency]) {
+    self.dependencies = dependencies
+    self.consoleDependencies = Array(dependencies.prefix(3))
+  }
 
-    init(externalDependencies: [PackageContent.Dependency]) {
-        self.externalDependencies = externalDependencies
-        self.dependencies = externalDependencies.map(Dependency.init(from:))
-    }
+  var messages: [ConsoleMessage] { buildConsoleMessages() }
 
-    private func buildConsoleMessages() -> [ConsoleMessage] {
-        if externalDependencies.isEmpty {
-            return [
-                .init(
-                    text: "No third-party dependencies :)",
-                    hasLineBreakAfter: false
-                )
-            ]
-        } else {
-            return externalDependencies.map { dependency -> [ConsoleMessage] in
-                var messages: [ConsoleMessage] = [
-                    .init(
-                        text: "\(dependency.name)",
-                        hasLineBreakAfter: false
-                    ),
-                    .init(
-                        text: " v. \(dependency.requirement?.range.first?.lowerBound ?? "")",
-                        hasLineBreakAfter: false
-                    )
-                ]
+  private func buildConsoleMessages() -> [ConsoleMessage] {
+    if dependencies.isEmpty {
+      return [
+        .init(
+          text: "No third-party dependencies :)",
+          hasLineBreakAfter: false
+        )
+      ]
+    } else {
+      return consoleDependencies.enumerated().map { index, dependency -> [ConsoleMessage] in
+        var messages: [ConsoleMessage] = [
+          .init(
+            text: "\(dependency.product)",
+            hasLineBreakAfter: false
+          ),
+        ]
 
-                let isLast = dependency == externalDependencies.last
-                if isLast == false {
-                    messages.append(
-                        .init(
-                            text: " | ",
-                            hasLineBreakAfter: false
-                        )
-                    )
-                }
-
-                return messages
-            }
-            .reduce(
-                [],
-                +
+        let isLast = index == consoleDependencies.count - 1
+        if isLast == false {
+          messages.append(
+            .init(
+              text: " | ",
+              hasLineBreakAfter: false
             )
+          )
         }
+
+        if isLast && dependencies.count > 3 {
+          messages.append(
+            .init(
+              text: " | ",
+              hasLineBreakAfter: false
+            )
+          )
+          messages.append(
+            .init(
+              text: "Use `--report jsonDump` to see all..",
+              hasLineBreakAfter: false
+            )
+          )
+        }
+
+        return messages
+      }
+      .reduce(
+        [],
+        +
+      )
     }
+  }
 }
 
 extension DependenciesInformation: Encodable {
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(dependencies)
-    }
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
+    try container.encode(dependencies)
+  }
 }
 
 extension DependenciesInformation.Dependency {
-    init(from dependency: PackageContent.Dependency) {
-        self.init(
-            name: dependency.name,
-            version: dependency.requirement?.range.first?.lowerBound.description,
-            branch: dependency.requirement?.branch.first,
-            revision: dependency.requirement?.revision.first
-        )
-    }
+  init(
+    from dependency: PackageWrapper.Product
+  ) {
+    self.init(
+      product: dependency.name,
+      package: dependency.package ?? ""
+    )
+  }
 }

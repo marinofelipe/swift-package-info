@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2024 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -18,4 +18,24 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-SwiftPackageInfo.main()
+import TSCBasic
+import Foundation
+
+public extension AbsolutePath {
+  /// The path to the program’s current directory.
+  static let currentDir: Self = {
+    do {
+      return try AbsolutePath(validating: currentDirPath)
+    } catch {
+      preconditionFailure(
+        "Unable to make AbsolutePath from currentDir, error: \(error.localizedDescription)"
+      )
+    }
+  }()
+}
+
+#if DEBUG
+  var currentDirPath = FileManager.default.currentDirectoryPath
+#else
+  let currentDirPath = FileManager.default.currentDirectoryPath
+#endif
