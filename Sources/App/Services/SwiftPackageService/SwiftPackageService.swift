@@ -100,6 +100,13 @@ public final class SwiftPackageService {
     swiftPackage: SwiftPackage,
     verbose: Bool
   ) async throws -> SwiftPackageValidationResult {
+    Console.default.lineBreakAndWrite("swift-package-info built with Swift Toolchain: \(ToolsVersion.current)")
+
+    let swiftVersionOutput = try Shell.run("xcrun swift -version", verbose: false)
+    let swiftVersion = String(data: swiftVersionOutput.data, encoding: .utf8)
+
+    Console.default.write("Current user Swift Toolchain: \(swiftVersion ?? "")")
+
     if swiftPackage.isLocal {
       return try await runLocalValidation(for: swiftPackage, verbose: verbose)
     } else {
@@ -126,8 +133,6 @@ public final class SwiftPackageService {
   }
 
   // MARK: - Remote
-
-  // SPM Package ToolsVersion.current
 
   private func runRemoteValidation(
     for swiftPackage: SwiftPackage,
