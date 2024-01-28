@@ -186,6 +186,7 @@ extension ParsableCommand {
 
         if let latestTag {
           Console.default.lineBreakAndWrite("Defaulting to latest found tag: \(latestTag)")
+          swiftPackage.version = latestTag
         }
       case .valid:
         break
