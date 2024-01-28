@@ -223,6 +223,7 @@ public final class SwiftPackageService {
 
 private extension WorkingCheckout {
   /// Get repository tags ordered by semantic versioning
+  /// it attempts to normalize the tags by removing occurrences of `v`
   func getSemVerOrderedTags() throws -> [String] {
     try getTags().sorted(
       by: {
