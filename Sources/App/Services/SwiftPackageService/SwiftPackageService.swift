@@ -160,7 +160,7 @@ public final class SwiftPackageService {
         editable: false
       )
 
-      let repositoryTags = try workingCopy.getTags()
+      let repositoryTags = try workingCopy.getSemVerOrderedTags()
 
       let resolvedTag: String
       let tagState: ResourceState
@@ -215,5 +215,33 @@ public final class SwiftPackageService {
         }
       }
     }
+  }
+}
+
+// MARK: - Helpers
+
+private extension WorkingCheckout {
+  func getSemVerOrderedTags() throws -> [String] {
+    try getTags().sorted(
+      by: {
+        let normalizedVersionA = $0.normalizedVersion
+        let normalizedVersionB = $1.normalizedVersion
+
+        if normalizedVersionB.first?.isNumber == false {
+          return false
+        }
+
+        return normalizedVersionA.compare(
+          normalizedVersionB,
+          options: .numeric
+        ) == .orderedAscending
+      }
+    )
+  }
+}
+
+private extension String {
+  var normalizedVersion: String {
+    replacingOccurrences(of: "v", with: "")
   }
 }
