@@ -31,7 +31,7 @@ extension SwiftPackageInfo {
             Show direct and indirect dependencies of a product, listing
             all dependencies that are linked to its binary.
             """,
-      version: "1.3.4"
+      version: SwiftPackageInfo.configuration.version
     )
 
     @OptionGroup var allArguments: AllArguments

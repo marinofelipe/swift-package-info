@@ -32,7 +32,7 @@ extension SwiftPackageInfo {
             Runs all available providers (each one available via a subcommand, e.g. BinarySize),
             and generates a full report of a given Swift Package product for a specific version.
             """,
-      version: "1.3.4"
+      version: SwiftPackageInfo.configuration.version
     )
 
     @OptionGroup var allArguments: AllArguments

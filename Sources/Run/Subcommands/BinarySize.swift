@@ -40,7 +40,7 @@ extension SwiftPackageInfo {
 
             \(estimatedSizeNote)
             """,
-      version: "1.3.4"
+      version: SwiftPackageInfo.configuration.version
     )
 
     @OptionGroup var allArguments: AllArguments
