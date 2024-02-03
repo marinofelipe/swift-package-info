@@ -37,7 +37,7 @@ public struct SwiftPackageInfo: AsyncParsableCommand {
         that can be used in your favor when deciding whether to
         adopt or not a Swift Package as a dependency on your app.
         """,
-    version: "1.4.0",
+    version: "1.4.1",
     subcommands: [
       BinarySize.self,
       Platforms.self,
@@ -185,7 +185,7 @@ extension ParsableCommand {
         Console.default.lineBreakAndWrite("Package version was \(tagState.description)")
 
         if let latestTag {
-          Console.default.lineBreakAndWrite("Defaulting to latest found tag: \(latestTag)")
+          Console.default.lineBreakAndWrite("Defaulting to latest found semver tag: \(latestTag)")
           swiftPackage.version = latestTag
         }
       case .valid:

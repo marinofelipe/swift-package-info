@@ -28,6 +28,7 @@ import Basics
 import PackageModel
 import SourceControl
 import TSCBasic
+import TSCUtility
 
 public enum ResourceState: Equatable, CustomStringConvertible {
   case undefined
@@ -160,7 +161,7 @@ public final class SwiftPackageService {
         editable: false
       )
 
-      let repositoryTags = try workingCopy.getTags()
+      let repositoryTags = try workingCopy.getSemVerOrderedTags()
 
       let resolvedTag: String
       let tagState: ResourceState
@@ -215,5 +216,35 @@ public final class SwiftPackageService {
         }
       }
     }
+  }
+}
+
+// MARK: - Helpers
+
+private extension WorkingCheckout {
+  /// Get repository tags ordered by semantic versioning
+  /// it attempts to normalize the tags by removing occurrences of `v`
+  func getSemVerOrderedTags() throws -> [String] {
+    try getTags().sorted(
+      by: {
+        guard
+          let versionA = Version($0.removingCharacterV),
+          let versionB = Version($1.removingCharacterV)
+        else {
+          return $0.compare(
+            $1,
+            options: .numeric
+          ) == .orderedAscending
+        }
+
+        return versionA < versionB
+      }
+    )
+  }
+}
+
+private extension String {
+  var removingCharacterV: String {
+    replacingOccurrences(of: "v", with: "")
   }
 }
