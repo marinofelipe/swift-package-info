@@ -80,9 +80,18 @@ struct AllArguments: ParsableArguments {
       .long,
       .customShort("v")
     ],
-    help: "Semantic version of the Swift Package. If not passed in the latest release is used"
+    help: "Semantic version of the Swift Package. If not passed and `revision` is not set, the latest semver tag is used"
   )
   var packageVersion: String?
+
+  @Option(
+    name: [
+      .long,
+      .customShort("r")
+    ],
+    help: "A single git commit, SHA-1 hash, or branch name. Applied when `packageVersion` is not set"
+  )
+  var revision: String?
 
   @Option(
     name: [
@@ -174,6 +183,7 @@ extension ParsableCommand {
       url: arguments.url,
       isLocal: arguments.url.isValidRemote ? false : true,
       version: arguments.packageVersion ?? ResourceState.undefined.description,
+      revision: arguments.revision,
       product: arguments.product ?? ResourceState.undefined.description
     )
   }
@@ -200,17 +210,22 @@ extension ParsableCommand {
         )
       }
 
-      switch tagState {
-      case .undefined, .invalid:
-        Console.default.lineBreakAndWrite("Package version was \(tagState.description)")
+      switch swiftPackage.resolution {
+      case let .revision(revision):
+        Console.default.lineBreakAndWrite("Resolved revision: \(revision)")
+        case .version:
+          switch tagState {
+          case .undefined, .invalid:
+            Console.default.lineBreakAndWrite("Package version was \(tagState.description)")
 
-        if let latestTag {
-          Console.default.lineBreakAndWrite("Defaulting to latest found semver tag: \(latestTag)")
-          swiftPackage.version = latestTag
+            if let latestTag {
+              Console.default.lineBreakAndWrite("Defaulting to latest found semver tag: \(latestTag)")
+              swiftPackage.resolution = .version(latestTag)
+            }
+          case .valid:
+            break
+          }
         }
-      case .valid:
-        break
-      }
     case .local:
       break
     }
