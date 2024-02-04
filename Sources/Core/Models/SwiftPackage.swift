@@ -21,27 +21,47 @@
 import struct Foundation.URL
 
 public struct SwiftPackage: Equatable, CustomStringConvertible {
+  public enum Resolution: Equatable, CustomStringConvertible {
+    case version(String)
+    case revision(String)
+
+    public var description: String {
+      switch self {
+      case let .revision(revision):
+        return "Revision: \(revision)"
+      case let .version(tag):
+        return "Version: \(tag)"
+      }
+    }
+  }
+
   public let url: URL
   public let isLocal: Bool
-  public var version: String
+  public var resolution: Resolution
   public var product: String
 
   public init(
     url: URL,
     isLocal: Bool,
     version: String,
+    revision: String?,
     product: String
   ) {
     self.url = url
     self.isLocal = isLocal
-    self.version = version
     self.product = product
+
+    if let revision = revision, version == ResourceState.undefined.description {
+      self.resolution = .revision(revision)
+    } else {
+      self.resolution = .version(version)
+    }
   }
 
   public var description: String {
     """
     \(isLocal ? "Local path" : "Repository URL"): \(url)
-    Version: \(version)
+    \(resolution.description)
     Product: \(product)
     """
   }

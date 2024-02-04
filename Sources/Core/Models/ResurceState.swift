@@ -18,24 +18,19 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Foundation
+public enum ResourceState: Equatable, CustomStringConvertible {
+  case undefined
+  case valid
+  case invalid
 
-import Core
-
-public extension Fixture {
-  static func makeSwiftPackage(
-    url: URL = URL(string: "https://www.apple.com")!,
-    isLocal: Bool = false,
-    version: String = "1.0.0",
-    revision: String? = nil,
-    product: String = "Some"
-  ) -> SwiftPackage {
-    .init(
-      url: url,
-      isLocal: isLocal,
-      version: version,
-      revision: revision,
-      product: product
-    )
+  public var description: String {
+    switch self {
+    case .undefined:
+      return "undefined"
+    case .valid:
+      return "valid"
+    case .invalid:
+      return "invalid"
+    }
   }
 }
