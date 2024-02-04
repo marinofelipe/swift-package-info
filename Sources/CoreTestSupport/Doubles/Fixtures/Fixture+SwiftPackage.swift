@@ -26,12 +26,15 @@ public extension Fixture {
   static func makeSwiftPackage(
     url: URL = URL(string: "https://www.apple.com")!,
     isLocal: Bool = false,
+    version: String = "1.0.0",
+    revision: String? = nil,
     product: String = "Some"
   ) -> SwiftPackage {
     .init(
       url: url,
       isLocal: isLocal,
-      version: "1.0.0",
+      version: version,
+      revision: revision,
       product: product
     )
   }
