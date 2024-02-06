@@ -31,12 +31,12 @@ final class SizeMeasurer {
     private let console: Console
     private let verbose: Bool
 
-    public convenience init(verbose: Bool) {
-        self.init(appManager: .init(verbose: verbose), verbose: verbose)
+    public convenience init(verbose: Bool, xcconfig: URL?) {
+        self.init(appManager: .init(xcconfig: xcconfig, verbose: verbose), verbose: verbose)
     }
 
     init(
-        appManager: AppManager = .init(verbose: true),
+        appManager: AppManager = .init(xcconfig: nil, verbose: true),
         console: Console = .default,
         verbose: Bool
     ) {

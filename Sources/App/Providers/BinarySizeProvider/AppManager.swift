@@ -59,14 +59,17 @@ final class AppManager {
     private let fileManager: FileManager
     private let console: Console
     private let verbose: Bool
+    private let xcconfig: URL?
 
     init(
         fileManager: FileManager = .default,
         console: Console = .default,
+        xcconfig: URL?,
         verbose: Bool
     ) {
         self.fileManager = fileManager
         self.console = console
+        self.xcconfig = xcconfig
         self.verbose = verbose
     }
 
@@ -90,6 +93,10 @@ final class AppManager {
     }
     
     func generateArchive() throws {
+        var cmdXCConfig: String = ""
+        if let xcconfig, let customXCConfigURL = URL(string: FileManager.default.currentDirectoryPath)?.appendingPathComponent(xcconfig.path) {
+            cmdXCConfig = "-xcconfig \(customXCConfigURL.path)"
+        }
         let command: ConsoleMessage = """
         xcodebuild \
         archive \
@@ -97,6 +104,7 @@ final class AppManager {
         -scheme \(Constants.appName) \
         -archivePath \(archivedPath) \
         -configuration Release \
+        \(cmdXCConfig) \
         -arch arm64 \
         CODE_SIGNING_REQUIRED=NO \
         CODE_SIGNING_ALLOWED=NO \

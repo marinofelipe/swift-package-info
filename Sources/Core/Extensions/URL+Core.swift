@@ -82,15 +82,21 @@ extension Array where Element == URL {
 
 public extension URL {
     static let isValidURLRegex = "^(https?://)?(www\\.)?([-a-z0-9]{1,63}\\.)*?[a-z0-9][-a-z0-9]{0,61}[a-z0-9]\\.[a-z]{2,6}(/[-\\w@\\+\\.~#\\?&/=%]*)?$"
-
+    
     var isValidRemote: Bool {
         NSPredicate(format:"SELF MATCHES %@", Self.isValidURLRegex)
             .evaluate(with: absoluteString)
     }
-
+    
     func isLocalDirectoryContainingPackageDotSwift(
         fileManager: FileManager = .default
     ) throws -> Bool {
         try fileManager.contentsOfDirectory(atPath: path).contains("Package.swift")
+    }
+    
+    func isLocalXCConfigFileValid(
+        fileManager: FileManager = .default
+    ) -> Bool {
+        fileManager.isReadableFile(atPath: path) && self.pathExtension == "xcconfig"
     }
 }

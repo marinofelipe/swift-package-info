@@ -48,9 +48,9 @@ public struct SwiftPackageInfo: AsyncParsableCommand {
   )
 
   static var subcommandsProviders: [InfoProvider] = [
-    BinarySizeProvider.fetchInformation(for:package:verbose:),
-    PlatformsProvider.fetchInformation(for:package:verbose:),
-    DependenciesProvider.fetchInformation(for:package:verbose:)
+    BinarySizeProvider.fetchInformation(for:package:xcconfig:verbose:),
+    PlatformsProvider.fetchInformation(for:package:xcconfig:verbose:),
+    DependenciesProvider.fetchInformation(for:package:xcconfig:verbose:)
   ]
 
   public init() {}
@@ -111,6 +111,17 @@ struct AllArguments: ParsableArguments {
         """
   )
   var report: ReportFormat = .consoleMessage
+  
+  @Option(
+    name: [
+      .customLong("xcconfig"),
+    ],
+    help: """
+        A valid relative local directory path that point to a file of type `.xcconfig`
+        - Note: For local packages full paths are discouraged and unsupported.
+        """
+  )
+  var xcconfig: URL? = nil
 
   @Flag(
     name: .long,
@@ -127,16 +138,17 @@ extension ParsableCommand {
 
     let isValidRemoteURL = arguments.url.isValidRemote
     let isValidLocalDirectory = try? arguments.url.isLocalDirectoryContainingPackageDotSwift()
+    let isValidLocalCustomFile = arguments.xcconfig?.isLocalXCConfigFileValid()
 
-    guard arguments.url.absoluteString.first != "/" else {
-      throw CleanExit.message(
-                """
-                Error: Invalid argument '--url <url>'
-                Usage: Absolute paths aren't supported! Please pass a relative path to your local package.
-                """
-      )
-    }
-
+//    guard arguments.url.absoluteString.first != "/" else {
+//      throw CleanExit.message(
+//                """
+//                Error: Invalid argument '--url <url>'
+//                Usage: Absolute paths aren't supported! Please pass a relative path to your local package.
+//                """
+//      )
+//    }
+//
     guard isValidRemoteURL || isValidLocalDirectory == true else {
       throw CleanExit.message(
                 """
@@ -147,6 +159,16 @@ extension ParsableCommand {
                 """
       )
     }
+      
+      if let isValidLocalCustomFile, isValidLocalCustomFile == false {
+          throw CleanExit.message(
+                    """
+                    Error: Invalid argument '--xcconfig <url>'
+                    Usage: The URL must be either:
+                    - A relative local file path that has point to a `.xcconfig` file, e.g. `../other-dir/CustomConfiguration.xcconfig`
+                    """
+          )
+      }
   }
 
   func makeSwiftPackage(from arguments: AllArguments) -> SwiftPackage {

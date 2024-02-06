@@ -45,6 +45,7 @@ final class PlatformsProviderTests: XCTestCase {
           ),
         ]
       ),
+      xcconfig: nil,
       verbose: true
     )
 
