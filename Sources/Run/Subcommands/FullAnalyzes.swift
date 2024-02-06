@@ -63,6 +63,7 @@ extension SwiftPackageInfo {
         subcommandProvider(
           swiftPackage,
           packageWrapper,
+          allArguments.xcconfig,
           allArguments.verbose
         )
         .onSuccess { providedInfos.append($0) }

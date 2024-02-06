@@ -45,6 +45,7 @@ public enum ProviderKind: String, CodingKey {
 public typealias InfoProvider = (
     _ swiftPackage: SwiftPackage,
     _ packageContent: PackageWrapper,
+    _ xcconfig: URL?,
     _ verbose: Bool
 ) -> Result<ProvidedInfo, InfoProviderError>
 

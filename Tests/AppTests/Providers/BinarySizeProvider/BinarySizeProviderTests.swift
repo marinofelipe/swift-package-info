@@ -33,7 +33,7 @@ final class BinarySizeProviderTests: XCTestCase {
     var lastSwiftPackage: SwiftPackage?
     var lastIsDynamic: Bool?
 
-    defaultSizeMeasurer = { verbose in
+    defaultSizeMeasurer = { xcconfig, verbose in
       lastVerbose = verbose
       defaultSizeMeasurerCallsCount += 1
 
@@ -69,7 +69,8 @@ final class BinarySizeProviderTests: XCTestCase {
             ]
           )
         ]
-      ),
+      ), 
+      xcconfig: nil,
       verbose: true
     )
 

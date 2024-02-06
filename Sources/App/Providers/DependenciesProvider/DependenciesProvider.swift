@@ -36,6 +36,7 @@ public struct DependenciesProvider {
   public static func fetchInformation(
     for swiftPackage: SwiftPackage,
     package: PackageWrapper,
+    xcconfig: URL?,
     verbose: Bool
   ) -> Result<ProvidedInfo, InfoProviderError> {
     guard let product = package.products.first(where: { $0.name == swiftPackage.product }) else {

@@ -64,9 +64,10 @@ public struct BinarySizeProvider {
     public static func fetchInformation(
         for swiftPackage: SwiftPackage,
         package: PackageWrapper,
+        xcconfig: URL?,
         verbose: Bool
     ) -> Result<ProvidedInfo, InfoProviderError> {
-        let sizeMeasurer = defaultSizeMeasurer(verbose)
+        let sizeMeasurer = defaultSizeMeasurer(xcconfig, verbose)
         var binarySize: SizeOnDisk = .zero
 
         let isProductDynamicLibrary = package.products
@@ -140,11 +141,11 @@ struct BinarySizeInformation: Equatable, Encodable, CustomConsoleMessagesConvert
 }
 
 #if DEBUG
-var defaultSizeMeasurer: (Bool) -> SizeMeasuring = { verbose in
-    SizeMeasurer(verbose: verbose).binarySize
+var defaultSizeMeasurer: (URL?, Bool) -> SizeMeasuring = { xcconfig, verbose in
+    SizeMeasurer(verbose: verbose, xcconfig: xcconfig).binarySize
 }
 #else
-let defaultSizeMeasurer: (Bool) -> SizeMeasuring = { verbose in
-    SizeMeasurer(verbose: verbose).binarySize
+let defaultSizeMeasurer: (URL?, Bool) -> SizeMeasuring = { xcconfig, verbose in
+    SizeMeasurer(verbose: verbose, xcconfig: xcconfig).binarySize
 }
 #endif
