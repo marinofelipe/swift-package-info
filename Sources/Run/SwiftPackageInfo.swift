@@ -140,15 +140,15 @@ extension ParsableCommand {
     let isValidLocalDirectory = try? arguments.url.isLocalDirectoryContainingPackageDotSwift()
     let isValidLocalCustomFile = arguments.xcconfig?.isLocalXCConfigFileValid()
 
-//    guard arguments.url.absoluteString.first != "/" else {
-//      throw CleanExit.message(
-//                """
-//                Error: Invalid argument '--url <url>'
-//                Usage: Absolute paths aren't supported! Please pass a relative path to your local package.
-//                """
-//      )
-//    }
-//
+    guard arguments.url.absoluteString.first != "/" else {
+      throw CleanExit.message(
+                """
+                Error: Invalid argument '--url <url>'
+                Usage: Absolute paths aren't supported! Please pass a relative path to your local package.
+                """
+      )
+    }
+
     guard isValidRemoteURL || isValidLocalDirectory == true else {
       throw CleanExit.message(
                 """
