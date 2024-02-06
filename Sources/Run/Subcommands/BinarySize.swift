@@ -63,7 +63,8 @@ extension SwiftPackageInfo {
 
       try BinarySizeProvider.fetchInformation(
         for: swiftPackage,
-        package: packageWrapper,
+        package: packageWrapper, 
+        xcconfig: allArguments.xcconfig,
         verbose: allArguments.verbose
       )
       .onSuccess {

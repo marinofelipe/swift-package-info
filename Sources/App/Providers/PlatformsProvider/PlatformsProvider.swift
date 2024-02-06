@@ -19,11 +19,13 @@
 //  SOFTWARE.
 
 import Core
+import Foundation
 
 public struct PlatformsProvider {
   public static func fetchInformation(
     for swiftPackage: SwiftPackage,
     package: PackageWrapper,
+    xcconfig: URL?,
     verbose: Bool
   ) -> Result<ProvidedInfo, InfoProviderError> {
     .success(

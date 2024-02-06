@@ -100,7 +100,7 @@ final class DependenciesProviderTests: XCTestCase {
           target2,
           target3
         ]
-      ),
+      ), xcconfig: nil,
       verbose: true
     )
 
@@ -222,7 +222,8 @@ final class DependenciesProviderTests: XCTestCase {
         targets: [
           target
         ]
-      ),
+      ), 
+      xcconfig: nil,
       verbose: true
     )
 

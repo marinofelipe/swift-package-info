@@ -55,6 +55,7 @@ extension SwiftPackageInfo {
       try PlatformsProvider.fetchInformation(
         for: swiftPackage,
         package: packageWrapper,
+        xcconfig: allArguments.xcconfig,
         verbose: allArguments.verbose
       )
       .onSuccess {
