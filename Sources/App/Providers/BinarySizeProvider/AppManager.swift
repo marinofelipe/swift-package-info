@@ -93,8 +93,9 @@ final class AppManager {
     }
     
     func generateArchive() throws {
+        let workingDirectory = fileManager.currentDirectoryPath
         var cmdXCConfig: String = ""
-        if let xcconfig, let customXCConfigURL = URL(string: FileManager.default.currentDirectoryPath)?.appendingPathComponent(xcconfig.path) {
+        if let xcconfig, let customXCConfigURL = URL(string: workingDirectory)?.appendingPathComponent(xcconfig.path) {
             cmdXCConfig = "-xcconfig \(customXCConfigURL.path)"
         }
         let command: ConsoleMessage = """
@@ -117,7 +118,7 @@ final class AppManager {
 
         let output = try Shell.run(
             command.text,
-            workingDirectory: fileManager.currentDirectoryPath,
+            workingDirectory: workingDirectory,
             verbose: verbose,
             timeout: nil
         )
