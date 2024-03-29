@@ -118,7 +118,6 @@ struct AllArguments: ParsableArguments {
     ],
     help: """
         A valid relative local directory path that point to a file of type `.xcconfig`
-        - Note: For local packages full paths are discouraged and unsupported.
         """
   )
   var xcconfig: URL? = nil
@@ -160,12 +159,11 @@ extension ParsableCommand {
       )
     }
       
-      if let isValidLocalCustomFile, isValidLocalCustomFile == false {
+      if isValidLocalCustomFile == false {
           throw CleanExit.message(
                     """
                     Error: Invalid argument '--xcconfig <url>'
-                    Usage: The URL must be either:
-                    - A relative local file path that has point to a `.xcconfig` file, e.g. `../other-dir/CustomConfiguration.xcconfig`
+                    Usage: The URL must be a relative local file path that has point to a `.xcconfig` file, e.g. `../other-dir/CustomConfiguration.xcconfig`
                     """
           )
       }
