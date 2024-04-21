@@ -30,23 +30,6 @@ import SourceControl
 import TSCBasic
 import TSCUtility
 
-public enum ResourceState: Equatable, CustomStringConvertible {
-  case undefined
-  case valid
-  case invalid
-
-  public var description: String {
-    switch self {
-    case .undefined:
-      return "undefined"
-    case .valid:
-      return "valid"
-    case .invalid:
-      return "invalid"
-    }
-  }
-}
-
 public struct SwiftPackageValidationResult {
   public enum SourceInformation: Equatable {
     case local
@@ -162,22 +145,28 @@ public final class SwiftPackageService {
       )
 
       let repositoryTags = try workingCopy.getSemVerOrderedTags()
-
-      let resolvedTag: String
+      
       let tagState: ResourceState
 
-      if swiftPackage.version == ResourceState.undefined.description {
-        tagState = .undefined
-        resolvedTag = repositoryTags.last ?? ""
-      } else if repositoryTags.contains(swiftPackage.version) {
-        tagState = .valid
-        resolvedTag = swiftPackage.version
-      } else {
-        tagState = .invalid
-        resolvedTag = repositoryTags.last ?? ""
-      }
+      switch swiftPackage.resolution {
+      case let .version(version):
+        let resolvedTag: String
+        if version == ResourceState.undefined.description {
+          tagState = .undefined
+          resolvedTag = repositoryTags.last ?? ""
+        } else if repositoryTags.contains(version) {
+          tagState = .valid
+          resolvedTag = version
+        } else {
+          tagState = .invalid
+          resolvedTag = repositoryTags.last ?? ""
+        }
 
-      try workingCopy.checkout(tag: resolvedTag)
+        try workingCopy.checkout(tag: resolvedTag)
+      case let .revision(revision):
+        tagState = .undefined
+        try workingCopy.checkout(revision: Revision(identifier: revision))
+      }
 
       let package = try await packageLoader.load(cloneDirPath)
 

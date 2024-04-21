@@ -24,77 +24,147 @@ import CoreTestSupport
 @testable import Core
 
 final class SwiftPackageTests: XCTestCase {
-    func testDescriptionWhenLocal() {
-        let sut = Fixture.makeSwiftPackage(
-            isLocal: true
-        )
-        XCTAssertEqual(
-            sut.description,
-            """
-            Local path: https://www.apple.com
-            Version: 1.0.0
-            Product: Some
-            """
-        )
+  // MARK: - Init
+
+  func testResolutionPermutations() {
+    struct Permutation: Equatable {
+      let version: String
+      let revision: String?
+      let expectedResolution: SwiftPackage.Resolution
     }
 
-    func testDescriptionWhenRemote() {
-        let sut = Fixture.makeSwiftPackage(isLocal: false)
-        XCTAssertEqual(
-            sut.description,
-            """
-            Repository URL: https://www.apple.com
-            Version: 1.0.0
-            Product: Some
-            """
-        )
-    }
+    let permutations = [
+      Permutation(
+        version: "1.2.3",
+        revision: "3fag5v0",
+        expectedResolution: .version("1.2.3")
+      ),
+      Permutation(
+        version: ResourceState.undefined.description,
+        revision: nil,
+        expectedResolution: .version(ResourceState.undefined.description)
+      ),
+      Permutation(
+        version: ResourceState.undefined.description, 
+        revision: "3fag5v0",
+        expectedResolution: .revision("3fag5v0")
+      ),
+      Permutation(
+        version: ResourceState.invalid.description,
+        revision: "3fag5v0",
+        expectedResolution: .version(ResourceState.invalid.description)
+      ),
+      Permutation(
+        version: ResourceState.undefined.description, 
+        revision: nil, 
+        expectedResolution: .version(ResourceState.undefined.description)
+      )
+    ]
 
-    func testAccountAndRepositoryNamesWhenLocal() {
-        let sut = Fixture.makeSwiftPackage(
-            url: URL(string: "../directory")!,
-            isLocal: true
-        )
-        XCTAssertTrue(sut.accountName.isEmpty)
-        XCTAssertTrue(sut.repositoryName.isEmpty)
-    }
+    permutations.forEach { permutation in
+      let sut = Fixture.makeSwiftPackage(
+        version: permutation.version,
+        revision: permutation.revision
+      )
 
-    func testAccountAndRepositoryNamesWhenNotValidGitURL() {
-        let sut = Fixture.makeSwiftPackage(
-            url: URL(string: "https://www.where.com")!,
-            isLocal: false
-        )
-        XCTAssertTrue(sut.accountName.isEmpty)
-        XCTAssertTrue(sut.repositoryName.isEmpty)
+      XCTAssertEqual(
+        sut.resolution,
+        permutation.expectedResolution
+      )
     }
+  }
 
-    func testAccountAndRepositoryNamesWhenRemoteValidGitURL() {
-        let sut = Fixture.makeSwiftPackage(
-            url: URL(string: "https://www.github.com/erica/now")!,
-            isLocal: false
-        )
-        XCTAssertEqual(
-            sut.accountName,
-            "erica"
-        )
-        XCTAssertEqual(
-            sut.repositoryName,
-            "now"
-        )
-    }
+  // MARK: - Description
 
-    func testAccountAndRepositoryNamesWhenURLHasDotGitAtTheEnd() {
-        let sut = Fixture.makeSwiftPackage(
-            url: URL(string: "https://www.github.com/erica/now.git")!,
-            isLocal: false
-        )
-        XCTAssertEqual(
-            sut.accountName,
-            "erica"
-        )
-        XCTAssertEqual(
-            sut.repositoryName,
-            "now"
-        )
-    }
+  func testDescriptionWhenLocal() {
+    let sut = Fixture.makeSwiftPackage(
+      isLocal: true
+    )
+    XCTAssertEqual(
+      sut.description,
+      """
+      Local path: https://www.apple.com
+      Version: 1.0.0
+      Product: Some
+      """
+    )
+  }
+
+  func testDescriptionWhenRemote() {
+    let sut = Fixture.makeSwiftPackage(isLocal: false)
+    XCTAssertEqual(
+      sut.description,
+      """
+      Repository URL: https://www.apple.com
+      Version: 1.0.0
+      Product: Some
+      """
+    )
+  }
+
+  func testDescriptionWhenRevision() {
+    let revision = "f46ab7s"
+    let sut = Fixture.makeSwiftPackage(
+      version: ResourceState.undefined.description,
+      revision: revision
+    )
+    XCTAssertEqual(
+      sut.description,
+      """
+      Repository URL: https://www.apple.com
+      Revision: \(revision)
+      Product: Some
+      """
+    )
+  }
+
+  // MARK: - Account and repository
+
+  func testAccountAndRepositoryNamesWhenLocal() {
+    let sut = Fixture.makeSwiftPackage(
+      url: URL(string: "../directory")!,
+      isLocal: true
+    )
+    XCTAssertTrue(sut.accountName.isEmpty)
+    XCTAssertTrue(sut.repositoryName.isEmpty)
+  }
+
+  func testAccountAndRepositoryNamesWhenNotValidGitURL() {
+    let sut = Fixture.makeSwiftPackage(
+      url: URL(string: "https://www.where.com")!,
+      isLocal: false
+    )
+    XCTAssertTrue(sut.accountName.isEmpty)
+    XCTAssertTrue(sut.repositoryName.isEmpty)
+  }
+
+  func testAccountAndRepositoryNamesWhenRemoteValidGitURL() {
+    let sut = Fixture.makeSwiftPackage(
+      url: URL(string: "https://www.github.com/erica/now")!,
+      isLocal: false
+    )
+    XCTAssertEqual(
+      sut.accountName,
+      "erica"
+    )
+    XCTAssertEqual(
+      sut.repositoryName,
+      "now"
+    )
+  }
+
+  func testAccountAndRepositoryNamesWhenURLHasDotGitAtTheEnd() {
+    let sut = Fixture.makeSwiftPackage(
+      url: URL(string: "https://www.github.com/erica/now.git")!,
+      isLocal: false
+    )
+    XCTAssertEqual(
+      sut.accountName,
+      "erica"
+    )
+    XCTAssertEqual(
+      sut.repositoryName,
+      "now"
+    )
+  }
 }

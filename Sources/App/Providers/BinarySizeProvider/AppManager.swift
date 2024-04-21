@@ -25,11 +25,11 @@ import XcodeProj
 // MARK: - Constants
 
 fileprivate enum Constants {
-    static let appName: String = "MeasurementApp"
-    static let clonedRepoName: String = "swift-package-info"
-    static let xcodeProjName: String = "\(appName).xcodeproj"
-    static let xcodeProjPath: String = "\(clonedRepoName)/\(xcodeProjName)"
-    static let archiveName: String = "archive.xcarchive"
+  static let appName: String = "MeasurementApp"
+  static let clonedRepoName: String = "swift-package-info"
+  static let xcodeProjName: String = "\(appName).xcodeproj"
+  static let xcodeProjPath: String = "\(clonedRepoName)/\(xcodeProjName)"
+  static let archiveName: String = "archive.xcarchive"
 }
 
 // MARK: - App manager
@@ -37,68 +37,69 @@ fileprivate enum Constants {
 /// Provides API to work with the `measurement app`.
 /// Can `generate archive`, `calculate its binary size` and `mutate the project` with a given Swift Package dependency`.
 final class AppManager {
-    private lazy var appPath: String = fileManager.currentDirectoryPath
-        .appending("/")
-        .appending(Constants.xcodeProjPath)
+  private lazy var appPath: String = fileManager.currentDirectoryPath
+    .appending("/")
+    .appending(Constants.xcodeProjPath)
 
-    private lazy var emptyAppDirectoryPath: String = fileManager.currentDirectoryPath
-        .appending("/")
-        .appending(Constants.clonedRepoName)
+  private lazy var emptyAppDirectoryPath: String = fileManager.currentDirectoryPath
+    .appending("/")
+    .appending(Constants.clonedRepoName)
 
-    private lazy var archivedPath: String = fileManager.temporaryDirectory
-        .path
-        .appending("/")
-        .appending(Constants.archiveName)
+  private lazy var archivedPath: String = fileManager.temporaryDirectory
+    .path
+    .appending("/")
+    .appending(Constants.archiveName)
 
-    private lazy var archivedProductPath: String = fileManager.temporaryDirectory
-        .path
-        .appending("/")
-        .appending(Constants.archiveName)
-        .appending("/Products/Applications/MeasurementApp.app")
+  private lazy var archivedProductPath: String = fileManager.temporaryDirectory
+    .path
+    .appending("/")
+    .appending(Constants.archiveName)
+    .appending("/Products/Applications/MeasurementApp.app")
 
-    private let fileManager: FileManager
-    private let console: Console
-    private let verbose: Bool
-    private let xcconfig: URL?
+  private let fileManager: FileManager
+  private let console: Console
+  private let verbose: Bool
+  private let xcconfig: URL?
 
-    init(
-        fileManager: FileManager = .default,
-        console: Console = .default,
-        xcconfig: URL?,
-        verbose: Bool
-    ) {
-        self.fileManager = fileManager
-        self.console = console
-        self.xcconfig = xcconfig
-        self.verbose = verbose
+  init(
+    fileManager: FileManager = .default,
+    console: Console = .default,
+    xcconfig: URL?,
+    verbose: Bool
+  ) {
+    self.fileManager = fileManager
+    self.console = console
+    self.xcconfig = xcconfig
+    self.verbose = verbose
+  }
+
+  func cloneEmptyApp() throws {
+    do {
+      try Shell.performShallowGitClone(
+        workingDirectory: fileManager.currentDirectoryPath,
+        repositoryURLString: "https://github.com/marinofelipe/swift-package-info",
+        branchOrTag: "main",
+        verbose: verbose
+      )
+    } catch {
+      throw BinarySizeProviderError.unableToCloneEmptyApp(errorMessage: error.localizedDescription)
+    }
+  }
+
+  func cleanUp() throws {
+    if fileManager.fileExists(atPath: emptyAppDirectoryPath) {
+      try fileManager.removeItem(atPath: emptyAppDirectoryPath)
+    }
+  }
+
+  func generateArchive() throws {
+    let workingDirectory = fileManager.currentDirectoryPath
+    var cmdXCConfig: String = ""
+    if let xcconfig, let customXCConfigURL = URL(string: workingDirectory)?.appendingPathComponent(xcconfig.path) {
+      cmdXCConfig = "-xcconfig \(customXCConfigURL.path)"
     }
 
-    func cloneEmptyApp() throws {
-        do {
-            try Shell.performShallowGitClone(
-                workingDirectory: fileManager.currentDirectoryPath,
-                repositoryURLString: "https://github.com/marinofelipe/swift-package-info",
-                branchOrTag: "main",
-                verbose: verbose
-            )
-        } catch {
-            throw BinarySizeProviderError.unableToCloneEmptyApp(errorMessage: error.localizedDescription)
-        }
-    }
-
-    func cleanUp() throws {
-        if fileManager.fileExists(atPath: emptyAppDirectoryPath) {
-            try fileManager.removeItem(atPath: emptyAppDirectoryPath)
-        }
-    }
-    
-    func generateArchive() throws {
-        let workingDirectory = fileManager.currentDirectoryPath
-        var cmdXCConfig: String = ""
-        if let xcconfig, let customXCConfigURL = URL(string: workingDirectory)?.appendingPathComponent(xcconfig.path) {
-            cmdXCConfig = "-xcconfig \(customXCConfigURL.path)"
-        }
-        let command: ConsoleMessage = """
+    let command: ConsoleMessage = """
         xcodebuild \
         archive \
         -project \(Constants.xcodeProjPath) \
@@ -112,114 +113,121 @@ final class AppManager {
         ENABLE_BITCODE=NO
         """
 
-        if verbose {
-            console.lineBreakAndWrite(command)
-        }
+    if verbose {
+      console.lineBreakAndWrite(command)
+    }
 
-        let output = try Shell.run(
-            command.text,
-            workingDirectory: workingDirectory,
-            verbose: verbose,
-            timeout: nil
+    let output = try Shell.run(
+      command.text,
+      workingDirectory: workingDirectory,
+      verbose: verbose,
+      timeout: nil
+    )
+
+    if output.succeeded == false {
+      if verbose {
+        console.lineBreakAndWrite(
+          .init(
+            text: "Command failed...",
+            color: .red
+          )
         )
+      }
 
-        if output.succeeded == false {
-            if verbose {
-                console.lineBreakAndWrite(
-                    .init(
-                        text: "Command failed...",
-                        color: .red
-                    )
-                )
-            }
+      let errorMessage = String(data: output.errorData, encoding: .utf8) ?? ""
+      throw BinarySizeProviderError.unableToGenerateArchive(errorMessage: errorMessage)
+    }
+  }
 
-            let errorMessage = String(data: output.errorData, encoding: .utf8) ?? ""
-            throw BinarySizeProviderError.unableToGenerateArchive(errorMessage: errorMessage)
-        }
+  func calculateBinarySize() throws -> SizeOnDisk {
+    do {
+      let url = URL(fileURLWithPath: archivedProductPath)
+      let appSize = try url.sizeOnDisk()
+
+      if verbose { console.lineBreakAndWrite(appSize.message) }
+
+      return appSize
+    } catch {
+      throw BinarySizeProviderError.unableToGetBinarySizeOnDisk(
+        underlyingError: error as NSError
+      )
+    }
+  }
+
+  func add(
+    asDependency swiftPackage: SwiftPackage,
+    isDynamic: Bool
+  ) throws {
+    let xcodeProj = try XcodeProj(path: .init(appPath))
+
+    guard let appProject = xcodeProj.pbxproj.projects.first else {
+      throw BinarySizeProviderError.unableToRetrieveAppProject(atPath: appPath)
     }
 
-    func calculateBinarySize() throws -> SizeOnDisk {
-        do {
-            let url = URL(fileURLWithPath: archivedProductPath)
-            let appSize = try url.sizeOnDisk()
-
-            if verbose { console.lineBreakAndWrite(appSize.message) }
-
-            return appSize
-        } catch {
-            throw BinarySizeProviderError.unableToGetBinarySizeOnDisk(
-                underlyingError: error as NSError
-            )
-        }
+    if swiftPackage.isLocal {
+      let packageReference = try appProject.addLocal(swiftPackage: swiftPackage)
+      xcodeProj.pbxproj.add(object: packageReference)
+    } else {
+      let packageReference = try appProject.addRemote(swiftPackage: swiftPackage)
+      xcodeProj.pbxproj.add(object: packageReference)
     }
 
-    func add(
-        asDependency swiftPackage: SwiftPackage,
-        isDynamic: Bool
-    ) throws {
-        let xcodeProj = try XcodeProj(path: .init(appPath))
+    try xcodeProj.write(path: .init(appPath))
 
-        guard let appProject = xcodeProj.pbxproj.projects.first else {
-            throw BinarySizeProviderError.unableToRetrieveAppProject(atPath: appPath)
-        }
+    if isDynamic {
+      let packageDependency = appProject.targets
+        .first?
+        .packageProductDependencies
+        .first
+      let packageBuildFile = PBXBuildFile(product: packageDependency)
 
-        if swiftPackage.isLocal {
-            let packageReference = try appProject.addLocal(swiftPackage: swiftPackage)
-            xcodeProj.pbxproj.add(object: packageReference)
-        } else {
-            let packageReference = try appProject.addRemote(swiftPackage: swiftPackage)
-            xcodeProj.pbxproj.add(object: packageReference)
-        }
+      let embedFrameworksBuildPhase = appProject.targets
+        .first?
+        .embedFrameworksBuildPhases()
+        .first
+      embedFrameworksBuildPhase?.files?.append(packageBuildFile)
 
-        try xcodeProj.write(path: .init(appPath))
-
-        if isDynamic {
-            let packageDependency = appProject.targets
-                .first?
-                .packageProductDependencies
-                .first
-            let packageBuildFile = PBXBuildFile(product: packageDependency)
-
-            let embedFrameworksBuildPhase = appProject.targets
-                .first?
-                .embedFrameworksBuildPhases()
-                .first
-            embedFrameworksBuildPhase?.files?.append(packageBuildFile)
-
-            try xcodeProj.write(path: .init(appPath))
-        }
+      try xcodeProj.write(path: .init(appPath))
     }
+  }
 }
 
 // MARK: - PBXProject: add(swiftPackage:targetName:)
 
 private extension PBXProject {
-    func addRemote(
-        swiftPackage: SwiftPackage,
-        targetName: String = Constants.appName
-    ) throws -> XCRemoteSwiftPackageReference {
-        try addSwiftPackage(
-            repositoryURL: swiftPackage.url.absoluteString,
-            productName: swiftPackage.product,
-            versionRequirement: .upToNextMinorVersion(
-                swiftPackage.version
-                    .trimmingCharacters(
-                        in: CharacterSet.decimalDigits.inverted
-                    )
-            ),
-            targetName: targetName
+  func addRemote(
+    swiftPackage: SwiftPackage,
+    targetName: String = Constants.appName
+  ) throws -> XCRemoteSwiftPackageReference {
+    let requirement: XCRemoteSwiftPackageReference.VersionRequirement
+    switch swiftPackage.resolution {
+    case let .revision(revision):
+      requirement = .revision(revision)
+    case let .version(tag):
+      requirement = .exact(
+        tag.trimmingCharacters(
+          in: CharacterSet.decimalDigits.inverted
         )
+      )
     }
 
-    func addLocal(
-        swiftPackage: SwiftPackage,
-        targetName: String = Constants.appName
-    ) throws -> XCSwiftPackageProductDependency {
-        try addLocalSwiftPackage(
-            // Relative path is adjusted for the location of the cloned MeasurementApp
-            path: .init("../\(swiftPackage.url.path)"),
-            productName: swiftPackage.product,
-            targetName: targetName
-        )
-    }
+    return try addSwiftPackage(
+      repositoryURL: swiftPackage.url.absoluteString,
+      productName: swiftPackage.product,
+      versionRequirement: requirement,
+      targetName: targetName
+    )
+  }
+
+  func addLocal(
+    swiftPackage: SwiftPackage,
+    targetName: String = Constants.appName
+  ) throws -> XCSwiftPackageProductDependency {
+    try addLocalSwiftPackage(
+      // Relative path is adjusted for the location of the cloned MeasurementApp
+      path: .init("../\(swiftPackage.url.path)"),
+      productName: swiftPackage.product,
+      targetName: targetName
+    )
+  }
 }
