@@ -41,30 +41,40 @@ extension SwiftPackageInfo {
     public func run() async throws {
       try runArgumentsValidation(arguments: allArguments)
       var swiftPackage = makeSwiftPackage(from: allArguments)
-      swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+
+      Task { @MainActor in
+        swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+      }
 
       let package = try await validate(
         swiftPackage: &swiftPackage,
         verbose: allArguments.verbose
       )
 
-      let report = Report(swiftPackage: swiftPackage)
-
       let packageWrapper = PackageWrapper(from: package)
 
-      try PlatformsProvider.fetchInformation(
-        for: swiftPackage,
-        package: packageWrapper,
-        xcconfig: allArguments.xcconfig,
-        verbose: allArguments.verbose
-      )
-      .onSuccess {
-        try report.generate(
-          for: $0,
-          format: allArguments.report
+      do {
+        let providedInfo = try await PlatformsProvider.fetchInformation(
+          for: swiftPackage,
+          package: packageWrapper,
+          xcconfig: allArguments.xcconfig,
+          verbose: allArguments.verbose
         )
+
+        Task { @MainActor in
+          let report = Report(swiftPackage: swiftPackage, console: .default)
+          try await report.generate(
+            for: providedInfo,
+            format: allArguments.report
+          )
+        }
+      } catch {
+        if let providerError = error as? InfoProviderError {
+          Task { @MainActor in
+            Console.default.write(providerError.message)
+          }
+        }
       }
-      .onFailure { Console.default.write($0.message) }
     }
   }
 }

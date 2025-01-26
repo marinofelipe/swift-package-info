@@ -21,17 +21,18 @@
 import Core
 
 public enum ReportFormat: String, CaseIterable {
-    case consoleMessage
-    case jsonDump
+  case consoleMessage
+  case jsonDump
 }
 
 extension ReportFormat {
-    func makeReportGenerator(console: Console = .default) -> ReportGenerating {
-        switch self {
-        case .consoleMessage:
-            return ConsoleReportGenerator(console: console).renderReport
-        case .jsonDump:
-            return JSONDumpReportGenerator(console: console).renderDump
-        }
+  @MainActor
+  func makeReportGenerator(console: Console) -> ReportGenerating {
+    switch self {
+    case .consoleMessage:
+      ConsoleReportGenerator(console: console).renderReport
+    case .jsonDump:
+      JSONDumpReportGenerator(console: console).renderDump
     }
+  }
 }

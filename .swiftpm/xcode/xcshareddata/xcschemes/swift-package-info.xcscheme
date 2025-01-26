@@ -191,12 +191,12 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "--path https://github.com/firebase/firebase-ios-sdk.git"
+            argument = "binary-size "
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = ""
-            isEnabled = "NO">
+            argument = "--path https://github.com/firebase/firebase-ios-sdk.git"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-v 6.0.0"

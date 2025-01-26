@@ -42,34 +42,36 @@ extension SwiftPackageInfo {
     public func run() async throws {
       try runArgumentsValidation(arguments: allArguments)
       var swiftPackage = makeSwiftPackage(from: allArguments)
-      swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+
+      Task { @MainActor in
+        swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+      }
 
       let package = try await validate(
         swiftPackage: &swiftPackage,
         verbose: allArguments.verbose
       )
 
-      let report = Report(swiftPackage: swiftPackage)
+      let report = await Report(swiftPackage: swiftPackage, console: .default)
 
       let packageWrapper = PackageWrapper(from: package)
 
-      // Providers have a synchronous API and are run in sequence. Each of them, even when performing async tasks, have to fulfill a sync API.
-      // For current setup it works as wanted, since the only heavy provider is binary size, that executes xcodebuild commands that are logged into the console
-      // when verbose flag is passed in. All other providers have sync logic that consumes PackageContent (Package.swift) decoded and provide specific
-      // information over it.
-      // Adding providers with asynchronous tasks should be avoided, and in case of adding any appears, things can be re-evaluated to run providers concurrently.
       var providedInfos: [ProvidedInfo] = []
-      SwiftPackageInfo.subcommandsProviders.forEach { subcommandProvider in
-        subcommandProvider(
-          swiftPackage,
-          packageWrapper,
-          allArguments.xcconfig,
-          allArguments.verbose
-        )
-        .onSuccess { providedInfos.append($0) }
-        .onFailure { Console.default.write($0.message) }
+      await withThrowingTaskGroup(of: Void.self) { taskGroup in
+        SwiftPackageInfo.subcommandsProviders.forEach { subcommandProvider in
+          taskGroup.addTask {
+            let providedInfo = try await subcommandProvider(
+              swiftPackage,
+              packageWrapper,
+              allArguments.xcconfig,
+              allArguments.verbose
+            )
+            providedInfos.append(providedInfo)
+          }
+        }
       }
-      try report.generate(
+
+      try await report.generate(
         for: providedInfos,
         format: allArguments.report
       )

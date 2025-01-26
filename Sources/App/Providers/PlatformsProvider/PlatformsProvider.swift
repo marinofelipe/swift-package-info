@@ -27,14 +27,12 @@ public struct PlatformsProvider {
     package: PackageWrapper,
     xcconfig: URL?,
     verbose: Bool
-  ) -> Result<ProvidedInfo, InfoProviderError> {
-    .success(
-      .init(
-        providerName: "Platforms",
-        providerKind: .platforms,
-        information: PlatformsInformation(
-          platforms: package.platforms
-        )
+  ) async throws -> ProvidedInfo {
+    .init(
+      providerName: "Platforms",
+      providerKind: .platforms,
+      information: PlatformsInformation(
+        platforms: package.platforms
       )
     )
   }
@@ -63,14 +61,14 @@ struct PlatformsInformation: Equatable, Encodable, CustomConsoleMessagesConverti
 
   private func buildConsoleMessages() -> [ConsoleMessage] {
     if platforms.isEmpty {
-      return [
+      [
         .init(
           text: "System default",
           hasLineBreakAfter: false
         )
       ]
     } else {
-      return platforms
+      platforms
         .map { platform -> [ConsoleMessage] in
           var messages = [
             ConsoleMessage(

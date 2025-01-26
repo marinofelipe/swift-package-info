@@ -63,7 +63,7 @@ final class AppManager {
 
   init(
     fileManager: FileManager = .default,
-    console: Console = .default,
+    console: Console,
     xcconfig: URL?,
     verbose: Bool
   ) {
@@ -73,9 +73,9 @@ final class AppManager {
     self.verbose = verbose
   }
 
-  func cloneEmptyApp() throws {
+  func cloneEmptyApp() async throws {
     do {
-      try Shell.performShallowGitClone(
+      try await Shell.performShallowGitClone(
         workingDirectory: fileManager.currentDirectoryPath,
         repositoryURLString: "https://github.com/marinofelipe/swift-package-info",
         branchOrTag: "main",
@@ -92,7 +92,7 @@ final class AppManager {
     }
   }
 
-  func generateArchive() throws {
+  func generateArchive() async throws {
     let workingDirectory = fileManager.currentDirectoryPath
     var cmdXCConfig: String = ""
     if let xcconfig, let customXCConfigURL = URL(string: workingDirectory)?.appendingPathComponent(xcconfig.path) {
@@ -114,10 +114,10 @@ final class AppManager {
         """
 
     if verbose {
-      console.lineBreakAndWrite(command)
+      await console.lineBreakAndWrite(command)
     }
 
-    let output = try Shell.run(
+    let output = try await Shell.run(
       command.text,
       workingDirectory: workingDirectory,
       verbose: verbose,
@@ -126,7 +126,7 @@ final class AppManager {
 
     if output.succeeded == false {
       if verbose {
-        console.lineBreakAndWrite(
+        await console.lineBreakAndWrite(
           .init(
             text: "Command failed...",
             color: .red
@@ -139,12 +139,14 @@ final class AppManager {
     }
   }
 
-  func calculateBinarySize() throws -> SizeOnDisk {
+  func calculateBinarySize() async throws -> SizeOnDisk {
     do {
       let url = URL(fileURLWithPath: archivedProductPath)
       let appSize = try url.sizeOnDisk()
 
-      if verbose { console.lineBreakAndWrite(appSize.message) }
+      if verbose {
+        await console.lineBreakAndWrite(appSize.message)
+      }
 
       return appSize
     } catch {

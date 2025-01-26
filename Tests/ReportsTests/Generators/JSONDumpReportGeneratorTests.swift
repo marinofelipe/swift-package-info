@@ -24,40 +24,44 @@ import CoreTestSupport
 @testable import Core
 @testable import Reports
 
+@MainActor
 final class JSONDumpReportGeneratorTests: XCTestCase {
-    func testRenderDumpWithOneKindOfProvidedInfoOnly() throws {
-        let terminalControllerMock = TerminalControllerMock()
-        let progressAnimationMock = ProgressAnimationMock()
+  func testRenderDumpWithOneKindOfProvidedInfoOnly() async throws {
+    let terminalControllerMock = TerminalControllerMock()
+    let progressAnimationMock = ProgressAnimationMock()
 
-        Console.default = Console(
-            isOutputColored: false,
-            terminalController: terminalControllerMock,
-            progressAnimation: progressAnimationMock
+    Console.default = Console(
+      isOutputColored: false,
+      terminalController: terminalControllerMock,
+      progressAnimation: progressAnimationMock
+    )
+
+    let sut = JSONDumpReportGenerator(console: .default)
+
+    try sut.renderDump(
+      for: Fixture.makeSwiftPackage(),
+      providedInfos: [
+        ProvidedInfo.init(
+          providerName: "Name",
+          providerKind: .binarySize,
+          information: Fixture.makeProvidedInfoInformation()
         )
+      ]
+    )
 
-        let sut = JSONDumpReportGenerator(console: .default)
+    await Task.yield()
+    await Task.yield()
 
-        try sut.renderDump(
-            for: Fixture.makeSwiftPackage(),
-            providedInfos: [
-                ProvidedInfo.init(
-                    providerName: "Name",
-                    providerKind: .binarySize,
-                    information: Fixture.makeProvidedInfoInformation()
-                )
-            ]
-        )
+    XCTAssertEqual(progressAnimationMock.completeCallsCount, 0)
+    XCTAssertEqual(progressAnimationMock.clearCallsCount, 0)
+    XCTAssertEqual(progressAnimationMock.updateCallsCount, 0)
 
-        XCTAssertEqual(progressAnimationMock.completeCallsCount, 0)
-        XCTAssertEqual(progressAnimationMock.clearCallsCount, 0)
-        XCTAssertEqual(progressAnimationMock.updateCallsCount, 0)
+    XCTAssertEqual(terminalControllerMock.writeCallsCount, 1)
+    XCTAssertEqual(terminalControllerMock.endLineCallsCount, 1)
 
-        XCTAssertEqual(terminalControllerMock.writeCallsCount, 1)
-        XCTAssertEqual(terminalControllerMock.endLineCallsCount, 1)
-
-        XCTAssertEqual(
-            terminalControllerMock.writeStrings,
-            [
+    XCTAssertEqual(
+      terminalControllerMock.writeStrings,
+      [
                 #"""
                 {
                   "binarySize" : {
@@ -66,72 +70,75 @@ final class JSONDumpReportGeneratorTests: XCTestCase {
                   }
                 }
                 """#
-            ]
+      ]
+    )
+
+    XCTAssertEqual(
+      terminalControllerMock.writeColors,
+      [
+        .noColor
+      ]
+    )
+    XCTAssertEqual(
+      terminalControllerMock.writeBolds,
+      [
+        false
+      ]
+    )
+  }
+
+  func testRenderDumpWithAllProvidedInfoKinds() async throws {
+    let terminalControllerMock = TerminalControllerMock()
+    let progressAnimationMock = ProgressAnimationMock()
+
+    Console.default = Console(
+      isOutputColored: false,
+      terminalController: terminalControllerMock,
+      progressAnimation: progressAnimationMock
+    )
+
+    let sut = JSONDumpReportGenerator(console: .default)
+
+    try sut.renderDump(
+      for: Fixture.makeSwiftPackage(),
+      providedInfos: [
+        ProvidedInfo.init(
+          providerName: "Name",
+          providerKind: .binarySize,
+          information: Fixture.makeProvidedInfoInformation()
+        ),
+        ProvidedInfo.init(
+          providerName: "Other",
+          providerKind: .dependencies,
+          information: Fixture.makeProvidedInfoInformation(
+            name: "other",
+            value: 9999
+          )
+        ),
+        ProvidedInfo.init(
+          providerName: "Yet another",
+          providerKind: .platforms,
+          information: Fixture.makeProvidedInfoInformation(
+            name: "yet another",
+            value: 17
+          )
         )
+      ]
+    )
 
-        XCTAssertEqual(
-            terminalControllerMock.writeColors,
-            [
-                .noColor
-            ]
-        )
-        XCTAssertEqual(
-            terminalControllerMock.writeBolds,
-            [
-                false
-            ]
-        )
-    }
+    await Task.yield()
+    await Task.yield()
 
-    func testRenderDumpWithAllProvidedInfoKinds() throws {
-        let terminalControllerMock = TerminalControllerMock()
-        let progressAnimationMock = ProgressAnimationMock()
+    XCTAssertEqual(progressAnimationMock.completeCallsCount, 0)
+    XCTAssertEqual(progressAnimationMock.clearCallsCount, 0)
+    XCTAssertEqual(progressAnimationMock.updateCallsCount, 0)
 
-        Console.default = Console(
-            isOutputColored: false,
-            terminalController: terminalControllerMock,
-            progressAnimation: progressAnimationMock
-        )
+    XCTAssertEqual(terminalControllerMock.writeCallsCount, 1)
+    XCTAssertEqual(terminalControllerMock.endLineCallsCount, 1)
 
-        let sut = JSONDumpReportGenerator(console: .default)
-
-        try sut.renderDump(
-            for: Fixture.makeSwiftPackage(),
-            providedInfos: [
-                ProvidedInfo.init(
-                    providerName: "Name",
-                    providerKind: .binarySize,
-                    information: Fixture.makeProvidedInfoInformation()
-                ),
-                ProvidedInfo.init(
-                    providerName: "Other",
-                    providerKind: .dependencies,
-                    information: Fixture.makeProvidedInfoInformation(
-                        name: "other",
-                        value: 9999
-                    )
-                ),
-                ProvidedInfo.init(
-                    providerName: "Yet another",
-                    providerKind: .platforms,
-                    information: Fixture.makeProvidedInfoInformation(
-                        name: "yet another",
-                        value: 17
-                    )
-                )
-            ]
-        )
-
-        XCTAssertEqual(progressAnimationMock.completeCallsCount, 0)
-        XCTAssertEqual(progressAnimationMock.clearCallsCount, 0)
-        XCTAssertEqual(progressAnimationMock.updateCallsCount, 0)
-
-        XCTAssertEqual(terminalControllerMock.writeCallsCount, 1)
-        XCTAssertEqual(terminalControllerMock.endLineCallsCount, 1)
-
-        XCTAssertEqual(
-            terminalControllerMock.writeStrings,
-            [
+    XCTAssertEqual(
+      terminalControllerMock.writeStrings,
+      [
                 #"""
                 {
                   "binarySize" : {
@@ -148,20 +155,20 @@ final class JSONDumpReportGeneratorTests: XCTestCase {
                   }
                 }
                 """#
-            ]
-        )
+      ]
+    )
 
-        XCTAssertEqual(
-            terminalControllerMock.writeColors,
-            [
-                .noColor
-            ]
-        )
-        XCTAssertEqual(
-            terminalControllerMock.writeBolds,
-            [
-                false
-            ]
-        )
-    }
+    XCTAssertEqual(
+      terminalControllerMock.writeColors,
+      [
+        .noColor
+      ]
+    )
+    XCTAssertEqual(
+      terminalControllerMock.writeBolds,
+      [
+        false
+      ]
+    )
+  }
 }

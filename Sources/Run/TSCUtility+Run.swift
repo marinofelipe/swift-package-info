@@ -21,7 +21,7 @@
 import ArgumentParser
 import TSCUtility
 
-extension TSCUtility.Version: ExpressibleByArgument {
+extension TSCUtility.Version: @retroactive ExpressibleByArgument {
     public init?(argument: String) {
         self.init(argument)
     }

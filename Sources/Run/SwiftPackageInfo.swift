@@ -33,10 +33,10 @@ public struct SwiftPackageInfo: AsyncParsableCommand {
   public static var configuration = CommandConfiguration(
     abstract: "A tool for analyzing Swift Packages",
     discussion: """
-        Provides valuable information about a given Swift Package,
-        that can be used in your favor when deciding whether to
-        adopt or not a Swift Package as a dependency on your app.
-        """,
+    Provides valuable information about a given Swift Package,
+    that can be used in your favor when deciding whether to
+    adopt or not a Swift Package as a dependency on your app.
+    """,
     version: "1.4.1",
     subcommands: [
       BinarySize.self,
@@ -69,9 +69,9 @@ struct AllArguments: ParsableArguments {
       .customLong("local-path"),
     ],
     help: """
-        Either a valid git repository URL or a relative local directory path that contains a `Package.swift`
-        - Note: For local packages full paths are discouraged and unsupported.
-        """
+    Either a valid git repository URL or a relative local directory path that contains a `Package.swift`
+    - Note: For local packages full paths are discouraged and unsupported.
+    """
   )
   var url: URL
 
@@ -111,16 +111,15 @@ struct AllArguments: ParsableArguments {
       .customLong("output-format")
     ],
     help: """
-        Define the report output format/strategy. Supported values are:
-        - \(
-            ReportFormat.allCases.map(\.rawValue)
-                .joined(separator: "\n- ")
-        )
-
-        """
+    Define the report output format/strategy. Supported values are:
+    - \(
+        ReportFormat.allCases.map(\.rawValue)
+            .joined(separator: "\n- ")
+    )
+    """
   )
   var report: ReportFormat = .consoleMessage
-  
+
   @Option(
     name: [
       .customLong("xcconfig"),
@@ -150,32 +149,32 @@ extension ParsableCommand {
 
     guard arguments.url.absoluteString.first != "/" else {
       throw CleanExit.message(
-                """
-                Error: Invalid argument '--url <url>'
-                Usage: Absolute paths aren't supported! Please pass a relative path to your local package.
-                """
+        """
+        Error: Invalid argument '--url <url>'
+        Usage: Absolute paths aren't supported! Please pass a relative path to your local package.
+        """
       )
     }
 
     guard isValidRemoteURL || isValidLocalDirectory == true else {
       throw CleanExit.message(
-                """
-                Error: Invalid argument '--url <url>'
-                Usage: The URL must be either:
-                - A valid git repository URL that contains a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`; or
-                - A relative local directory path that has a `Package.swift`, e.g. `../other-dir/my-project`
-                """
+        """
+        Error: Invalid argument '--url <url>'
+        Usage: The URL must be either:
+        - A valid git repository URL that contains a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`; or
+        - A relative local directory path that has a `Package.swift`, e.g. `../other-dir/my-project`
+        """
       )
     }
-      
-      if isValidLocalCustomFile == false {
-          throw CleanExit.message(
-                    """
-                    Error: Invalid argument '--xcconfig <url>'
-                    Usage: The URL must be a relative local file path that has point to a `.xcconfig` file, e.g. `../other-dir/CustomConfiguration.xcconfig`
-                    """
-          )
-      }
+
+    if isValidLocalCustomFile == false {
+      throw CleanExit.message(
+        """
+        Error: Invalid argument '--xcconfig <url>'
+        Usage: The URL must be a relative local file path that has point to a `.xcconfig` file, e.g. `../other-dir/CustomConfiguration.xcconfig`
+        """
+      )
+    }
   }
 
   func makeSwiftPackage(from arguments: AllArguments) -> SwiftPackage {
@@ -212,20 +211,20 @@ extension ParsableCommand {
 
       switch swiftPackage.resolution {
       case let .revision(revision):
-        Console.default.lineBreakAndWrite("Resolved revision: \(revision)")
-        case .version:
-          switch tagState {
-          case .undefined, .invalid:
-            Console.default.lineBreakAndWrite("Package version was \(tagState.description)")
+        await Console.default.lineBreakAndWrite("Resolved revision: \(revision)")
+      case .version:
+        switch tagState {
+        case .undefined, .invalid:
+          await Console.default.lineBreakAndWrite("Package version was \(tagState.description)")
 
-            if let latestTag {
-              Console.default.lineBreakAndWrite("Defaulting to latest found semver tag: \(latestTag)")
-              swiftPackage.resolution = .version(latestTag)
-            }
-          case .valid:
-            break
+          if let latestTag {
+            await Console.default.lineBreakAndWrite("Defaulting to latest found semver tag: \(latestTag)")
+            swiftPackage.resolution = .version(latestTag)
           }
+        case .valid:
+          break
         }
+      }
     case .local:
       break
     }
@@ -237,8 +236,8 @@ extension ParsableCommand {
     }
 
     if packageResponse.isProductValid == false {
-      Console.default.lineBreakAndWrite("Invalid product: \(swiftPackage.product)")
-      Console.default.lineBreakAndWrite("Using first found product instead: \(firstProduct)")
+      await Console.default.lineBreakAndWrite("Invalid product: \(swiftPackage.product)")
+      await Console.default.lineBreakAndWrite("Using first found product instead: \(firstProduct)")
 
       swiftPackage.product = firstProduct
     }
