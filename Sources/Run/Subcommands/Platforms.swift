@@ -25,7 +25,7 @@ import Reports
 
 extension SwiftPackageInfo {
   public struct Platforms: AsyncParsableCommand {
-    public static var configuration = CommandConfiguration(
+    public static let configuration = CommandConfiguration(
       abstract: "Shows platforms supported b a Package product.",
       discussion: """
             Informs supported platforms by a given Package.swift and its products,
@@ -41,9 +41,11 @@ extension SwiftPackageInfo {
     public func run() async throws {
       try runArgumentsValidation(arguments: allArguments)
       var swiftPackage = makeSwiftPackage(from: allArguments)
-
-      Task { @MainActor in
-        swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+      swiftPackage.messages.forEach {
+        let message = $0
+        Task { @MainActor in
+          Console.default.lineBreakAndWrite(message)
+        }
       }
 
       let package = try await validate(
@@ -61,13 +63,11 @@ extension SwiftPackageInfo {
           verbose: allArguments.verbose
         )
 
-        Task { @MainActor in
-          let report = Report(swiftPackage: swiftPackage, console: .default)
-          try await report.generate(
-            for: providedInfo,
-            format: allArguments.report
-          )
-        }
+        let report = await Report(swiftPackage: swiftPackage, console: .default)
+        try await report.generate(
+          for: providedInfo,
+          format: allArguments.report
+        )
       } catch {
         if let providerError = error as? InfoProviderError {
           Task { @MainActor in

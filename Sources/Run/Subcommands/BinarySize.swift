@@ -32,7 +32,7 @@ extension SwiftPackageInfo {
         Such a strategy has proven to be very consistent with the size added to iOS apps downloaded and installed via TestFlight.
         """
 
-    public static var configuration = CommandConfiguration(
+    public static let configuration = CommandConfiguration(
       abstract: "Estimated binary size of a Swift Package product.",
       discussion: """
             Measures the estimated binary size impact of a Swift Package product,

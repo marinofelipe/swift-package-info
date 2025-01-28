@@ -30,7 +30,7 @@ import PackageModel
 
 @main
 public struct SwiftPackageInfo: AsyncParsableCommand {
-  public static var configuration = CommandConfiguration(
+  public static let configuration = CommandConfiguration(
     abstract: "A tool for analyzing Swift Packages",
     discussion: """
     Provides valuable information about a given Swift Package,
@@ -47,7 +47,7 @@ public struct SwiftPackageInfo: AsyncParsableCommand {
     defaultSubcommand: FullAnalyzes.self
   )
 
-  static var subcommandsProviders: [InfoProvider] = [
+  static let subcommandsProviders: [InfoProvider] = [
     BinarySizeProvider.fetchInformation(for:package:xcconfig:verbose:),
     PlatformsProvider.fetchInformation(for:package:xcconfig:verbose:),
     DependenciesProvider.fetchInformation(for:package:xcconfig:verbose:)

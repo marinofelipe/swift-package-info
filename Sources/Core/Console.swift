@@ -7,12 +7,12 @@
 //  Created by Marino Felipe on 28.12.20.
 //
 
-import TSCBasic
+@preconcurrency import TSCBasic
 import TSCUtility
 
 // MARK: - ConsoleColor - Wrapper
 
-public enum ConsoleColor {
+public enum ConsoleColor: Sendable {
   case noColor
   case red
   case green
@@ -76,7 +76,7 @@ final class PrintController: TerminalControlling {
 
 // MARK: - ConsoleMessage
 
-public struct ConsoleMessage: Equatable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public struct ConsoleMessage: Equatable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation, Sendable {
   public let text: String
   let color: ConsoleColor
   let isBold: Bool
@@ -117,7 +117,7 @@ public protocol CustomConsoleMessageConvertible {
   var message: ConsoleMessage { get }
 }
 
-public protocol CustomConsoleMessagesConvertible {
+public protocol CustomConsoleMessagesConvertible: Sendable {
   /// A console message representation that is split into and composed by multiple messages.
   var messages: [ConsoleMessage] { get }
 }
@@ -132,7 +132,7 @@ public final class Console {
 
   public init(
     isOutputColored: Bool,
-    terminalController: TerminalControlling = TerminalControllerFactory.make(stream: stdoutStream),
+    terminalController: TerminalControlling = TerminalControllerFactory.make(),
     progressAnimation: ProgressAnimationProtocol = NinjaProgressAnimation(stream: stdoutStream)
   ) {
     self.isOutputColored = isOutputColored

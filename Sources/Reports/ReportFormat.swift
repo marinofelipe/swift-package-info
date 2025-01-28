@@ -20,13 +20,12 @@
 
 import Core
 
-public enum ReportFormat: String, CaseIterable {
+public enum ReportFormat: String, CaseIterable, Sendable {
   case consoleMessage
   case jsonDump
 }
 
 extension ReportFormat {
-  @MainActor
   func makeReportGenerator(console: Console) -> ReportGenerating {
     switch self {
     case .consoleMessage:

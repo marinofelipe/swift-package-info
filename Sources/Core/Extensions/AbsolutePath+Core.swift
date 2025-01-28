@@ -35,7 +35,8 @@ public extension AbsolutePath {
 }
 
 #if DEBUG
-  var currentDirPath = FileManager.default.currentDirectoryPath
+  //debug only
+  nonisolated(unsafe) var currentDirPath = FileManager.default.currentDirectoryPath
 #else
   let currentDirPath = FileManager.default.currentDirectoryPath
 #endif

@@ -21,7 +21,7 @@
 import Core
 import Foundation
 
-struct JSONDumpReportGenerator {
+struct JSONDumpReportGenerator: Sendable {
   private let console: Console
   private let encoder: JSONEncoder
 
@@ -33,6 +33,7 @@ struct JSONDumpReportGenerator {
     self.encoder = encoder
   }
 
+  @Sendable
   func renderDump(
     for swiftPackage: SwiftPackage,
     providedInfos: [ProvidedInfo]

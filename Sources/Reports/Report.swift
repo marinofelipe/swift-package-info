@@ -47,7 +47,7 @@ public final class Report: Reporting {
     for providedInfos: [ProvidedInfo],
     format: ReportFormat
   ) async throws {
-    let reportGenerator = await format.makeReportGenerator(console: console)
+    let reportGenerator = format.makeReportGenerator(console: console)
     try await reportGenerator(
       swiftPackage,
       providedInfos

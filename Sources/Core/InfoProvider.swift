@@ -42,7 +42,7 @@ public enum ProviderKind: String, CodingKey {
   case platforms
 }
 
-public typealias InfoProvider = (
+public typealias InfoProvider = @Sendable (
   _ swiftPackage: SwiftPackage,
   _ packageContent: PackageWrapper,
   _ xcconfig: URL?,
@@ -50,14 +50,14 @@ public typealias InfoProvider = (
 ) async throws -> ProvidedInfo
 //throws(InfoProviderError) , typed throws only supported from macOS 15.0 runtime
 
-public struct ProvidedInfo: Encodable, CustomConsoleMessagesConvertible {
+public struct ProvidedInfo: Encodable, CustomConsoleMessagesConvertible, Sendable {
   public let providerName: String
   public let providerKind: ProviderKind
   public var messages: [ConsoleMessage] {
     informationMessagesConvertible.messages
   }
   
-  private let informationEncoder: (Encoder) throws -> Void
+  private let informationEncoder: @Sendable (Encoder) throws -> Void
   private let informationMessagesConvertible: CustomConsoleMessagesConvertible
   
   public init<T>(

@@ -26,8 +26,8 @@ import HTTPClientCore
 
 import Basics
 import PackageModel
-import SourceControl
-import TSCBasic
+@preconcurrency import SourceControl
+@preconcurrency import TSCBasic
 import TSCUtility
 
 public struct SwiftPackageValidationResult {
@@ -199,7 +199,8 @@ public final class SwiftPackageService {
       ) { result in
         switch result {
         case let .success(handle):
-          continuation.resume(returning: handle)
+          let handleCopy = handle
+          continuation.resume(returning: handleCopy)
         case let .failure(error):
           continuation.resume(throwing: error)
         }

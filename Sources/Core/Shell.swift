@@ -129,21 +129,15 @@ private extension Shell {
     try process.run()
 
     await withTaskGroup(of: Void.self) { taskGroup in
-      await readData(
+      outputData = await readData(
         from: outputPipe,
         isError: false,
-        verbose: verbose,
-        availableDataHandler: { availableData in
-          outputData.append(availableData)
-        }
+        verbose: verbose
       )
-      await readData(
+      errorData = await readData(
         from: errorPipe,
         isError: true,
-        verbose: verbose,
-        availableDataHandler: { availableData in
-          errorData.append(availableData)
-        }
+        verbose: verbose
       )
     }
 
@@ -168,11 +162,12 @@ private extension Shell {
   static func readData(
     from pipe: Pipe,
     isError: Bool,
-    verbose: Bool,
-    availableDataHandler: ((Data) -> Void)?
-  ) async {
+    verbose: Bool
+  ) async -> Data {
     await withCheckedContinuation { continuation in
       pipe.fileHandleForReading.readabilityHandler = { fileHandle in
+        var allData = Data()
+
         // readData(ofLength:) is used here to avoid unwanted performance side effects,
         // as described in the findings from:
         // https://stackoverflow.com/questions/49184623/nstask-race-condition-with-readabilityhandler-block
@@ -180,7 +175,7 @@ private extension Shell {
 
         if data.isEmpty == false {
           String(data: data, encoding: .utf8).map {
-            availableDataHandler?(data)
+            allData.append(data)
             guard verbose else { return }
 
             let text = $0
@@ -207,7 +202,7 @@ private extension Shell {
           }
         } else {
           pipe.fileHandleForReading.readabilityHandler = nil
-          continuation.resume()
+          continuation.resume(returning: allData)
         }
       }
     }

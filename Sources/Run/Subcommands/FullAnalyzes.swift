@@ -26,7 +26,7 @@ import Reports
 
 extension SwiftPackageInfo {
   public struct FullAnalyzes: AsyncParsableCommand {
-    public static var configuration = CommandConfiguration(
+    public static let configuration = CommandConfiguration(
       abstract: "All available information about a Swift Package product.",
       discussion: """
             Runs all available providers (each one available via a subcommand, e.g. BinarySize),
@@ -42,9 +42,11 @@ extension SwiftPackageInfo {
     public func run() async throws {
       try runArgumentsValidation(arguments: allArguments)
       var swiftPackage = makeSwiftPackage(from: allArguments)
-
-      Task { @MainActor in
-        swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+      swiftPackage.messages.forEach {
+        let message = $0
+        Task { @MainActor in
+          Console.default.lineBreakAndWrite(message)
+        }
       }
 
       let package = try await validate(
@@ -56,19 +58,30 @@ extension SwiftPackageInfo {
 
       let packageWrapper = PackageWrapper(from: package)
 
-      var providedInfos: [ProvidedInfo] = []
-      await withThrowingTaskGroup(of: Void.self) { taskGroup in
+      // All copies to silence Swift 6 concurrency `sending` warnings
+      let xcconfig = allArguments.xcconfig
+      let isVerbose = allArguments.verbose
+      let finalSwiftPackage = swiftPackage
+      let providedInfos: [ProvidedInfo] = try await withThrowingTaskGroup(
+        of: ProvidedInfo.self,
+        returning: [ProvidedInfo].self
+      ) { taskGroup in
         SwiftPackageInfo.subcommandsProviders.forEach { subcommandProvider in
           taskGroup.addTask {
-            let providedInfo = try await subcommandProvider(
-              swiftPackage,
+            try await subcommandProvider(
+              finalSwiftPackage,
               packageWrapper,
-              allArguments.xcconfig,
-              allArguments.verbose
+              xcconfig,
+              isVerbose
             )
-            providedInfos.append(providedInfo)
           }
         }
+
+        var providedInfos: [ProvidedInfo] = []
+        for try await result in taskGroup {
+          providedInfos.append(result)
+        }
+        return providedInfos
       }
 
       try await report.generate(
@@ -78,3 +91,5 @@ extension SwiftPackageInfo {
     }
   }
 }
+
+extension CommandConfiguration: @retroactive @unchecked Sendable {}

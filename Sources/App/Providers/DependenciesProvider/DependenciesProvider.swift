@@ -33,6 +33,7 @@ enum DependenciesProviderError: LocalizedError, Equatable {
 }
 
 public struct DependenciesProvider {
+  @Sendable
   public static func fetchInformation(
     for swiftPackage: SwiftPackage,
     package: PackageWrapper,

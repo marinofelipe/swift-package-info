@@ -61,6 +61,7 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
 }
 
 public struct BinarySizeProvider {
+  @Sendable
   public static func fetchInformation(
     for swiftPackage: SwiftPackage,
     package: PackageWrapper,
@@ -135,7 +136,8 @@ struct BinarySizeInformation: Equatable, Encodable, CustomConsoleMessagesConvert
 }
 
 #if DEBUG
-var defaultSizeMeasurer: (URL?, Bool) async -> SizeMeasuring = { xcconfig, verbose in
+// debug only
+nonisolated(unsafe) var defaultSizeMeasurer: (URL?, Bool) async -> SizeMeasuring = { xcconfig, verbose in
   await SizeMeasurer(verbose: verbose, xcconfig: xcconfig).binarySize
 }
 #else

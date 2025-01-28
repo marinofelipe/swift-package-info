@@ -142,7 +142,7 @@ final class AppManager {
   func calculateBinarySize() async throws -> SizeOnDisk {
     do {
       let url = URL(fileURLWithPath: archivedProductPath)
-      let appSize = try url.sizeOnDisk()
+      let appSize = try await url.sizeOnDisk()
 
       if verbose {
         await console.lineBreakAndWrite(appSize.message)

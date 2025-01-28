@@ -22,6 +22,7 @@ import Core
 import Foundation
 
 public struct PlatformsProvider {
+  @Sendable
   public static func fetchInformation(
     for swiftPackage: SwiftPackage,
     package: PackageWrapper,

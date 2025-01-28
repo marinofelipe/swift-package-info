@@ -22,7 +22,7 @@ struct ConsoleReportGenerator {
 
   private let console: Console
 
-  init(console: Console) {
+  nonisolated init(console: Console) {
     self.console = console
   }
 
