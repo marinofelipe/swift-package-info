@@ -54,8 +54,6 @@ extension SwiftPackageInfo {
         verbose: allArguments.verbose
       )
 
-      let report = await Report(swiftPackage: swiftPackage, console: .default)
-
       let packageWrapper = PackageWrapper(from: package)
 
       // All copies to silence Swift 6 concurrency `sending` warnings
@@ -84,6 +82,7 @@ extension SwiftPackageInfo {
         return providedInfos
       }
 
+      let report = await Report(swiftPackage: swiftPackage, console: .default)
       try await report.generate(
         for: providedInfos,
         format: allArguments.report

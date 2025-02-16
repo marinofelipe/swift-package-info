@@ -14,7 +14,8 @@ let package = Package(
       targets: [
         "Run"
       ]
-    )
+    ),
+    .library(name: "SwiftPackageInfo", targets: ["App"])
   ],
   dependencies: [
     // Can't update and benefit from latest Swift 6 warnings fixes because the latest
@@ -155,3 +156,9 @@ let package = Package(
     )
   ]
 )
+
+// TODO: For lib
+// - Extract most out to the `App Target`
+// - Provide API for both a simple struct definition and passing a ready Package(Model)
+// - Remodel de report part, which has to return data for the consumer of the lib
+// - Consider App Target split

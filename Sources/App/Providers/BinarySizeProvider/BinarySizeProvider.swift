@@ -21,6 +21,8 @@
 import Core
 import Foundation
 
+// MARK: - Types
+
 enum BinarySizeProviderError: LocalizedError, Equatable {
   case unableToGenerateArchive(errorMessage: String)
   case unableToCloneEmptyApp(errorMessage: String)
@@ -59,6 +61,42 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
         """
   }
 }
+
+struct BinarySizeInformation: Equatable, Encodable, CustomConsoleMessagesConvertible {
+  private let amount: Int
+  private let formatted: String
+
+  var messages: [ConsoleMessage] { buildConsoleMessages() }
+
+  init(binarySize: SizeOnDisk) {
+    self.amount = binarySize.amount
+    self.formatted = binarySize.formatted
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case amount
+    case formatted
+  }
+
+  private func buildConsoleMessages() -> [ConsoleMessage] {
+    [
+      .init(
+        text: "Binary size increases by ",
+        color: .noColor,
+        isBold: false,
+        hasLineBreakAfter: false
+      ),
+      .init(
+        text: formatted,
+        color: .yellow,
+        isBold: true,
+        hasLineBreakAfter: false
+      )
+    ]
+  }
+}
+
+// MARK: - Provider
 
 public struct BinarySizeProvider {
   @Sendable
@@ -101,37 +139,81 @@ public struct BinarySizeProvider {
   }
 }
 
-struct BinarySizeInformation: Equatable, Encodable, CustomConsoleMessagesConvertible {
-  private let amount: Int
-  private let formatted: String
+// MARK: - Library
 
-  var messages: [ConsoleMessage] { buildConsoleMessages() }
+extension BinarySizeProvider {
+  public static func binarySize(
+    for swiftPackage: SwiftPackage,
+    xcconfig: URL? = nil
+  ) async throws -> ProvidedInfo {
+    var finalSwiftPackage = swiftPackage
 
-  init(binarySize: SizeOnDisk) {
-    self.amount = binarySize.amount
-    self.formatted = binarySize.formatted
-  }
+    // FIXME: Reuse validate method from Run package
+    let swiftPackageService = SwiftPackageService()
+    let packageResponse = try await swiftPackageService.validate(
+      swiftPackage: swiftPackage,
+      verbose: false
+    )
 
-  private enum CodingKeys: String, CodingKey {
-    case amount
-    case formatted
-  }
+    switch packageResponse.sourceInformation {
+    case let .remote(isRepositoryValid, tagState, latestTag):
+      guard isRepositoryValid else {
+//        throw CleanExit.message(
+//          """
+//          Error: Invalid argument '--url <url>'
+//          Usage: The URL must be a valid git repository URL that contains
+//          a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`
+//          """
+//        )
+        // FIXME: Proper error, reuse from Run target
+        throw BinarySizeProviderError.unableToCloneEmptyApp(errorMessage: "")
+      }
 
-  private func buildConsoleMessages() -> [ConsoleMessage] {
-    [
-      .init(
-        text: "Binary size increases by ",
-        color: .noColor,
-        isBold: false,
-        hasLineBreakAfter: false
-      ),
-      .init(
-        text: formatted,
-        color: .yellow,
-        isBold: true,
-        hasLineBreakAfter: false
-      )
-    ]
+      switch swiftPackage.resolution {
+      case let .revision(revision):
+        // FIXME: Enable console only via CLI
+        await Console.default.lineBreakAndWrite("Resolved revision: \(revision)")
+      case .version:
+        switch tagState {
+        case .undefined, .invalid:
+          await Console.default.lineBreakAndWrite("Package version was \(tagState.description)")
+
+          if let latestTag {
+            await Console.default.lineBreakAndWrite("Defaulting to latest found semver tag: \(latestTag)")
+            finalSwiftPackage.resolution = .version(latestTag)
+          }
+        case .valid:
+          break
+        }
+      }
+    case .local:
+      break
+    }
+
+    guard let firstProduct = packageResponse.availableProducts.first else {
+//      throw CleanExit.message(
+//        "Error: \(swiftPackage.url) doesn't contain any product declared on Package.swift"
+      // FIXME: Proper error, reuse from Run target
+      throw BinarySizeProviderError.unableToCloneEmptyApp(errorMessage: "")
+    }
+
+    if packageResponse.isProductValid == false {
+      // FIXME: Enable console only via CLI
+      await Console.default.lineBreakAndWrite("Invalid product: \(finalSwiftPackage.product)")
+      await Console.default.lineBreakAndWrite("Using first found product instead: \(firstProduct)")
+
+      finalSwiftPackage.product = firstProduct
+    }
+
+    let package = packageResponse.package
+    let packageWrapper = PackageWrapper(from: package)
+
+    return try await fetchInformation(
+      for: swiftPackage,
+      package: packageWrapper,
+      xcconfig: xcconfig,
+      verbose: false
+    )
   }
 }
 
