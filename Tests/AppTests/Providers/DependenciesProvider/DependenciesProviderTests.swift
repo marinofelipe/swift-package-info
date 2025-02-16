@@ -25,7 +25,7 @@ import CoreTestSupport
 @testable import Core
 
 final class DependenciesProviderTests: XCTestCase {
-  func testWithTransitiveDependencies() throws {
+  func testWithTransitiveDependencies() async throws {
     let productName = "Some"
 
     let target3 = PackageWrapper.Target(
@@ -80,7 +80,7 @@ final class DependenciesProviderTests: XCTestCase {
       ]
     )
 
-    let result = DependenciesProvider.fetchInformation(
+    let providedInfo = try await DependenciesProvider.fetchInformation(
       for: Fixture.makeSwiftPackage(
         product: productName
       ),
@@ -105,7 +105,6 @@ final class DependenciesProviderTests: XCTestCase {
       verbose: true
     )
 
-    let providedInfo = try result.get()
     XCTAssertEqual(
       providedInfo.providerName,
       "Dependencies"
@@ -164,7 +163,7 @@ final class DependenciesProviderTests: XCTestCase {
     )
   }
 
-  func testWithMoreThan3ExternalDependencies() throws {
+  func testWithMoreThan3ExternalDependencies() async throws {
     let productName = "Some"
 
     let target = PackageWrapper.Target(
@@ -205,7 +204,7 @@ final class DependenciesProviderTests: XCTestCase {
       ]
     )
 
-    let result = DependenciesProvider.fetchInformation(
+    let providedInfo = try await DependenciesProvider.fetchInformation(
       for: Fixture.makeSwiftPackage(
         product: productName
       ),
@@ -228,7 +227,6 @@ final class DependenciesProviderTests: XCTestCase {
       verbose: true
     )
 
-    let providedInfo = try result.get()
     XCTAssertEqual(
       providedInfo.providerName,
       "Dependencies"

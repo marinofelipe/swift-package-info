@@ -25,8 +25,8 @@ import CoreTestSupport
 @testable import Core
 
 final class PlatformsProviderTests: XCTestCase {
-  func testFetchInformation() throws {
-    let result = PlatformsProvider.fetchInformation(
+  func testFetchInformation() async throws {
+    let providedInfo = try await PlatformsProvider.fetchInformation(
       for: Fixture.makeSwiftPackage(),
       package: Fixture.makePackageWrapper(
         platforms: [
@@ -49,7 +49,6 @@ final class PlatformsProviderTests: XCTestCase {
       verbose: true
     )
 
-    let providedInfo = try result.get()
     XCTAssertEqual(
       providedInfo.providerName,
       "Platforms"
