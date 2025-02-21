@@ -29,7 +29,7 @@ public extension Fixture {
     version: String = "1.0.0",
     revision: String? = nil,
     product: String = "Some"
-  ) -> SwiftPackage {
+  ) -> PackageDefinition {
     .init(
       url: url,
       isLocal: isLocal,

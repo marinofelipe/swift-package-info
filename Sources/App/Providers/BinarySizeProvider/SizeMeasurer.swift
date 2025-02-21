@@ -18,11 +18,11 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Foundation
-import Core
+internal import Foundation
+internal import Core
 
 typealias SizeMeasuring = (
-  _ swiftPackage: SwiftPackage,
+  _ swiftPackage: PackageDefinition,
   _ isDynamic: Bool
 ) async throws -> SizeOnDisk
 
@@ -62,7 +62,7 @@ final class SizeMeasurer {
   }
 
   public func binarySize(
-    for swiftPackage: SwiftPackage,
+    for swiftPackage: PackageDefinition,
     isDynamic: Bool
   ) async throws -> SizeOnDisk {
     await console.lineBreak()
@@ -118,7 +118,7 @@ private extension SizeMeasurer {
   }
 
   func measureAppSize(
-    with swiftPackage: SwiftPackage,
+    with swiftPackage: PackageDefinition,
     isDynamic: Bool
   ) async throws -> SizeOnDisk {
     if verbose {

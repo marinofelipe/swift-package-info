@@ -47,26 +47,29 @@ extension SwiftPackageInfo {
 
     public init() {}
 
-    public func run() async throws {      
+    public func run() async throws {
       try runArgumentsValidation(arguments: allArguments)
-      var swiftPackage = makeSwiftPackage(from: allArguments)
+      var packageDefinition = makePackageDefinition(from: allArguments)
 
       Task { @MainActor in
-        swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+        packageDefinition.messages.forEach(Console.default.lineBreakAndWrite)
       }
 
-      let package = try await validate(
-        swiftPackage: &swiftPackage,
-        verbose: allArguments.verbose
-      )
+      let validator = SwiftPackageValidator()
+      let package: PackageWrapper
+      do {
+        package = try await validator.validate(packageDefinition: &packageDefinition)
+      } catch {
+        throw CleanExit.make(from: error)
+      }
 
-      let packageWrapper = PackageWrapper(from: package)
+      let finalPackageDefinition = packageDefinition
 
       let providedInfo: ProvidedInfo?
       do {
-        providedInfo = try await BinarySizeProvider.fetchInformation(
-          for: swiftPackage,
-          package: packageWrapper,
+        providedInfo = try await BinarySizeProvider.binarySize(
+          for: packageDefinition,
+          resolvedPackage: package,
           xcconfig: allArguments.xcconfig,
           verbose: allArguments.verbose
         )
@@ -80,7 +83,7 @@ extension SwiftPackageInfo {
       }
 
       if let providedInfo {
-        let report = await Report(swiftPackage: swiftPackage, console: .default)
+        let report = await Report(packageDefinition: finalPackageDefinition, console: .default)
         try await report.generate(
           for: providedInfo,
           format: allArguments.report
@@ -90,7 +93,7 @@ extension SwiftPackageInfo {
   }
 }
 
-extension SwiftPackage: @retroactive CustomConsoleMessagesConvertible {
+extension PackageDefinition: @retroactive CustomConsoleMessagesConvertible {
   public var messages: [ConsoleMessage] {
     [
       .init(

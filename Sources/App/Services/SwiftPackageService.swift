@@ -18,20 +18,20 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Core
-import Combine
-import CombineHTTPClient
-import Foundation
-import HTTPClientCore
+internal import Core
+private import Combine
+private import CombineHTTPClient
+internal import Foundation
+private import HTTPClientCore
 
-import Basics
-import PackageModel
-@preconcurrency import SourceControl
-@preconcurrency import TSCBasic
-import TSCUtility
+internal import Basics
+internal import PackageModel // FIXME: Make it internal, needs to clean up SwiftPackageValidationResult.package
+@preconcurrency internal import SourceControl
+@preconcurrency internal import TSCBasic
+internal import TSCUtility
 
-public struct SwiftPackageValidationResult {
-  public enum SourceInformation: Equatable {
+struct SwiftPackageValidationResult: Sendable {
+  enum SourceInformation: Equatable, Sendable {
     case local
     case remote(
       isRepositoryValid: Bool,
@@ -40,15 +40,15 @@ public struct SwiftPackageValidationResult {
     )
   }
 
-  public let sourceInformation: SourceInformation
-  public let isProductValid: Bool
-  public let availableProducts: [String]
-  public let package: Package
+  let sourceInformation: SourceInformation
+  let isProductValid: Bool
+  let availableProducts: [String]
+  let package: PackageWrapper
 }
 
 extension SwiftPackageValidationResult {
   init(
-    from package: Package,
+    from package: PackageWrapper,
     product: String,
     sourceInformation: SourceInformation
   ) {
@@ -61,7 +61,7 @@ extension SwiftPackageValidationResult {
   }
 }
 
-public final class SwiftPackageService {
+final class SwiftPackageService {
   private let fileManager: FileManager
   private let packageLoader: PackageLoader
   private let repositoryProvider: RepositoryProvider
@@ -81,7 +81,7 @@ public final class SwiftPackageService {
   }
 
   public func validate(
-    swiftPackage: SwiftPackage,
+    swiftPackage: PackageDefinition,
     verbose: Bool
   ) async throws -> SwiftPackageValidationResult {
     await Console.default.lineBreakAndWrite("swift-package-info built with Swift Toolchain: \(ToolsVersion.current)")
@@ -101,7 +101,7 @@ public final class SwiftPackageService {
   // MARK: - Local
 
   private func runLocalValidation(
-    for swiftPackage: SwiftPackage,
+    for swiftPackage: PackageDefinition,
     verbose: Bool
   ) async throws -> SwiftPackageValidationResult {
     .init(
@@ -111,15 +111,17 @@ public final class SwiftPackageService {
     )
   }
 
-  private func fetchLocalPackage(atPath path: String) async throws -> Package {
+  private func fetchLocalPackage(atPath path: String) async throws -> PackageWrapper {
     let absolutePath = AbsolutePath.currentDir.appending(path)
-    return try await packageLoader.load(absolutePath)
+    return try await PackageWrapper(
+      from: packageLoader.load(absolutePath)
+    )
   }
 
   // MARK: - Remote
 
   private func runRemoteValidation(
-    for swiftPackage: SwiftPackage,
+    for swiftPackage: PackageDefinition,
     verbose: Bool
   ) async throws -> SwiftPackageValidationResult {
     return try await withTemporaryDirectory(prefix: "spm-package-info-run-") { tempDirPath in
@@ -171,7 +173,7 @@ public final class SwiftPackageService {
       let package = try await packageLoader.load(cloneDirPath)
 
       return .init(
-        from: package,
+        from: PackageWrapper(from: package),
         product: swiftPackage.product,
         sourceInformation: .remote(
           isRepositoryValid: true,
@@ -184,7 +186,7 @@ public final class SwiftPackageService {
 
   private func fetchRepository(
     repositoryManager: RepositoryManager,
-    swiftPackage: SwiftPackage
+    swiftPackage: PackageDefinition
   ) async throws -> RepositoryManager.RepositoryHandle {
     let observability = ObservabilitySystem { print("\($0): \($1)") }
 

@@ -18,7 +18,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-public enum ResourceState: Equatable, CustomStringConvertible {
+public enum ResourceState: Equatable, CustomStringConvertible, Sendable {
   case undefined
   case valid
   case invalid

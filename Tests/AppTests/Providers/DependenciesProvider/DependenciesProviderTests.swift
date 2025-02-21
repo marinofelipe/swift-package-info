@@ -80,11 +80,11 @@ final class DependenciesProviderTests: XCTestCase {
       ]
     )
 
-    let providedInfo = try await DependenciesProvider.fetchInformation(
+    let providedInfo = try await DependenciesProvider.dependencies(
       for: Fixture.makeSwiftPackage(
         product: productName
       ),
-      package: Fixture.makePackageWrapper(
+      resolvedPackage: Fixture.makePackageWrapper(
         products: [
           .init(
             name: productName,
@@ -204,11 +204,11 @@ final class DependenciesProviderTests: XCTestCase {
       ]
     )
 
-    let providedInfo = try await DependenciesProvider.fetchInformation(
+    let providedInfo = try await DependenciesProvider.dependencies(
       for: Fixture.makeSwiftPackage(
         product: productName
       ),
-      package: Fixture.makePackageWrapper(
+      resolvedPackage: Fixture.makePackageWrapper(
         products: [
           .init(
             name: productName,

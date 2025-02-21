@@ -43,8 +43,8 @@ public enum ProviderKind: String, CodingKey {
 }
 
 public typealias InfoProvider = @Sendable (
-  _ swiftPackage: SwiftPackage,
-  _ packageContent: PackageWrapper,
+  _ packageDefinition: PackageDefinition,
+  _ resolvedPackage: PackageWrapper,
   _ xcconfig: URL?,
   _ verbose: Bool
 ) async throws -> ProvidedInfo

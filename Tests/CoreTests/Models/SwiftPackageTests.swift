@@ -30,7 +30,7 @@ final class SwiftPackageTests: XCTestCase {
     struct Permutation: Equatable {
       let version: String
       let revision: String?
-      let expectedResolution: SwiftPackage.Resolution
+      let expectedResolution: PackageDefinition.Resolution
     }
 
     let permutations = [

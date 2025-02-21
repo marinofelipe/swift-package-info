@@ -18,14 +18,14 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Core
-import Foundation
+public import Core
+public import Foundation
 
 public struct PlatformsProvider {
   @Sendable
-  public static func fetchInformation(
-    for swiftPackage: SwiftPackage,
-    package: PackageWrapper,
+  public static func platforms(
+    for packageDefinition: PackageDefinition,
+    resolvedPackage: PackageWrapper,
     xcconfig: URL?,
     verbose: Bool
   ) async throws -> ProvidedInfo {
@@ -33,7 +33,7 @@ public struct PlatformsProvider {
       providerName: "Platforms",
       providerKind: .platforms,
       information: PlatformsInformation(
-        platforms: package.platforms
+        platforms: resolvedPackage.platforms
       )
     )
   }

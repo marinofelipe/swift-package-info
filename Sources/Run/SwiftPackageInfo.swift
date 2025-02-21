@@ -48,9 +48,9 @@ public struct SwiftPackageInfo: AsyncParsableCommand {
   )
 
   static let subcommandsProviders: [InfoProvider] = [
-    BinarySizeProvider.fetchInformation(for:package:xcconfig:verbose:),
-    PlatformsProvider.fetchInformation(for:package:xcconfig:verbose:),
-    DependenciesProvider.fetchInformation(for:package:xcconfig:verbose:)
+    BinarySizeProvider.binarySize(for:resolvedPackage:xcconfig:verbose:),
+    PlatformsProvider.platforms(for:resolvedPackage:xcconfig:verbose:),
+    DependenciesProvider.dependencies(for:resolvedPackage:xcconfig:verbose:)
   ]
 
   public init() {}
@@ -177,7 +177,7 @@ extension ParsableCommand {
     }
   }
 
-  func makeSwiftPackage(from arguments: AllArguments) -> SwiftPackage {
+  func makePackageDefinition(from arguments: AllArguments) -> PackageDefinition {
     .init(
       url: arguments.url,
       isLocal: arguments.url.isValidRemote ? false : true,
@@ -186,62 +186,25 @@ extension ParsableCommand {
       product: arguments.product ?? ResourceState.undefined.description
     )
   }
+}
 
-  func validate(
-    swiftPackage: inout SwiftPackage,
-    verbose: Bool
-  ) async throws -> Package {
-    let swiftPackageService = SwiftPackageService()
-    let packageResponse = try await swiftPackageService.validate(
-      swiftPackage: swiftPackage,
-      verbose: verbose
-    )
-
-    switch packageResponse.sourceInformation {
-    case let .remote(isRepositoryValid, tagState, latestTag):
-      guard isRepositoryValid else {
-        throw CleanExit.message(
-          """
-          Error: Invalid argument '--url <url>'
-          Usage: The URL must be a valid git repository URL that contains
-          a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`
-          """
-        )
-      }
-
-      switch swiftPackage.resolution {
-      case let .revision(revision):
-        await Console.default.lineBreakAndWrite("Resolved revision: \(revision)")
-      case .version:
-        switch tagState {
-        case .undefined, .invalid:
-          await Console.default.lineBreakAndWrite("Package version was \(tagState.description)")
-
-          if let latestTag {
-            await Console.default.lineBreakAndWrite("Defaulting to latest found semver tag: \(latestTag)")
-            swiftPackage.resolution = .version(latestTag)
-          }
-        case .valid:
-          break
-        }
-      }
-    case .local:
-      break
-    }
-
-    guard let firstProduct = packageResponse.availableProducts.first else {
-      throw CleanExit.message(
-        "Error: \(swiftPackage.url) doesn't contain any product declared on Package.swift"
+extension CleanExit {
+  static func make(from validationError: SwiftPackageValidationError) -> Self {
+    switch validationError {
+    case .invalidURL:
+      CleanExit.message(
+        """
+        Error: Invalid argument '--url <url>'
+        Usage: The URL must be a valid git repository URL that contains
+        a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`
+        """
+      )
+    case .failedToLoadPackage:
+      CleanExit.message("<no idea>")
+    case let .noProductFound(packageURL):
+      CleanExit.message(
+        "Error: \(packageURL) doesn't contain any product declared on Package.swift"
       )
     }
-
-    if packageResponse.isProductValid == false {
-      await Console.default.lineBreakAndWrite("Invalid product: \(swiftPackage.product)")
-      await Console.default.lineBreakAndWrite("Using first found product instead: \(firstProduct)")
-
-      swiftPackage.product = firstProduct
-    }
-
-    return packageResponse.package
   }
 }

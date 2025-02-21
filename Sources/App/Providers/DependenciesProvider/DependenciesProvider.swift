@@ -18,8 +18,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Core
-import Foundation
+public import Core
+public import Foundation
 
 enum DependenciesProviderError: LocalizedError, Equatable {
   case failedToMatchProduct
@@ -34,20 +34,22 @@ enum DependenciesProviderError: LocalizedError, Equatable {
 
 public struct DependenciesProvider {
   @Sendable
-  public static func fetchInformation(
-    for swiftPackage: SwiftPackage,
-    package: PackageWrapper,
+  public static func dependencies(
+    for packageDefinition: PackageDefinition,
+    resolvedPackage: PackageWrapper,
     xcconfig: URL?,
     verbose: Bool
   ) async throws -> ProvidedInfo {
-    guard let product = package.products.first(where: { $0.name == swiftPackage.product }) else {
+    guard
+      let product = resolvedPackage.products.first(where: { $0.name == packageDefinition.product })
+    else {
       throw DependenciesProviderError.failedToMatchProduct
     }
 
     let productTargets = product.targets
     let externalDependencies = getExternalDependencies(
       forTargets: productTargets,
-      package: package
+      package: resolvedPackage
     )
 
     return ProvidedInfo(

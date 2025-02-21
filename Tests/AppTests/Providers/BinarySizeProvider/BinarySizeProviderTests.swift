@@ -30,7 +30,7 @@ final class BinarySizeProviderTests: XCTestCase {
     var lastVerbose: Bool?
     
     var sizeMeasurerCallsCount = 0
-    var lastSwiftPackage: SwiftPackage?
+    var lastSwiftPackage: PackageDefinition?
     var lastIsDynamic: Bool?
     
     defaultSizeMeasurer = { xcconfig, verbose in
@@ -53,9 +53,9 @@ final class BinarySizeProviderTests: XCTestCase {
     let swiftPackage = Fixture.makeSwiftPackage(
       product: productName
     )
-    let providedInfo = try await BinarySizeProvider.fetchInformation(
+    let providedInfo = try await BinarySizeProvider.binarySize(
       for: swiftPackage,
-      package: Fixture.makePackageWrapper(
+      resolvedPackage: Fixture.makePackageWrapper(
         products: [
           .init(
             name: productName,

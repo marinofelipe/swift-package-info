@@ -21,7 +21,7 @@
 import Core
 
 protocol Reporting {
-  var swiftPackage: SwiftPackage { get }
+  var packageDefinition: PackageDefinition { get }
 
   func generate(for _: ProvidedInfo, format: ReportFormat) async throws
   func generate(for _: [ProvidedInfo], format: ReportFormat) async throws

@@ -20,7 +20,9 @@
 
 import struct Foundation.URL
 
-public struct SwiftPackage: Equatable, CustomStringConvertible, Sendable {
+/// Defines a Swift Package product.
+/// The initial input needed to resolve the package graph and provide the required information.
+public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
   public enum Resolution: Equatable, CustomStringConvertible, Sendable {
     case version(String)
     case revision(String)
@@ -40,6 +42,7 @@ public struct SwiftPackage: Equatable, CustomStringConvertible, Sendable {
   public var resolution: Resolution
   public var product: String
 
+  // TODO: Review this for the library use case
   public init(
     url: URL,
     isLocal: Bool,
@@ -67,7 +70,7 @@ public struct SwiftPackage: Equatable, CustomStringConvertible, Sendable {
   }
 }
 
-public extension SwiftPackage {
+public extension PackageDefinition {
   var accountName: String {
     guard isLocal == false else { return "" }
 

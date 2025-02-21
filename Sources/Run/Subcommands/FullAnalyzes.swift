@@ -41,25 +41,22 @@ extension SwiftPackageInfo {
 
     public func run() async throws {
       try runArgumentsValidation(arguments: allArguments)
-      var swiftPackage = makeSwiftPackage(from: allArguments)
-      swiftPackage.messages.forEach {
+      var packageDefinition = makePackageDefinition(from: allArguments)
+      packageDefinition.messages.forEach {
         let message = $0
         Task { @MainActor in
           Console.default.lineBreakAndWrite(message)
         }
       }
 
-      let package = try await validate(
-        swiftPackage: &swiftPackage,
-        verbose: allArguments.verbose
-      )
+      let validator = SwiftPackageValidator()
+      let package = try await validator.validate(packageDefinition: &packageDefinition)
 
-      let packageWrapper = PackageWrapper(from: package)
+      let finalPackageDefinition = packageDefinition
 
       // All copies to silence Swift 6 concurrency `sending` warnings
       let xcconfig = allArguments.xcconfig
       let isVerbose = allArguments.verbose
-      let finalSwiftPackage = swiftPackage
       let providedInfos: [ProvidedInfo] = try await withThrowingTaskGroup(
         of: ProvidedInfo.self,
         returning: [ProvidedInfo].self
@@ -67,8 +64,8 @@ extension SwiftPackageInfo {
         SwiftPackageInfo.subcommandsProviders.forEach { subcommandProvider in
           taskGroup.addTask {
             try await subcommandProvider(
-              finalSwiftPackage,
-              packageWrapper,
+              finalPackageDefinition,
+              package,
               xcconfig,
               isVerbose
             )
@@ -82,7 +79,7 @@ extension SwiftPackageInfo {
         return providedInfos
       }
 
-      let report = await Report(swiftPackage: swiftPackage, console: .default)
+      let report = await Report(packageDefinition: finalPackageDefinition, console: .default)
       try await report.generate(
         for: providedInfos,
         format: allArguments.report

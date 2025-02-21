@@ -18,9 +18,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Foundation
-import Core
-import XcodeProj
+internal import Foundation
+internal import Core
+internal import XcodeProj
 
 // MARK: - Constants
 
@@ -157,7 +157,7 @@ final class AppManager {
   }
 
   func add(
-    asDependency swiftPackage: SwiftPackage,
+    asDependency swiftPackage: PackageDefinition,
     isDynamic: Bool
   ) throws {
     let xcodeProj = try XcodeProj(path: .init(appPath))
@@ -198,7 +198,7 @@ final class AppManager {
 
 private extension PBXProject {
   func addRemote(
-    swiftPackage: SwiftPackage,
+    swiftPackage: PackageDefinition,
     targetName: String = Constants.appName
   ) throws -> XCRemoteSwiftPackageReference {
     let requirement: XCRemoteSwiftPackageReference.VersionRequirement
@@ -222,7 +222,7 @@ private extension PBXProject {
   }
 
   func addLocal(
-    swiftPackage: SwiftPackage,
+    swiftPackage: PackageDefinition,
     targetName: String = Constants.appName
   ) throws -> XCSwiftPackageProductDependency {
     try addLocalSwiftPackage(
