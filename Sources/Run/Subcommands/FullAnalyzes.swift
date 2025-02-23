@@ -26,7 +26,7 @@ import Reports
 
 extension SwiftPackageInfo {
   public struct FullAnalyzes: AsyncParsableCommand {
-    public static var configuration = CommandConfiguration(
+    public static let configuration = CommandConfiguration(
       abstract: "All available information about a Swift Package product.",
       discussion: """
             Runs all available providers (each one available via a subcommand, e.g. BinarySize),
@@ -42,37 +42,53 @@ extension SwiftPackageInfo {
     public func run() async throws {
       try runArgumentsValidation(arguments: allArguments)
       var swiftPackage = makeSwiftPackage(from: allArguments)
-      swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+      swiftPackage.messages.forEach {
+        let message = $0
+        Task { @MainActor in
+          Console.default.lineBreakAndWrite(message)
+        }
+      }
 
       let package = try await validate(
         swiftPackage: &swiftPackage,
         verbose: allArguments.verbose
       )
 
-      let report = Report(swiftPackage: swiftPackage)
-
       let packageWrapper = PackageWrapper(from: package)
 
-      // Providers have a synchronous API and are run in sequence. Each of them, even when performing async tasks, have to fulfill a sync API.
-      // For current setup it works as wanted, since the only heavy provider is binary size, that executes xcodebuild commands that are logged into the console
-      // when verbose flag is passed in. All other providers have sync logic that consumes PackageContent (Package.swift) decoded and provide specific
-      // information over it.
-      // Adding providers with asynchronous tasks should be avoided, and in case of adding any appears, things can be re-evaluated to run providers concurrently.
-      var providedInfos: [ProvidedInfo] = []
-      SwiftPackageInfo.subcommandsProviders.forEach { subcommandProvider in
-        subcommandProvider(
-          swiftPackage,
-          packageWrapper,
-          allArguments.xcconfig,
-          allArguments.verbose
-        )
-        .onSuccess { providedInfos.append($0) }
-        .onFailure { Console.default.write($0.message) }
+      // All copies to silence Swift 6 concurrency `sending` warnings
+      let xcconfig = allArguments.xcconfig
+      let isVerbose = allArguments.verbose
+      let finalSwiftPackage = swiftPackage
+      let providedInfos: [ProvidedInfo] = try await withThrowingTaskGroup(
+        of: ProvidedInfo.self,
+        returning: [ProvidedInfo].self
+      ) { taskGroup in
+        SwiftPackageInfo.subcommandsProviders.forEach { subcommandProvider in
+          taskGroup.addTask {
+            try await subcommandProvider(
+              finalSwiftPackage,
+              packageWrapper,
+              xcconfig,
+              isVerbose
+            )
+          }
+        }
+
+        var providedInfos: [ProvidedInfo] = []
+        for try await result in taskGroup {
+          providedInfos.append(result)
+        }
+        return providedInfos
       }
-      try report.generate(
+
+      let report = await Report(swiftPackage: swiftPackage, console: .default)
+      try await report.generate(
         for: providedInfos,
         format: allArguments.report
       )
     }
   }
 }
+
+extension CommandConfiguration: @retroactive @unchecked Sendable {}

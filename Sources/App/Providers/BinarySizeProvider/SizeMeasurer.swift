@@ -22,119 +22,142 @@ import Foundation
 import Core
 
 typealias SizeMeasuring = (
-    _ swiftPackage: SwiftPackage,
-    _ isDynamic: Bool
-) throws -> SizeOnDisk
+  _ swiftPackage: SwiftPackage,
+  _ isDynamic: Bool
+) async throws -> SizeOnDisk
 
 final class SizeMeasurer {
-    private var appManager: AppManager
-    private let console: Console
-    private let verbose: Bool
+  private var appManager: AppManager
+  private let console: Console
+  private let verbose: Bool
 
-    public convenience init(verbose: Bool, xcconfig: URL?) {
-        self.init(appManager: .init(xcconfig: xcconfig, verbose: verbose), verbose: verbose)
-    }
+  public convenience init(verbose: Bool, xcconfig: URL?) async {
+    await self.init(
+      appManager: .init(
+        console: .default,
+        xcconfig: xcconfig,
+        verbose: verbose
+      ),
+      console: .default,
+      verbose: verbose
+    )
+  }
 
-    init(
-        appManager: AppManager = .init(xcconfig: nil, verbose: true),
-        console: Console = .default,
-        verbose: Bool
-    ) {
-        self.appManager = appManager
-        self.console = console
-        self.verbose = verbose
-    }
+  init(
+    appManager: AppManager,
+    console: Console,
+    verbose: Bool
+  ) async {
+    self.appManager = appManager
+    self.console = console
+    self.verbose = verbose
+  }
 
-    private static let stepsCount = 7
-    private var currentStep = 1
-    private static let second: Double = 1_000_000
+  private static let stepsCount = 7
+  private var currentStep = 1
+  private static let second: Double = 1_000_000
 
-    deinit {
-        try? appManager.cleanUp()
-    }
+  deinit {
+    try? appManager.cleanUp()
+  }
 
-    public func binarySize(
-        for swiftPackage: SwiftPackage,
-        isDynamic: Bool
-    ) throws -> SizeOnDisk {
-        console.lineBreak()
+  public func binarySize(
+    for swiftPackage: SwiftPackage,
+    isDynamic: Bool
+  ) async throws -> SizeOnDisk {
+    await console.lineBreak()
 
-        let emptyAppSize = try measureEmptyAppSize()
-        let appSizeWithDependencyAdded = try measureAppSize(
-            with: swiftPackage,
-            isDynamic: isDynamic
-        )
+    let emptyAppSize = try await measureEmptyAppSize()
+    let appSizeWithDependencyAdded = try await measureAppSize(
+      with: swiftPackage,
+      isDynamic: isDynamic
+    )
 
-        completeLoading()
-        let increasedSize = appSizeWithDependencyAdded - emptyAppSize
+    await completeLoading()
+    let increasedSize = appSizeWithDependencyAdded - emptyAppSize
 
-        return increasedSize
-    }
+    return increasedSize
+  }
 }
 
 // MARK: - Private
 
 private extension SizeMeasurer {
-    func measureEmptyAppSize() throws -> SizeOnDisk {
-        if verbose == false { showOrUpdateLoading(withText: "Cleaning up empty app directory...") }
-        try appManager.cleanUp()
-
-        if verbose {
-            console.lineBreakAndWrite("Cloning empty app")
-        } else {
-            showOrUpdateLoading(withText: "Cloning empty app...")
-        }
-        try appManager.cloneEmptyApp()
-
-        if verbose {
-            console.lineBreakAndWrite(
-                .init(
-                    text: "Measuring empty app size",
-                    color: .green,
-                    isBold: true
-                )
-            )
-        }
-
-        if verbose == false { showOrUpdateLoading(withText: "Generating archive for empty app...") }
-        try appManager.generateArchive()
-        if verbose == false { showOrUpdateLoading(withText: "Calculating binary size...") }
-        return try appManager.calculateBinarySize()
+  func measureEmptyAppSize() async throws -> SizeOnDisk {
+    if verbose == false {
+      await showOrUpdateLoading(withText: "Cleaning up empty app directory...")
     }
+    try appManager.cleanUp()
 
-    func measureAppSize(
-        with swiftPackage: SwiftPackage,
-        isDynamic: Bool
-    ) throws -> SizeOnDisk {
-        if verbose {
-            console.lineBreakAndWrite(
-                .init(
-                    text: "Measuring app size with \(swiftPackage.product) added as dependency",
-                    color: .green,
-                    isBold: true
-                )
-            )
-        }
+    if verbose {
+      await console.lineBreakAndWrite("Cloning empty app")
+    } else {
+      await showOrUpdateLoading(withText: "Cloning empty app...")
+    }
+    try await appManager.cloneEmptyApp()
 
-        if verbose == false { showOrUpdateLoading(withText: "Adding \(swiftPackage.product) as dependency...") }
-        try appManager.add(
-            asDependency: swiftPackage,
-            isDynamic: isDynamic
+    if verbose {
+      await console.lineBreakAndWrite(
+        .init(
+          text: "Measuring empty app size",
+          color: .green,
+          isBold: true
         )
-        if verbose == false { showOrUpdateLoading(withText: "Generating archive for updated app...") }
-        try appManager.generateArchive()
-        if verbose == false { showOrUpdateLoading(withText: "Calculating updated binary size...") }
-        return try appManager.calculateBinarySize()
+      )
     }
 
-    func showOrUpdateLoading(withText text: String) {
-        usleep(UInt32(Self.second * 0.5))
-        console.showLoading(step: currentStep, total: Self.stepsCount, text: text)
-        currentStep += 1
+    if verbose == false {
+      await showOrUpdateLoading(withText: "Generating archive for empty app...")
+    }
+    try await appManager.generateArchive()
+
+    if verbose == false {
+      await showOrUpdateLoading(withText: "Calculating binary size...")
+    }
+    return try await appManager.calculateBinarySize()
+  }
+
+  func measureAppSize(
+    with swiftPackage: SwiftPackage,
+    isDynamic: Bool
+  ) async throws -> SizeOnDisk {
+    if verbose {
+      await console.lineBreakAndWrite(
+        .init(
+          text: "Measuring app size with \(swiftPackage.product) added as dependency",
+          color: .green,
+          isBold: true
+        )
+      )
     }
 
-    func completeLoading() {
-        console.completeLoading(success: true)
-        currentStep = 0
+    if verbose == false {
+      await showOrUpdateLoading(withText: "Adding \(swiftPackage.product) as dependency...")
     }
+    try appManager.add(
+      asDependency: swiftPackage,
+      isDynamic: isDynamic
+    )
+
+    if verbose == false {
+      await showOrUpdateLoading(withText: "Generating archive for updated app...")
+    }
+    try await appManager.generateArchive()
+
+    if verbose == false {
+      await showOrUpdateLoading(withText: "Calculating updated binary size...")
+    }
+    return try await appManager.calculateBinarySize()
+  }
+
+  func showOrUpdateLoading(withText text: String) async {
+    usleep(UInt32(Self.second * 0.5))
+    await console.showLoading(step: currentStep, total: Self.stepsCount, text: text)
+    currentStep += 1
+  }
+
+  func completeLoading() async {
+    await console.completeLoading(success: true)
+    currentStep = 0
+  }
 }

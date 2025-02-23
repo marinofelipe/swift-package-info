@@ -26,8 +26,8 @@ import HTTPClientCore
 
 import Basics
 import PackageModel
-import SourceControl
-import TSCBasic
+@preconcurrency import SourceControl
+@preconcurrency import TSCBasic
 import TSCUtility
 
 public struct SwiftPackageValidationResult {
@@ -84,12 +84,12 @@ public final class SwiftPackageService {
     swiftPackage: SwiftPackage,
     verbose: Bool
   ) async throws -> SwiftPackageValidationResult {
-    Console.default.lineBreakAndWrite("swift-package-info built with Swift Toolchain: \(ToolsVersion.current)")
+    await Console.default.lineBreakAndWrite("swift-package-info built with Swift Toolchain: \(ToolsVersion.current)")
 
-    let swiftVersionOutput = try Shell.run("xcrun swift -version", verbose: false)
-    let swiftVersion = String(data: swiftVersionOutput.data, encoding: .utf8)
+    let swiftVersionOutput = try await Shell.run("xcrun swift -version", verbose: false)
+    let swiftVersion = String(data: swiftVersionOutput.data, encoding: .utf8) ?? "<undefined>"
 
-    Console.default.write("Current user Swift Toolchain: \(swiftVersion ?? "")")
+    await Console.default.write("Current user Swift Toolchain: \(swiftVersion)")
 
     if swiftPackage.isLocal {
       return try await runLocalValidation(for: swiftPackage, verbose: verbose)
@@ -199,7 +199,8 @@ public final class SwiftPackageService {
       ) { result in
         switch result {
         case let .success(handle):
-          continuation.resume(returning: handle)
+          let handleCopy = handle
+          continuation.resume(returning: handleCopy)
         case let .failure(error):
           continuation.resume(throwing: error)
         }

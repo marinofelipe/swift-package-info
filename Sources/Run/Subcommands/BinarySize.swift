@@ -32,7 +32,7 @@ extension SwiftPackageInfo {
         Such a strategy has proven to be very consistent with the size added to iOS apps downloaded and installed via TestFlight.
         """
 
-    public static var configuration = CommandConfiguration(
+    public static let configuration = CommandConfiguration(
       abstract: "Estimated binary size of a Swift Package product.",
       discussion: """
             Measures the estimated binary size impact of a Swift Package product,
@@ -47,38 +47,50 @@ extension SwiftPackageInfo {
 
     public init() {}
 
-    public func run() async throws {
+    public func run() async throws {      
       try runArgumentsValidation(arguments: allArguments)
       var swiftPackage = makeSwiftPackage(from: allArguments)
-      swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+
+      Task { @MainActor in
+        swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+      }
 
       let package = try await validate(
         swiftPackage: &swiftPackage,
         verbose: allArguments.verbose
       )
 
-      let report = Report(swiftPackage: swiftPackage)
-
       let packageWrapper = PackageWrapper(from: package)
 
-      try BinarySizeProvider.fetchInformation(
-        for: swiftPackage,
-        package: packageWrapper, 
-        xcconfig: allArguments.xcconfig,
-        verbose: allArguments.verbose
-      )
-      .onSuccess {
-        try report.generate(
-          for: $0,
+      let providedInfo: ProvidedInfo?
+      do {
+        providedInfo = try await BinarySizeProvider.fetchInformation(
+          for: swiftPackage,
+          package: packageWrapper,
+          xcconfig: allArguments.xcconfig,
+          verbose: allArguments.verbose
+        )
+      } catch {
+        providedInfo = nil
+        if let providerError = error as? InfoProviderError {
+          Task { @MainActor in
+            Console.default.write(providerError.message)
+          }
+        }
+      }
+
+      if let providedInfo {
+        let report = await Report(swiftPackage: swiftPackage, console: .default)
+        try await report.generate(
+          for: providedInfo,
           format: allArguments.report
         )
       }
-      .onFailure { Console.default.write($0.message) }
     }
   }
 }
 
-extension SwiftPackage: CustomConsoleMessagesConvertible {
+extension SwiftPackage: @retroactive CustomConsoleMessagesConvertible {
   public var messages: [ConsoleMessage] {
     [
       .init(

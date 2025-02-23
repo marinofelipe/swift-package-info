@@ -25,35 +25,35 @@ import CoreTestSupport
 @testable import Core
 
 final class BinarySizeProviderTests: XCTestCase {
-  func testFetchInformation() throws {
+  func testFetchInformation() async throws {
     var defaultSizeMeasurerCallsCount = 0
     var lastVerbose: Bool?
-
+    
     var sizeMeasurerCallsCount = 0
     var lastSwiftPackage: SwiftPackage?
     var lastIsDynamic: Bool?
-
+    
     defaultSizeMeasurer = { xcconfig, verbose in
       lastVerbose = verbose
       defaultSizeMeasurerCallsCount += 1
-
+      
       return { swiftPackage, isDynamic in
         lastSwiftPackage = swiftPackage
         lastIsDynamic = isDynamic
         sizeMeasurerCallsCount += 1
-
+        
         return .init(
           amount: 908,
           formatted: "908 kb"
         )
       }
     }
-
+    
     let productName = "Product"
     let swiftPackage = Fixture.makeSwiftPackage(
       product: productName
     )
-    let result = BinarySizeProvider.fetchInformation(
+    let providedInfo = try await BinarySizeProvider.fetchInformation(
       for: swiftPackage,
       package: Fixture.makePackageWrapper(
         products: [
@@ -73,8 +73,7 @@ final class BinarySizeProviderTests: XCTestCase {
       xcconfig: nil,
       verbose: true
     )
-
-    let providedInfo = try result.get()
+    
     XCTAssertEqual(
       providedInfo.providerName,
       "Binary Size"
@@ -83,7 +82,7 @@ final class BinarySizeProviderTests: XCTestCase {
       providedInfo.providerKind,
       .binarySize
     )
-
+    
     XCTAssertEqual(
       defaultSizeMeasurerCallsCount,
       1
@@ -104,7 +103,7 @@ final class BinarySizeProviderTests: XCTestCase {
       lastIsDynamic,
       true
     )
-
+    
     XCTAssertEqual(
       providedInfo.messages,
       [
@@ -122,13 +121,13 @@ final class BinarySizeProviderTests: XCTestCase {
         )
       ]
     )
-
+    
     let encodedProvidedInfo = try JSONEncoder.sortedAndPrettyPrinted.encode(providedInfo)
     let encodedProvidedInfoString = String(
       data: encodedProvidedInfo,
       encoding: .utf8
     )
-
+    
     XCTAssertEqual(
       encodedProvidedInfoString,
       #"""

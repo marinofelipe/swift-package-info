@@ -33,18 +33,15 @@ enum DependenciesProviderError: LocalizedError, Equatable {
 }
 
 public struct DependenciesProvider {
+  @Sendable
   public static func fetchInformation(
     for swiftPackage: SwiftPackage,
     package: PackageWrapper,
     xcconfig: URL?,
     verbose: Bool
-  ) -> Result<ProvidedInfo, InfoProviderError> {
+  ) async throws -> ProvidedInfo {
     guard let product = package.products.first(where: { $0.name == swiftPackage.product }) else {
-      return .failure(
-        .init(
-          localizedError: DependenciesProviderError.failedToMatchProduct
-        )
-      )
+      throw DependenciesProviderError.failedToMatchProduct
     }
 
     let productTargets = product.targets
@@ -53,12 +50,10 @@ public struct DependenciesProvider {
       package: package
     )
 
-    return .success(
-      .init(
-        providerName: "Dependencies",
-        providerKind: .dependencies,
-        information: DependenciesInformation(dependencies: externalDependencies)
-      )
+    return ProvidedInfo(
+      providerName: "Dependencies",
+      providerKind: .dependencies,
+      information: DependenciesInformation(dependencies: externalDependencies)
     )
   }
 
@@ -132,14 +127,14 @@ struct DependenciesInformation: Equatable, CustomConsoleMessagesConvertible {
 
   private func buildConsoleMessages() -> [ConsoleMessage] {
     if dependencies.isEmpty {
-      return [
+      [
         .init(
           text: "No third-party dependencies :)",
           hasLineBreakAfter: false
         )
       ]
     } else {
-      return consoleDependencies.enumerated().map { index, dependency -> [ConsoleMessage] in
+      consoleDependencies.enumerated().map { index, dependency -> [ConsoleMessage] in
         var messages: [ConsoleMessage] = [
           .init(
             text: "\(dependency.product)",

@@ -22,16 +22,16 @@ import PackageModel
 
 /// A wrapper over SwiftPM library Package type.
 /// `Equatable` and `easily testable`
-public struct PackageWrapper: Equatable {
-  public struct Product: Equatable {
+public struct PackageWrapper: Equatable, Sendable {
+  public struct Product: Equatable, Sendable {
     public let name: String
     public let package: String?
     public let isDynamicLibrary: Bool?
     public let targets: [Target]
   }
 
-  public struct Target: Equatable {
-    public enum Dependency: Equatable {
+  public struct Target: Equatable, Sendable {
+    public enum Dependency: Equatable, Sendable {
       case target(Target)
       case product(Product)
 
@@ -58,7 +58,7 @@ public struct PackageWrapper: Equatable {
     public let dependencies: [Dependency]
   }
 
-  public struct Platform: Equatable {
+  public struct Platform: Equatable, Sendable {
     public let platformName: String
     public let version: String
   }

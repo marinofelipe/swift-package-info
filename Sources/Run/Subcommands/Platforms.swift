@@ -25,7 +25,7 @@ import Reports
 
 extension SwiftPackageInfo {
   public struct Platforms: AsyncParsableCommand {
-    public static var configuration = CommandConfiguration(
+    public static let configuration = CommandConfiguration(
       abstract: "Shows platforms supported b a Package product.",
       discussion: """
             Informs supported platforms by a given Package.swift and its products,
@@ -41,30 +41,40 @@ extension SwiftPackageInfo {
     public func run() async throws {
       try runArgumentsValidation(arguments: allArguments)
       var swiftPackage = makeSwiftPackage(from: allArguments)
-      swiftPackage.messages.forEach(Console.default.lineBreakAndWrite)
+      swiftPackage.messages.forEach {
+        let message = $0
+        Task { @MainActor in
+          Console.default.lineBreakAndWrite(message)
+        }
+      }
 
       let package = try await validate(
         swiftPackage: &swiftPackage,
         verbose: allArguments.verbose
       )
 
-      let report = Report(swiftPackage: swiftPackage)
-
       let packageWrapper = PackageWrapper(from: package)
 
-      try PlatformsProvider.fetchInformation(
-        for: swiftPackage,
-        package: packageWrapper,
-        xcconfig: allArguments.xcconfig,
-        verbose: allArguments.verbose
-      )
-      .onSuccess {
-        try report.generate(
-          for: $0,
+      do {
+        let providedInfo = try await PlatformsProvider.fetchInformation(
+          for: swiftPackage,
+          package: packageWrapper,
+          xcconfig: allArguments.xcconfig,
+          verbose: allArguments.verbose
+        )
+
+        let report = await Report(swiftPackage: swiftPackage, console: .default)
+        try await report.generate(
+          for: providedInfo,
           format: allArguments.report
         )
+      } catch {
+        if let providerError = error as? InfoProviderError {
+          Task { @MainActor in
+            Console.default.write(providerError.message)
+          }
+        }
       }
-      .onFailure { Console.default.write($0.message) }
     }
   }
 }

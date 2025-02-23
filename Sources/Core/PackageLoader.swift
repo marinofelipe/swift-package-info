@@ -26,9 +26,9 @@ import Workspace
 /// Loads the content of a Package.swift, the dependency graph included
 ///
 /// The ``PackageLoader`` uses the SPM library to load the package representation
-public struct PackageLoader {
+public struct PackageLoader: Sendable {
   /// Loads a Package.swift at a given `packagePath`
-  public var load: (AbsolutePath) async throws -> Package
+  public var load: @Sendable (AbsolutePath) async throws -> Package
 }
 
 extension PackageLoader {

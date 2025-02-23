@@ -20,8 +20,8 @@
 
 import struct Foundation.URL
 
-public struct SwiftPackage: Equatable, CustomStringConvertible {
-  public enum Resolution: Equatable, CustomStringConvertible {
+public struct SwiftPackage: Equatable, CustomStringConvertible, Sendable {
+  public enum Resolution: Equatable, CustomStringConvertible, Sendable {
     case version(String)
     case revision(String)
 

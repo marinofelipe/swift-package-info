@@ -27,7 +27,7 @@ public final class Report: Reporting {
 
   public init(
     swiftPackage: SwiftPackage,
-    console: Console = .default
+    console: Console
   ) {
     self.swiftPackage = swiftPackage
     self.console = console
@@ -36,8 +36,8 @@ public final class Report: Reporting {
   public func generate(
     for providedInfo: ProvidedInfo,
     format: ReportFormat
-  ) throws {
-    try generate(
+  ) async throws {
+    try await generate(
       for: [providedInfo],
       format: format
     )
@@ -46,9 +46,9 @@ public final class Report: Reporting {
   public func generate(
     for providedInfos: [ProvidedInfo],
     format: ReportFormat
-  ) throws {
-    let reportGenerator = format.makeReportGenerator()
-    try reportGenerator(
+  ) async throws {
+    let reportGenerator = format.makeReportGenerator(console: console)
+    try await reportGenerator(
       swiftPackage,
       providedInfos
     )
@@ -57,7 +57,7 @@ public final class Report: Reporting {
 
 // MARK: - SwiftPackage: CustomConsoleMessageConvertible
 
-extension SwiftPackage: CustomConsoleMessageConvertible {
+extension SwiftPackage: @retroactive CustomConsoleMessageConvertible {
   public var message: ConsoleMessage {
     .init(
       text: "\(product), \(versionOrRevision)",
