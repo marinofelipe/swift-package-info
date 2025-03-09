@@ -150,7 +150,7 @@ final class SwiftPackageService {
       
       let tagState: ResourceState
 
-      switch swiftPackage.resolution {
+      switch swiftPackage.source.remoteResolution {
       case let .version(version):
         let resolvedTag: String
         if version == ResourceState.undefined.description {
@@ -168,6 +168,9 @@ final class SwiftPackageService {
       case let .revision(revision):
         tagState = .undefined
         try workingCopy.checkout(revision: Revision(identifier: revision))
+      case .none:
+        tagState = .invalid
+        try workingCopy.checkout(tag: repositoryTags.last ?? "")
       }
 
       let package = try await packageLoader.load(cloneDirPath)

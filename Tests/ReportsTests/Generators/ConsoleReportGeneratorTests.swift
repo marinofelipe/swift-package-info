@@ -41,7 +41,7 @@ final class ConsoleReportGeneratorTests: XCTestCase {
     )
     
     sut.renderReport(
-      for: try Fixture.makeSwiftPackage(),
+      for: try Fixture.makePackageDefinition(),
       providedInfos: [
         ProvidedInfo.init(
           providerName: "Name",

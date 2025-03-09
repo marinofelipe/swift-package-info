@@ -23,7 +23,7 @@ import Foundation
 import Core
 
 public extension Fixture {
-  static func makeSwiftPackage(
+  static func makePackageDefinition(
     url: URL = URL(string: "https://www.apple.com")!,
     version: String = "1.0.0",
     revision: String? = nil,

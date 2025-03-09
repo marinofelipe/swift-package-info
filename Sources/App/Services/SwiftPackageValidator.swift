@@ -68,7 +68,7 @@ public struct SwiftPackageValidator: SwiftPackageValidating {
         throw SwiftPackageValidationError.invalidURL
       }
 
-      switch packageDefinition.resolution {
+      switch packageDefinition.source.remoteResolution {
       case let .revision(revision):
         await console?.lineBreakAndWrite("Resolved revision: \(revision)")
       case .version:
@@ -78,11 +78,16 @@ public struct SwiftPackageValidator: SwiftPackageValidating {
 
           if let latestTag {
             await console?.lineBreakAndWrite("Defaulting to latest found semver tag: \(latestTag)")
-            packageDefinition.resolution = .version(latestTag)
+            packageDefinition.source = .remote(
+              url: packageDefinition.url,
+              resolution: .version(latestTag)
+            )
           }
         case .valid:
           break
         }
+      case .none:
+        break
       }
     case .local:
       break

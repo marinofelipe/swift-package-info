@@ -68,11 +68,13 @@ extension PackageDefinition: @retroactive CustomConsoleMessageConvertible {
   }
 
   private var versionOrRevision: String {
-    switch resolution {
+    switch source.remoteResolution {
     case let .revision(revision):
-      return revision
+      revision
     case let .version(tag):
-      return tag
+      tag
+    case .none:
+      "local package"
     }
   }
 }

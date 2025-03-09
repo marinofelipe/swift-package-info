@@ -81,7 +81,7 @@ final class DependenciesProviderTests: XCTestCase {
     )
 
     let providedInfo = try await DependenciesProvider.dependencies(
-      for: Fixture.makeSwiftPackage(
+      for: Fixture.makePackageDefinition(
         product: productName
       ),
       resolvedPackage: Fixture.makePackageWrapper(
@@ -205,7 +205,7 @@ final class DependenciesProviderTests: XCTestCase {
     )
 
     let providedInfo = try await DependenciesProvider.dependencies(
-      for: Fixture.makeSwiftPackage(
+      for: Fixture.makePackageDefinition(
         product: productName
       ),
       resolvedPackage: Fixture.makePackageWrapper(

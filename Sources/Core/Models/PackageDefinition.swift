@@ -23,7 +23,8 @@ import struct Foundation.URL
 /// Defines a Swift Package product.
 /// The initial input needed to resolve the package graph and provide the required information.
 public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
-  public enum Resolution: Equatable, CustomStringConvertible, Sendable {
+  /// The remote repository resolution, either a git tag or revision.
+  public enum RemoteResolution: Equatable, CustomStringConvertible, Sendable {
     /// Semantic version of the Swift Package. If not valid, the latest semver tag is used
     case version(String)
     /// A single git commit, SHA-1 hash, or branch name
@@ -37,17 +38,109 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
         return "Version: \(tag)"
       }
     }
+
+    var version: String? {
+      switch self {
+      case .revision: nil
+      case let .version(tag): tag
+      }
+    }
+
+    var revision: String? {
+      switch self {
+      case let .revision(revision): revision
+      case .version: nil
+      }
+    }
   }
 
-  public let url: URL
-  public let isLocal: Bool
-  public var resolution: Resolution
-  public var product: String
+  /// The source reference for the Package repository.
+  public enum Source: Equatable, Sendable, CustomStringConvertible {
+    /// A relative local directory path that contains a `Package.swift`. **Full paths not supported**.
+    case local(URL)
+    /// A valid git repository URL that contains a `Package.swift` and it's resolution method, either the git version or revision.
+    case remote(url: URL, resolution: RemoteResolution)
 
+    public var description: String {
+      switch self {
+      case let .local(url):
+        "Local path: \(url)"
+      case let .remote(url, resolution):
+        """
+        Repository URL: \(url)
+        \(resolution.description)
+        """
+      }
+    }
+
+    public var remoteResolution: RemoteResolution? {
+      switch self {
+      case .local: nil
+      case let .remote(_, resolution): resolution
+      }
+    }
+
+    public var url: URL {
+      switch self {
+      case let .local(localURL): localURL
+      case let .remote(remoteURL, _): remoteURL
+      }
+    }
+
+    var version: String? {
+      switch self {
+      case .local: nil
+      case let .remote(_, resolution): resolution.version
+      }
+    }
+
+    var revision: String? {
+      switch self {
+      case .local: nil
+      case let .remote(_, resolution): resolution.revision
+      }
+    }
+  }
+
+  /// A ``PackageDefinition`` initialization error.
   public enum Error: Swift.Error {
     case invalidURL
   }
 
+  public let url: URL
+//  public var resolution: RemoteResolution
+  public var source: Source
+  public var product: String
+  public var isLocal: Bool {
+    switch source {
+    case .local: true
+    case .remote: false
+    }
+  }
+
+  /// Initializes a ``PackageDefinition``
+  /// - Parameters:
+  ///   - source: The source reference for the Package repository.
+  ///   - product: Name of the product to be checked. If not passed in the first available product is used.
+  public init(
+    source: Source,
+    product: String?
+  ) throws(PackageDefinition.Error) {
+    try self.init(
+      url: source.url,
+      version: source.version,
+      revision: source.revision,
+      product: product
+    )
+  }
+
+  /// Initializes a ``PackageDefinition`` from CLI arguments
+  /// - Parameters:
+  ///   - url: Either a valid git repository URL or a relative local directory path that contains a `Package.swift`. For local packages **full paths are discouraged and unsupported**.
+  ///   - version: Semantic version of the Swift Package. If not passed and `revision` is not set, the latest semver tag is used.
+  ///   - revision: A single git commit, SHA-1 hash, or branch name. Applied when `packageVersion` is not set.
+  ///   - product: Name of the product to be checked. If not passed in the first available product is used.
+  @_disfavoredOverload
   public init(
     url: URL,
     version: String?,
@@ -61,22 +154,25 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
       throw Error.invalidURL
     }
 
-    self.url = url
-    self.isLocal = isValidLocalDirectory
-    self.product = product ?? ResourceState.undefined.description // TODO: Why use undefined?
-
-    let resolvedVersion = version ?? ResourceState.undefined.description
-    if let revision = revision, resolvedVersion == ResourceState.undefined.description {
-      self.resolution = .revision(revision)
+    let isLocal = isValidLocalDirectory
+    if isLocal {
+      self.source = .local(url)
     } else {
-      self.resolution = .version(resolvedVersion)
+      let resolvedVersion = version ?? ResourceState.undefined.description
+      if let revision = revision, resolvedVersion == ResourceState.undefined.description {
+        self.source = .remote(url: url, resolution: .revision(revision))
+      } else {
+        self.source = .remote(url: url, resolution: .version(resolvedVersion))
+      }
     }
+
+    self.url = url
+    self.product = product ?? ResourceState.undefined.description // TODO: Why use undefined?
   }
 
   public var description: String {
     """
-    \(isLocal ? "Local path" : "Repository URL"): \(url)
-    \(resolution.description)
+    \(source.description)
     Product: \(product)
     """
   }

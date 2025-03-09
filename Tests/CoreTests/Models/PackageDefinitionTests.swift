@@ -23,66 +23,95 @@ import CoreTestSupport
 
 @testable import Core
 
-final class SwiftPackageTests: XCTestCase {
+final class PackageDefinitionTests: XCTestCase {
   // MARK: - Init
 
-  func testResolutionPermutations() throws {
+  func testSourcePermutations() throws {
     struct Permutation: Equatable {
       let version: String
       let revision: String?
-      let expectedResolution: PackageDefinition.Resolution
+      let expectedSource: PackageDefinition.Source
     }
+
+    let url = try Fixture.makePackageDefinition().url
+    let temporaryDir = createTemporaryValidLocalDir()
 
     let permutations = [
       Permutation(
         version: "1.2.3",
         revision: "3fag5v0",
-        expectedResolution: .version("1.2.3")
+        expectedSource: .remote(url: url, resolution: .version("1.2.3"))
       ),
       Permutation(
         version: ResourceState.undefined.description,
         revision: nil,
-        expectedResolution: .version(ResourceState.undefined.description)
+        expectedSource: .remote(
+          url: url,
+          resolution: .version(ResourceState.undefined.description)
+        )
       ),
       Permutation(
         version: ResourceState.undefined.description, 
         revision: "3fag5v0",
-        expectedResolution: .revision("3fag5v0")
+        expectedSource: .remote(
+          url: url,
+          resolution: .revision("3fag5v0")
+        )
       ),
       Permutation(
         version: ResourceState.invalid.description,
         revision: "3fag5v0",
-        expectedResolution: .version(ResourceState.invalid.description)
+        expectedSource: .remote(
+          url: url,
+          resolution: .version(ResourceState.invalid.description)
+        )
       ),
       Permutation(
         version: ResourceState.undefined.description, 
         revision: nil, 
-        expectedResolution: .version(ResourceState.undefined.description)
-      )
+        expectedSource: .remote(
+          url: url,
+          resolution: .version(ResourceState.undefined.description)
+        )
+      ),
+      Permutation(
+        version: "",
+        revision: nil,
+        expectedSource: .local(temporaryDir)
+      ),
     ]
 
     try permutations.forEach { permutation in
-      let sut = try Fixture.makeSwiftPackage(
-        version: permutation.version,
-        revision: permutation.revision
-      )
+      let sut: PackageDefinition
+      if case let .local(url) = permutation.expectedSource {
+        sut = try Fixture.makePackageDefinition(
+          url: url,
+          version: permutation.version,
+          revision: permutation.revision
+        )
+      } else {
+        sut = try Fixture.makePackageDefinition(
+          version: permutation.version,
+          revision: permutation.revision
+        )
+      }
 
       XCTAssertEqual(
-        sut.resolution,
-        permutation.expectedResolution
+        sut.source,
+        permutation.expectedSource
       )
     }
   }
 
   func testInvalidRemoteAndLocal() throws {
     XCTAssertThrowsError(
-      try Fixture.makeSwiftPackage(
+      try Fixture.makePackageDefinition(
         url: URL(string: "../directory")!
       )
     )
 
     do {
-      _ = try Fixture.makeSwiftPackage(
+      _ = try Fixture.makePackageDefinition(
         url: URL(string: "../directory")!
       )
     } catch {
@@ -94,19 +123,18 @@ final class SwiftPackageTests: XCTestCase {
 
   func testDescriptionWhenLocal() throws {
     let temporaryDir = createTemporaryValidLocalDir()
-    let sut = try Fixture.makeSwiftPackage(url: temporaryDir)
+    let sut = try Fixture.makePackageDefinition(url: temporaryDir)
     XCTAssertEqual(
       sut.description,
       """
       Local path: \(temporaryDir)
-      Version: 1.0.0
       Product: Some
       """
     )
   }
 
   func testDescriptionWhenRemote() throws {
-    let sut = try Fixture.makeSwiftPackage()
+    let sut = try Fixture.makePackageDefinition()
     XCTAssertEqual(
       sut.description,
       """
@@ -119,7 +147,7 @@ final class SwiftPackageTests: XCTestCase {
 
   func testDescriptionWhenRevision() throws {
     let revision = "f46ab7s"
-    let sut = try Fixture.makeSwiftPackage(
+    let sut = try Fixture.makePackageDefinition(
       version: ResourceState.undefined.description,
       revision: revision
     )
@@ -137,14 +165,14 @@ final class SwiftPackageTests: XCTestCase {
 
   func testAccountAndRepositoryNamesWhenLocal() throws {
     let temporaryDir = createTemporaryValidLocalDir()
-    let sut = try Fixture.makeSwiftPackage(url: temporaryDir)
+    let sut = try Fixture.makePackageDefinition(url: temporaryDir)
 
     XCTAssertTrue(sut.accountName.isEmpty)
     XCTAssertTrue(sut.repositoryName.isEmpty)
   }
 
   func testAccountAndRepositoryNamesWhenNotValidGitURL() throws {
-    let sut = try Fixture.makeSwiftPackage(
+    let sut = try Fixture.makePackageDefinition(
       url: URL(string: "https://www.where.com")!
     )
     XCTAssertTrue(sut.accountName.isEmpty)
@@ -152,7 +180,7 @@ final class SwiftPackageTests: XCTestCase {
   }
 
   func testAccountAndRepositoryNamesWhenRemoteValidGitURL() throws {
-    let sut = try Fixture.makeSwiftPackage(
+    let sut = try Fixture.makePackageDefinition(
       url: URL(string: "https://www.github.com/erica/now")!
     )
     XCTAssertEqual(
@@ -166,7 +194,7 @@ final class SwiftPackageTests: XCTestCase {
   }
 
   func testAccountAndRepositoryNamesWhenURLHasDotGitAtTheEnd() throws {
-    let sut = try Fixture.makeSwiftPackage(
+    let sut = try Fixture.makePackageDefinition(
       url: URL(string: "https://www.github.com/erica/now.git")!
     )
     XCTAssertEqual(
@@ -180,7 +208,7 @@ final class SwiftPackageTests: XCTestCase {
   }
 }
 
-private extension SwiftPackageTests {
+private extension PackageDefinitionTests {
   func createTemporaryValidLocalDir() -> URL {
     let temporaryDir = URL.temporaryDirectory
     let temporaryFilename = "Package.swift"
