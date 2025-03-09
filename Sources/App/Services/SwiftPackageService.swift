@@ -25,7 +25,7 @@ internal import Foundation
 private import HTTPClientCore
 
 internal import Basics
-internal import PackageModel // FIXME: Make it internal, needs to clean up SwiftPackageValidationResult.package
+internal import PackageModel
 @preconcurrency internal import SourceControl
 @preconcurrency internal import TSCBasic
 internal import TSCUtility
