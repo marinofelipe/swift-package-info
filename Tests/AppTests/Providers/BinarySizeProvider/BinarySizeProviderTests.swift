@@ -50,7 +50,7 @@ final class BinarySizeProviderTests: XCTestCase {
     }
     
     let productName = "Product"
-    let swiftPackage = Fixture.makeSwiftPackage(
+    let swiftPackage = try Fixture.makeSwiftPackage(
       product: productName
     )
     let providedInfo = try await BinarySizeProvider.binarySize(

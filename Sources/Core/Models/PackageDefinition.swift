@@ -24,7 +24,9 @@ import struct Foundation.URL
 /// The initial input needed to resolve the package graph and provide the required information.
 public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
   public enum Resolution: Equatable, CustomStringConvertible, Sendable {
+    /// Semantic version of the Swift Package. If not valid, the latest semver tag is used
     case version(String)
+    /// A single git commit, SHA-1 hash, or branch name
     case revision(String)
 
     public var description: String {
@@ -42,22 +44,32 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
   public var resolution: Resolution
   public var product: String
 
-  // TODO: Review this for the library use case
+  public enum Error: Swift.Error {
+    case invalidURL
+  }
+
   public init(
     url: URL,
-    isLocal: Bool,
-    version: String,
+    version: String?,
     revision: String?,
-    product: String
-  ) {
-    self.url = url
-    self.isLocal = isLocal
-    self.product = product
+    product: String?
+  ) throws(PackageDefinition.Error) {
+    let isValidRemoteURL = url.isValidRemote
+    let isValidLocalDirectory = (try? url.isLocalDirectoryContainingPackageDotSwift()) ?? false
 
-    if let revision = revision, version == ResourceState.undefined.description {
+    guard isValidRemoteURL || isValidLocalDirectory else {
+      throw Error.invalidURL
+    }
+
+    self.url = url
+    self.isLocal = isValidLocalDirectory
+    self.product = product ?? ResourceState.undefined.description // TODO: Why use undefined?
+
+    let resolvedVersion = version ?? ResourceState.undefined.description
+    if let revision = revision, resolvedVersion == ResourceState.undefined.description {
       self.resolution = .revision(revision)
     } else {
-      self.resolution = .version(version)
+      self.resolution = .version(resolvedVersion)
     }
   }
 

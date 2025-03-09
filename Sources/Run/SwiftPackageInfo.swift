@@ -177,13 +177,12 @@ extension ParsableCommand {
     }
   }
 
-  func makePackageDefinition(from arguments: AllArguments) -> PackageDefinition {
-    .init(
+  func makePackageDefinition(from arguments: AllArguments) throws -> PackageDefinition {
+    try PackageDefinition(
       url: arguments.url,
-      isLocal: arguments.url.isValidRemote ? false : true,
-      version: arguments.packageVersion ?? ResourceState.undefined.description,
+      version: arguments.packageVersion,
       revision: arguments.revision,
-      product: arguments.product ?? ResourceState.undefined.description
+      product: arguments.product
     )
   }
 }

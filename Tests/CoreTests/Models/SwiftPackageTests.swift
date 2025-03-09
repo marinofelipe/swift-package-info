@@ -26,7 +26,7 @@ import CoreTestSupport
 final class SwiftPackageTests: XCTestCase {
   // MARK: - Init
 
-  func testResolutionPermutations() {
+  func testResolutionPermutations() throws {
     struct Permutation: Equatable {
       let version: String
       let revision: String?
@@ -61,8 +61,8 @@ final class SwiftPackageTests: XCTestCase {
       )
     ]
 
-    permutations.forEach { permutation in
-      let sut = Fixture.makeSwiftPackage(
+    try permutations.forEach { permutation in
+      let sut = try Fixture.makeSwiftPackage(
         version: permutation.version,
         revision: permutation.revision
       )
@@ -74,24 +74,39 @@ final class SwiftPackageTests: XCTestCase {
     }
   }
 
+  func testInvalidRemoteAndLocal() throws {
+    XCTAssertThrowsError(
+      try Fixture.makeSwiftPackage(
+        url: URL(string: "../directory")!
+      )
+    )
+
+    do {
+      _ = try Fixture.makeSwiftPackage(
+        url: URL(string: "../directory")!
+      )
+    } catch {
+      XCTAssertEqual(error as? PackageDefinition.Error, .invalidURL)
+    }
+  }
+
   // MARK: - Description
 
-  func testDescriptionWhenLocal() {
-    let sut = Fixture.makeSwiftPackage(
-      isLocal: true
-    )
+  func testDescriptionWhenLocal() throws {
+    let temporaryDir = createTemporaryValidLocalDir()
+    let sut = try Fixture.makeSwiftPackage(url: temporaryDir)
     XCTAssertEqual(
       sut.description,
       """
-      Local path: https://www.apple.com
+      Local path: \(temporaryDir)
       Version: 1.0.0
       Product: Some
       """
     )
   }
 
-  func testDescriptionWhenRemote() {
-    let sut = Fixture.makeSwiftPackage(isLocal: false)
+  func testDescriptionWhenRemote() throws {
+    let sut = try Fixture.makeSwiftPackage()
     XCTAssertEqual(
       sut.description,
       """
@@ -102,9 +117,9 @@ final class SwiftPackageTests: XCTestCase {
     )
   }
 
-  func testDescriptionWhenRevision() {
+  func testDescriptionWhenRevision() throws {
     let revision = "f46ab7s"
-    let sut = Fixture.makeSwiftPackage(
+    let sut = try Fixture.makeSwiftPackage(
       version: ResourceState.undefined.description,
       revision: revision
     )
@@ -120,28 +135,25 @@ final class SwiftPackageTests: XCTestCase {
 
   // MARK: - Account and repository
 
-  func testAccountAndRepositoryNamesWhenLocal() {
-    let sut = Fixture.makeSwiftPackage(
-      url: URL(string: "../directory")!,
-      isLocal: true
+  func testAccountAndRepositoryNamesWhenLocal() throws {
+    let temporaryDir = createTemporaryValidLocalDir()
+    let sut = try Fixture.makeSwiftPackage(url: temporaryDir)
+
+    XCTAssertTrue(sut.accountName.isEmpty)
+    XCTAssertTrue(sut.repositoryName.isEmpty)
+  }
+
+  func testAccountAndRepositoryNamesWhenNotValidGitURL() throws {
+    let sut = try Fixture.makeSwiftPackage(
+      url: URL(string: "https://www.where.com")!
     )
     XCTAssertTrue(sut.accountName.isEmpty)
     XCTAssertTrue(sut.repositoryName.isEmpty)
   }
 
-  func testAccountAndRepositoryNamesWhenNotValidGitURL() {
-    let sut = Fixture.makeSwiftPackage(
-      url: URL(string: "https://www.where.com")!,
-      isLocal: false
-    )
-    XCTAssertTrue(sut.accountName.isEmpty)
-    XCTAssertTrue(sut.repositoryName.isEmpty)
-  }
-
-  func testAccountAndRepositoryNamesWhenRemoteValidGitURL() {
-    let sut = Fixture.makeSwiftPackage(
-      url: URL(string: "https://www.github.com/erica/now")!,
-      isLocal: false
+  func testAccountAndRepositoryNamesWhenRemoteValidGitURL() throws {
+    let sut = try Fixture.makeSwiftPackage(
+      url: URL(string: "https://www.github.com/erica/now")!
     )
     XCTAssertEqual(
       sut.accountName,
@@ -153,10 +165,9 @@ final class SwiftPackageTests: XCTestCase {
     )
   }
 
-  func testAccountAndRepositoryNamesWhenURLHasDotGitAtTheEnd() {
-    let sut = Fixture.makeSwiftPackage(
-      url: URL(string: "https://www.github.com/erica/now.git")!,
-      isLocal: false
+  func testAccountAndRepositoryNamesWhenURLHasDotGitAtTheEnd() throws {
+    let sut = try Fixture.makeSwiftPackage(
+      url: URL(string: "https://www.github.com/erica/now.git")!
     )
     XCTAssertEqual(
       sut.accountName,
@@ -166,5 +177,20 @@ final class SwiftPackageTests: XCTestCase {
       sut.repositoryName,
       "now"
     )
+  }
+}
+
+private extension SwiftPackageTests {
+  func createTemporaryValidLocalDir() -> URL {
+    let temporaryDir = URL.temporaryDirectory
+    let temporaryFilename = "Package.swift"
+    let temporaryFileURL = temporaryDir.appendingPathComponent(temporaryFilename)
+
+    try? FileManager.default.createFile(
+      atPath: temporaryFileURL.path(),
+      content: Data("Test".utf8)
+    )
+
+    return temporaryDir
   }
 }
