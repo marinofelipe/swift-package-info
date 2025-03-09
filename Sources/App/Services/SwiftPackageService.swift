@@ -243,3 +243,12 @@ private extension String {
     replacingOccurrences(of: "v", with: "")
   }
 }
+
+private extension PackageDefinition {
+  var repositoryName: String {
+    guard isLocal == false else { return "" }
+
+    return (url.pathComponents.last ?? "")
+      .replacingOccurrences(of: ".git", with: "")
+  }
+}

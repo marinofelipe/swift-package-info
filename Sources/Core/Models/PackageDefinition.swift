@@ -18,7 +18,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import struct Foundation.URL
+public import struct Foundation.URL
 
 /// Defines a Swift Package product.
 /// The initial input needed to resolve the package graph and provide the required information.
@@ -108,7 +108,6 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
   }
 
   public let url: URL
-//  public var resolution: RemoteResolution
   public var source: Source
   public var product: String
   public var isLocal: Bool {
@@ -175,21 +174,5 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
     \(source.description)
     Product: \(product)
     """
-  }
-}
-
-public extension PackageDefinition {
-  var accountName: String {
-    guard isLocal == false else { return "" }
-
-    return url
-      .pathComponents[safeIndex: url.pathComponents.count - 2] ?? ""
-  }
-
-  var repositoryName: String {
-    guard isLocal == false else { return "" }
-
-    return (url.pathComponents.last ?? "")
-      .replacingOccurrences(of: ".git", with: "")
   }
 }

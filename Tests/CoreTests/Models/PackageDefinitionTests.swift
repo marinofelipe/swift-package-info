@@ -160,52 +160,6 @@ final class PackageDefinitionTests: XCTestCase {
       """
     )
   }
-
-  // MARK: - Account and repository
-
-  func testAccountAndRepositoryNamesWhenLocal() throws {
-    let temporaryDir = createTemporaryValidLocalDir()
-    let sut = try Fixture.makePackageDefinition(url: temporaryDir)
-
-    XCTAssertTrue(sut.accountName.isEmpty)
-    XCTAssertTrue(sut.repositoryName.isEmpty)
-  }
-
-  func testAccountAndRepositoryNamesWhenNotValidGitURL() throws {
-    let sut = try Fixture.makePackageDefinition(
-      url: URL(string: "https://www.where.com")!
-    )
-    XCTAssertTrue(sut.accountName.isEmpty)
-    XCTAssertTrue(sut.repositoryName.isEmpty)
-  }
-
-  func testAccountAndRepositoryNamesWhenRemoteValidGitURL() throws {
-    let sut = try Fixture.makePackageDefinition(
-      url: URL(string: "https://www.github.com/erica/now")!
-    )
-    XCTAssertEqual(
-      sut.accountName,
-      "erica"
-    )
-    XCTAssertEqual(
-      sut.repositoryName,
-      "now"
-    )
-  }
-
-  func testAccountAndRepositoryNamesWhenURLHasDotGitAtTheEnd() throws {
-    let sut = try Fixture.makePackageDefinition(
-      url: URL(string: "https://www.github.com/erica/now.git")!
-    )
-    XCTAssertEqual(
-      sut.accountName,
-      "erica"
-    )
-    XCTAssertEqual(
-      sut.repositoryName,
-      "now"
-    )
-  }
 }
 
 private extension PackageDefinitionTests {
