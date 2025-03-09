@@ -41,7 +41,7 @@ extension SwiftPackageInfo {
 
     public func run() async throws {
       try runArgumentsValidation(arguments: allArguments)
-      var packageDefinition = makePackageDefinition(from: allArguments)
+      var packageDefinition = try makePackageDefinition(from: allArguments)
       packageDefinition.messages.forEach {
         let message = $0
         Task { @MainActor in
@@ -49,7 +49,7 @@ extension SwiftPackageInfo {
         }
       }
 
-      let validator = SwiftPackageValidator()
+      let validator = await SwiftPackageValidator(console: .default)
       let package = try await validator.validate(packageDefinition: &packageDefinition)
 
       let finalPackageDefinition = packageDefinition
@@ -89,3 +89,24 @@ extension SwiftPackageInfo {
 }
 
 extension CommandConfiguration: @retroactive @unchecked Sendable {}
+
+
+// 1. validates and updates the package input
+// 2. calls info provider -> provides info
+// 3. calls reporter -> provides report
+
+// Executable
+// Needs both validation, provider and reporter
+
+// Library
+// Needs (input) -> output
+// with validation included, and ideally internally resolved
+
+// Library target
+// - has wrapper around providers
+// - for that we need the validation to be moved out
+// - the validation should be safer - no inout
+
+// Action items
+// - Make validation safer and improve executable
+// - then build library target

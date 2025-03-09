@@ -41,12 +41,12 @@ extension SwiftPackageInfo {
     public func run() async throws {
       try runArgumentsValidation(arguments: allArguments)
 
-      var packageDefinition = makePackageDefinition(from: allArguments)
+      var packageDefinition = try makePackageDefinition(from: allArguments)
       Task { @MainActor in
         packageDefinition.messages.forEach(Console.default.lineBreakAndWrite)
       }
 
-      let validator = SwiftPackageValidator()
+      let validator = await SwiftPackageValidator(console: .default)
       let package: PackageWrapper
       do {
         package = try await validator.validate(packageDefinition: &packageDefinition)

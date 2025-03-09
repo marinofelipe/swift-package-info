@@ -16,27 +16,41 @@ public enum SwiftPackageValidationError: Error, Equatable {
   case noProductFound(packageURL: URL)
 }
 
+public protocol SwiftPackageValidating {
+  func validate(
+    packageDefinition: inout PackageDefinition,
+    isVerbose: Bool
+  ) async throws(SwiftPackageValidationError) -> PackageWrapper
+}
+
 /// Uses the `SPM` library to load the package from its local or remote source, and then validates and adjusts
 /// its properties.
 ///
 /// Depending on the result, it can mutate the ``SwiftPackage`` with:
 /// - a valid first `Product`, if no product is passed or invalid
 /// - the latest `tag` as `resolution`, in case the passed tag is invalid
-public struct SwiftPackageValidator {
+public struct SwiftPackageValidator: SwiftPackageValidating {
   private let swiftPackageService: SwiftPackageService
+  private let console: Console?
 
-  public init() {
-    self.init(swiftPackageService: .init())
+  public init(console: Console? = nil) {
+    self.init(
+      swiftPackageService: .init(),
+      console: console
+    )
   }
 
-  init(swiftPackageService: SwiftPackageService = .init()) {
+  init(
+    swiftPackageService: SwiftPackageService = .init(),
+    console: Console? = nil
+  ) {
     self.swiftPackageService = swiftPackageService
+    self.console = console
   }
 
   public func validate(
     packageDefinition: inout PackageDefinition,
-    isVerbose: Bool = false,
-    console: Console? = nil // only available on CLI
+    isVerbose: Bool = false
   ) async throws(SwiftPackageValidationError) -> PackageWrapper {
     let packageResponse: SwiftPackageValidationResult
     do {
