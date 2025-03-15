@@ -166,7 +166,8 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
     }
 
     self.url = url
-    self.product = product ?? ResourceState.undefined.description // TODO: Why use undefined?
+    // N.B. Set as `undefined` which is used later on for replacing it for a valid Product
+    self.product = product ?? ResourceState.undefined.description
   }
 
   public var description: String {

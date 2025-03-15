@@ -20,13 +20,16 @@
 
 import Foundation
 
-public struct InfoProviderError: Error, CustomConsoleMessageConvertible {
+public struct InfoProviderError: LocalizedError, Equatable, CustomConsoleMessageConvertible {
   public let message: ConsoleMessage
-  
+
+  public private(set) var errorDescription: String?
+
   public init(
     localizedError: LocalizedError,
     customConsoleMessage: ConsoleMessage? = nil
   ) {
+    self.errorDescription = localizedError.errorDescription
     self.message = customConsoleMessage ?? .init(
       text: localizedError.errorDescription ?? "",
       color: .red,

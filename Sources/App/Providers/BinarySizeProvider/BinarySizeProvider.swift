@@ -139,6 +139,50 @@ public struct BinarySizeProvider {
   }
 }
 
+// MARK: - Provider - library
+
+public extension BinarySizeProvider {
+  struct Result: Sendable {
+    public let amount: Int
+    public let formatted: String
+  }
+
+  @Sendable
+  static func binarySize(
+    for packageDefinition: PackageDefinition,
+    resolvedPackage: PackageWrapper,
+    xcConfig: URL?
+  ) async throws(InfoProviderError) -> Result {
+    let sizeMeasurer = await defaultSizeMeasurer(xcConfig, false)
+    var binarySize: SizeOnDisk = .zero
+
+    let isProductDynamicLibrary = resolvedPackage.products
+      .first{ $0.name == packageDefinition.product }?
+      .isDynamicLibrary ?? false
+
+    do {
+      binarySize = try await sizeMeasurer(
+        packageDefinition,
+        isProductDynamicLibrary
+      )
+    } catch let error as LocalizedError {
+      throw InfoProviderError(localizedError: error)
+    } catch {
+      throw InfoProviderError(
+        localizedError: BinarySizeProviderError.unexpectedError(
+          underlyingError: error as NSError,
+          isVerbose: false
+        )
+      )
+    }
+
+    return Result(
+      amount: binarySize.amount,
+      formatted: binarySize.formatted
+    )
+  }
+}
+
 #if DEBUG
 // debug only
 nonisolated(unsafe) var defaultSizeMeasurer: (URL?, Bool) async -> SizeMeasuring = { xcconfig, verbose in
