@@ -18,18 +18,35 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import ArgumentParser
+public import ArgumentParser
+public import Foundation
+public import Reports
+public import TSCUtility
 
-extension ReportFormat: ExpressibleByArgument {
-    public init?(argument: String) {
-        self.init(rawValue: argument)
-    }
+extension Foundation.URL: @retroactive ExpressibleByArgument {
+  public init?(argument: String) {
+    self.init(string: argument)
+  }
+}
 
-    public var defaultValueDescription: String {
-        ReportFormat.consoleMessage.rawValue
-    }
+extension TSCUtility.Version: @retroactive ExpressibleByArgument {
+  public init?(argument: String) {
+    self.init(argument)
+  }
 
-    static public var allValueStrings: [String] {
-        ReportFormat.allCases.map(\.rawValue)
-    }
+  public var defaultValueDescription: String { "1.2.12" }
+}
+
+extension ReportFormat: @retroactive ExpressibleByArgument {
+  public init?(argument: String) {
+    self.init(rawValue: argument)
+  }
+
+  public var defaultValueDescription: String {
+    ReportFormat.consoleMessage.rawValue
+  }
+
+  static public var allValueStrings: [String] {
+    ReportFormat.allCases.map(\.rawValue)
+  }
 }

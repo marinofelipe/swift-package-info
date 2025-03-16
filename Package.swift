@@ -145,10 +145,6 @@ let package = Package(
       name: "Core",
       dependencies: [
         .product(
-          name: "ArgumentParser",
-          package: "swift-argument-parser"
-        ),
-        .product(
           name: "SwiftPM",
           package: "swift-package-manager"
         ),
