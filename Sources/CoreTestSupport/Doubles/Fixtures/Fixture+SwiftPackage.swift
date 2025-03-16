@@ -36,4 +36,17 @@ public extension Fixture {
       product: product
     )
   }
+
+  static func makePackageDefinition(
+    source: PackageDefinition.Source = .remote(
+      url: URL(string: "https://www.apple.com")!,
+      resolution: .version("1.0.0")
+    ),
+    product: String = "Some"
+  ) throws -> PackageDefinition {
+    try PackageDefinition(
+      source: source,
+      product: product
+    )
+  }
 }

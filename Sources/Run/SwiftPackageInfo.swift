@@ -152,7 +152,7 @@ extension ParsableCommand {
         Error: Invalid argument '--url <url>'
         Usage: The URL must be either:
         - A valid git repository URL that contains a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`; or
-        - A relative local directory path that has a `Package.swift`, e.g. `../other-dir/my-project`
+        - A relative or absolute path to a local directory that has a `Package.swift`, e.g. `../other-dir/my-project`
         """
       )
     }

@@ -198,11 +198,18 @@ final class SwiftPackageService {
   ) async throws -> RepositoryManager.RepositoryHandle {
     let observability = ObservabilitySystem { print("\($0): \($1)") }
 
+    let updateStrategy: RepositoryUpdateStrategy
+    if let revision = swiftPackage.revision ?? swiftPackage.version {
+      updateStrategy = .ifNeeded(revision: Revision(identifier: revision))
+    } else {
+      updateStrategy = .always
+    }
+
     return try await withCheckedThrowingContinuation { continuation in
       repositoryManager.lookup(
         package: PackageIdentity(url: "\(swiftPackage.url)"),
         repository: RepositorySpecifier(url: "\(swiftPackage.url)"),
-        updateStrategy: .never, // TODO: Update to ifNeeded
+        updateStrategy: updateStrategy,
         observabilityScope: observability.topScope,
         delegateQueue: .main,
         callbackQueue: .main

@@ -65,8 +65,8 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
 
     public var description: String {
       switch self {
-      case let .local(url):
-        "Local path: \(url)"
+      case let .local(path):
+        "Local path: \(path)"
       case let .remote(url, resolution):
         """
         Repository URL: \(url)
@@ -89,14 +89,14 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
       }
     }
 
-    var version: String? {
+    public var version: String? {
       switch self {
       case .local: nil
       case let .remote(_, resolution): resolution.version
       }
     }
 
-    var revision: String? {
+    public var revision: String? {
       switch self {
       case .local: nil
       case let .remote(_, resolution): resolution.revision
@@ -120,12 +120,21 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
     source: Source,
     product: String?
   ) throws(PackageDefinition.Error) {
-    try self.init(
-      url: source.url,
-      version: source.version,
-      revision: source.revision,
-      product: product
-    )
+    switch source {
+    case let .local(absolutePath):
+      let isValidLocalDirectory = try? absolutePath.asURL.isLocalDirectoryContainingPackageDotSwift()
+      guard isValidLocalDirectory ?? false else {
+        throw Error.invalidURL
+      }
+    case let .remote(url, _):
+      guard url.isValidRemote else {
+        throw Error.invalidURL
+      }
+    }
+
+    self.source = source
+    // N.B. Set as `undefined` which is used later on for replacing it for a valid Product
+    self.product = product ?? ResourceState.undefined.description
   }
 
   /// Initializes a ``PackageDefinition`` from CLI arguments
