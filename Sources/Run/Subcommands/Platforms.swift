@@ -43,7 +43,7 @@ extension SwiftPackageInfo {
 
       var packageDefinition = try makePackageDefinition(from: allArguments)
       Task { @MainActor in
-        packageDefinition.messages.forEach(Console.default.lineBreakAndWrite)
+        try packageDefinition.messages.forEach(Console.default.lineBreakAndWrite)
       }
 
       let validator = await SwiftPackageValidator(console: .default)

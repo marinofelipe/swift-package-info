@@ -37,7 +37,7 @@ extension TSCUtility.Version: @retroactive ExpressibleByArgument {
   public var defaultValueDescription: String { "1.2.12" }
 }
 
-extension ReportFormat: @retroactive ExpressibleByArgument {
+extension ReportFormat: ExpressibleByArgument {
   public init?(argument: String) {
     self.init(rawValue: argument)
   }

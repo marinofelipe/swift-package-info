@@ -57,7 +57,7 @@ public final class Report: Reporting {
 
 // MARK: - SwiftPackage: CustomConsoleMessageConvertible
 
-extension PackageDefinition: @retroactive CustomConsoleMessageConvertible {
+extension PackageDefinition: CustomConsoleMessageConvertible {
   public var message: ConsoleMessage {
     .init(
       text: "\(product), \(versionOrRevision)",
