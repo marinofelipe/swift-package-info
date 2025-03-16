@@ -1,4 +1,4 @@
-// swift-tools-version:6.0
+// swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -53,12 +53,20 @@ let package = Package(
           name: "ArgumentParser",
           package: "swift-argument-parser"
         ),
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     ),
     .testTarget(
       name: "RunTests",
       dependencies: [
         .target(name: "Run")
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     ),
     .target(
@@ -66,6 +74,10 @@ let package = Package(
       dependencies: [
         .target(name: "App"),
         .target(name: "Core")
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     ),
     .testTarget(
@@ -73,6 +85,10 @@ let package = Package(
       dependencies: [
         .target(name: "SwiftPackageInfo"),
         .target(name: "CoreTestSupport")
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     ),
     .target(
@@ -87,6 +103,10 @@ let package = Package(
           package: "http_client"
         ),
         .target(name: "Core")
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     ),
     .testTarget(
@@ -94,12 +114,20 @@ let package = Package(
       dependencies: [
         .target(name: "App"),
         .target(name: "CoreTestSupport")
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     ),
     .target(
       name: "Reports",
       dependencies: [
         .target(name: "Core")
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     ),
     .testTarget(
@@ -107,6 +135,10 @@ let package = Package(
       dependencies: [
         .target(name: "Reports"),
         .target(name: "CoreTestSupport")
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     ),
     .target(
@@ -116,6 +148,10 @@ let package = Package(
           name: "SwiftPM",
           package: "swift-package-manager"
         ),
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     ),
     .testTarget(
@@ -123,16 +159,25 @@ let package = Package(
       dependencies: [
         .target(name: "Core"),
         .target(name: "CoreTestSupport")
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     ),
     .target(
       name: "CoreTestSupport",
       dependencies: [
         .target(name: "Core")
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     )
   ],
-  swiftLanguageModes: [
-    .v6
+  swiftLanguageVersions: [
+    .v4,
+    .v5
   ]
 )
