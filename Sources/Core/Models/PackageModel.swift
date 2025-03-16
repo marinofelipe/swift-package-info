@@ -72,23 +72,23 @@ extension PackageWrapper {
   public init(from package: Package) {
     products = package.products.map(Product.init(from:))
     platforms = package.manifest.platforms.map(Platform.init(from:))
-    targets = package.targets.map(Target.init(from:))
+    targets = package.modules.map(Target.init(from:))
   }
 }
 
 // MARK: - Mappers
 
 extension PackageWrapper.Target {
-  init(from target: PackageModel.Target) {
-    name = target.name
-    dependencies = target.dependencies.map(Dependency.init(from:))
+  init(from module: PackageModel.Module) {
+    name = module.name
+    dependencies = module.dependencies.map(Dependency.init(from:))
   }
 }
 
 extension PackageWrapper.Target.Dependency {
-  init(from dependency: PackageModel.Target.Dependency) {
+  init(from dependency: PackageModel.Module.Dependency) {
     switch dependency {
-      case let .target(target, _):
+      case let .module(target, _):
       self = .target(PackageWrapper.Target(from: target))
       case let .product(product, _):
       self = .product(PackageWrapper.Product(from: product))
@@ -101,12 +101,12 @@ extension PackageWrapper.Product {
     name = product.name
     package = nil
     isDynamicLibrary = product.isDynamicLibrary
-    targets = product.targets.map(PackageWrapper.Target.init(from:))
+    targets = product.modules.map(PackageWrapper.Target.init(from:))
   }
 }
 
 extension PackageWrapper.Product {
-  init(from product: PackageModel.Target.ProductReference) {
+  init(from product: PackageModel.Module.ProductReference) {
     name = product.name
     package = product.package
     isDynamicLibrary = nil

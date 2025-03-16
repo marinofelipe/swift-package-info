@@ -18,10 +18,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Basics
-import PackageModel
-import TSCBasic
-import Workspace
+public import Basics
+public import PackageModel
+internal import Workspace
 
 /// Loads the content of a Package.swift, the dependency graph included
 ///

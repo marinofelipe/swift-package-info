@@ -27,7 +27,6 @@ private import HTTPClientCore
 internal import Basics
 internal import PackageModel
 @preconcurrency internal import SourceControl
-@preconcurrency internal import TSCBasic
 internal import TSCUtility
 
 struct SwiftPackageValidationResult: Sendable {
@@ -91,9 +90,14 @@ final class SwiftPackageService {
 
     await Console.default.write("Current user Swift Toolchain: \(swiftVersion)")
 
-    if swiftPackage.isLocal {
-      return try await runLocalValidation(for: swiftPackage, verbose: verbose)
-    } else {
+    switch swiftPackage.source {
+    case let .local(absolutePath):
+      return try await runLocalValidation(
+        for: swiftPackage,
+        path: absolutePath,
+        verbose: verbose
+      )
+    case .remote:
       return try await runRemoteValidation(for: swiftPackage, verbose: verbose)
     }
   }
@@ -102,10 +106,11 @@ final class SwiftPackageService {
 
   private func runLocalValidation(
     for swiftPackage: PackageDefinition,
+    path: AbsolutePath,
     verbose: Bool
   ) async throws -> SwiftPackageValidationResult {
     .init(
-      from: try await fetchLocalPackage(atPath: swiftPackage.url.path),
+      from: try await PackageWrapper(from: packageLoader.load(path)),
       product: swiftPackage.product,
       sourceInformation: .local
     )
@@ -197,7 +202,7 @@ final class SwiftPackageService {
       repositoryManager.lookup(
         package: PackageIdentity(url: "\(swiftPackage.url)"),
         repository: RepositorySpecifier(url: "\(swiftPackage.url)"),
-        skipUpdate: false,
+        updateStrategy: .never, // TODO: Update to ifNeeded
         observabilityScope: observability.topScope,
         delegateQueue: .main,
         callbackQueue: .main
@@ -246,9 +251,14 @@ private extension String {
 
 private extension PackageDefinition {
   var repositoryName: String {
-    guard isLocal == false else { return "" }
-
-    return (url.pathComponents.last ?? "")
-      .replacingOccurrences(of: ".git", with: "")
+    switch source {
+    case .local: ""
+    case .remote:
+      self.url
+        .pathComponents
+        .last?
+        .replacingOccurrences(of: ".git", with: "")
+      ?? ""
+    }
   }
 }

@@ -18,19 +18,23 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import TSCBasic
-import Foundation
+public import Basics
+internal import Foundation
 
 public extension AbsolutePath {
   /// The path to the program’s current directory.
   static let currentDir: Self = {
-    do {
-      return try AbsolutePath(validating: currentDirPath)
-    } catch {
-      preconditionFailure(
-        "Unable to make AbsolutePath from currentDir, error: \(error.localizedDescription)"
-      )
+    guard let currentDir = localFileSystem.currentWorkingDirectory else {
+      do {
+        return try AbsolutePath(validating: currentDirPath)
+      } catch {
+        preconditionFailure(
+          "Unable to make AbsolutePath from currentDir, error: \(error.localizedDescription)"
+        )
+      }
     }
+
+    return currentDir
   }()
 }
 

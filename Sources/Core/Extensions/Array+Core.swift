@@ -18,12 +18,12 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Foundation
+internal import Foundation
 
 public extension Array {
-    subscript(safeIndex index: Int) -> Element? {
-        guard index >= 0, index < endIndex else { return nil }
+  subscript(safeIndex index: Int) -> Element? {
+    guard index >= 0, index < endIndex else { return nil }
 
-        return self[index]
-    }
+    return self[index]
+  }
 }

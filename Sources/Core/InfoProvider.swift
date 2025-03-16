@@ -18,13 +18,13 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Foundation
+public import Foundation
 
 public struct InfoProviderError: LocalizedError, Equatable, CustomConsoleMessageConvertible {
   public let message: ConsoleMessage
-
+  
   public private(set) var errorDescription: String?
-
+  
   public init(
     localizedError: LocalizedError,
     customConsoleMessage: ConsoleMessage? = nil

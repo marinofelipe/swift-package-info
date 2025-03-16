@@ -18,11 +18,13 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import ArgumentParser
-import Foundation
+// TODO: Move to `Run` target
+
+public import ArgumentParser
+public import Foundation
 
 extension URL: @retroactive ExpressibleByArgument {
-    public init?(argument: String) {
-        self.init(string: argument)
-    }
+  public init?(argument: String) {
+    self.init(string: argument)
+  }
 }
