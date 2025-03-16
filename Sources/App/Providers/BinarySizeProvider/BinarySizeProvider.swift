@@ -18,8 +18,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Core
-import Foundation
+public import Core
+public import Foundation
 
 // MARK: - Types
 
@@ -100,22 +100,22 @@ struct BinarySizeInformation: Equatable, Encodable, CustomConsoleMessagesConvert
 
 public struct BinarySizeProvider {
   @Sendable
-  public static func fetchInformation(
-    for swiftPackage: SwiftPackage,
-    package: PackageWrapper,
+  public static func binarySize(
+    for packageDefinition: PackageDefinition,
+    resolvedPackage: PackageWrapper,
     xcconfig: URL?,
     verbose: Bool
   ) async throws -> ProvidedInfo { // throws(InfoProviderError): typed throws only supported from macOS 15 runtime
     let sizeMeasurer = await defaultSizeMeasurer(xcconfig, verbose)
     var binarySize: SizeOnDisk = .zero
 
-    let isProductDynamicLibrary = package.products
-      .first{ $0.name == swiftPackage.product }?
+    let isProductDynamicLibrary = resolvedPackage.products
+      .first{ $0.name == packageDefinition.product }?
       .isDynamicLibrary ?? false
 
     do {
       binarySize = try await sizeMeasurer(
-        swiftPackage,
+        packageDefinition,
         isProductDynamicLibrary
       )
     } catch let error as LocalizedError {
@@ -139,80 +139,46 @@ public struct BinarySizeProvider {
   }
 }
 
-// MARK: - Library
+// MARK: - Provider - library
 
-extension BinarySizeProvider {
-  public static func binarySize(
-    for swiftPackage: SwiftPackage,
-    xcconfig: URL? = nil
-  ) async throws -> ProvidedInfo {
-    var finalSwiftPackage = swiftPackage
+public extension BinarySizeProvider {
+  struct Result: Sendable {
+    public let amount: Int
+    public let formatted: String
+  }
 
-    // FIXME: Reuse validate method from Run package
-    let swiftPackageService = SwiftPackageService()
-    let packageResponse = try await swiftPackageService.validate(
-      swiftPackage: swiftPackage,
-      verbose: false
-    )
+  @Sendable
+  static func binarySize(
+    for packageDefinition: PackageDefinition,
+    resolvedPackage: PackageWrapper,
+    xcConfig: URL?
+  ) async throws(InfoProviderError) -> Result {
+    let sizeMeasurer = await defaultSizeMeasurer(xcConfig, false)
+    var binarySize: SizeOnDisk = .zero
 
-    switch packageResponse.sourceInformation {
-    case let .remote(isRepositoryValid, tagState, latestTag):
-      guard isRepositoryValid else {
-//        throw CleanExit.message(
-//          """
-//          Error: Invalid argument '--url <url>'
-//          Usage: The URL must be a valid git repository URL that contains
-//          a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`
-//          """
-//        )
-        // FIXME: Proper error, reuse from Run target
-        throw BinarySizeProviderError.unableToCloneEmptyApp(errorMessage: "")
-      }
+    let isProductDynamicLibrary = resolvedPackage.products
+      .first{ $0.name == packageDefinition.product }?
+      .isDynamicLibrary ?? false
 
-      switch swiftPackage.resolution {
-      case let .revision(revision):
-        // FIXME: Enable console only via CLI
-        await Console.default.lineBreakAndWrite("Resolved revision: \(revision)")
-      case .version:
-        switch tagState {
-        case .undefined, .invalid:
-          await Console.default.lineBreakAndWrite("Package version was \(tagState.description)")
-
-          if let latestTag {
-            await Console.default.lineBreakAndWrite("Defaulting to latest found semver tag: \(latestTag)")
-            finalSwiftPackage.resolution = .version(latestTag)
-          }
-        case .valid:
-          break
-        }
-      }
-    case .local:
-      break
+    do {
+      binarySize = try await sizeMeasurer(
+        packageDefinition,
+        isProductDynamicLibrary
+      )
+    } catch let error as LocalizedError {
+      throw InfoProviderError(localizedError: error)
+    } catch {
+      throw InfoProviderError(
+        localizedError: BinarySizeProviderError.unexpectedError(
+          underlyingError: error as NSError,
+          isVerbose: false
+        )
+      )
     }
 
-    guard let firstProduct = packageResponse.availableProducts.first else {
-//      throw CleanExit.message(
-//        "Error: \(swiftPackage.url) doesn't contain any product declared on Package.swift"
-      // FIXME: Proper error, reuse from Run target
-      throw BinarySizeProviderError.unableToCloneEmptyApp(errorMessage: "")
-    }
-
-    if packageResponse.isProductValid == false {
-      // FIXME: Enable console only via CLI
-      await Console.default.lineBreakAndWrite("Invalid product: \(finalSwiftPackage.product)")
-      await Console.default.lineBreakAndWrite("Using first found product instead: \(firstProduct)")
-
-      finalSwiftPackage.product = firstProduct
-    }
-
-    let package = packageResponse.package
-    let packageWrapper = PackageWrapper(from: package)
-
-    return try await fetchInformation(
-      for: swiftPackage,
-      package: packageWrapper,
-      xcconfig: xcconfig,
-      verbose: false
+    return Result(
+      amount: binarySize.amount,
+      formatted: binarySize.formatted
     )
   }
 }

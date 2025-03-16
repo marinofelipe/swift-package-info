@@ -27,7 +27,7 @@ struct ConsoleReportGenerator {
   }
 
   func renderReport(
-    for swiftPackage: SwiftPackage,
+    for packageDefinition: PackageDefinition,
     providedInfos: [ProvidedInfo]
   ) {
     var firstColumnMaxContentSize = Self.providerNameColumnTitle.count
@@ -54,7 +54,7 @@ struct ConsoleReportGenerator {
     + secondColumnMaxContentSize
     + ((Size.numberOfColumns - 1) * Divider.pipe.rawValue.count) // in between columns separators
 
-    let packageInfoRowWidth = swiftPackage.message.text.count + Size.cellMargin
+    let packageInfoRowWidth = packageDefinition.message.text.count + Size.cellMargin
 
     if packageInfoRowWidth > maxWidthWithoutLeftRightSeparators {
       let differenceInWidth = packageInfoRowWidth - maxWidthWithoutLeftRightSeparators
@@ -75,7 +75,7 @@ struct ConsoleReportGenerator {
     renderEmptyRow(size: maxWidthWithoutLeftRightSeparators)
     renderHorizontallyCenteredCell(
       maxWidth: maxWidthWithoutLeftRightSeparators,
-      cell: .init(messages: [swiftPackage.message])
+      cell: .init(messages: [packageDefinition.message])
     )
 
     let columnsTotalSizes = [firstColumnMaxContentSize, secondColumnMaxContentSize]

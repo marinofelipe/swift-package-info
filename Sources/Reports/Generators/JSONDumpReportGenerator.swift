@@ -35,7 +35,7 @@ struct JSONDumpReportGenerator: Sendable {
 
   @Sendable
   func renderDump(
-    for swiftPackage: SwiftPackage,
+    for swiftPackage: PackageDefinition,
     providedInfos: [ProvidedInfo]
   ) throws {
     let reportData = ReportData(

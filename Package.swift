@@ -15,7 +15,10 @@ let package = Package(
         "Run"
       ]
     ),
-    .library(name: "SwiftPackageInfo", targets: ["App"])
+    .library(
+      name: "SwiftPackageInfo",
+      targets: ["SwiftPackageInfo"]
+    )
   ],
   dependencies: [
     // Can't update and benefit from latest Swift 6 warnings fixes because the latest
@@ -60,6 +63,28 @@ let package = Package(
       name: "RunTests",
       dependencies: [
         .target(name: "Run")
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
+      ]
+    ),
+    .target(
+      name: "SwiftPackageInfo", // Library
+      dependencies: [
+        .target(name: "App"),
+        .target(name: "Core")
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("InferSendableFromCaptures"),
+      ]
+    ),
+    .testTarget(
+      name: "SwiftPackageInfoTests",
+      dependencies: [
+        .target(name: "SwiftPackageInfo"),
+        .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
         .enableExperimentalFeature("StrictConcurrency"),

@@ -21,6 +21,6 @@
 import Core
 
 typealias ReportGenerating = (
-  _ swiftPackage: SwiftPackage,
+  _ swiftPackage: PackageDefinition,
   _ providedInfos: [ProvidedInfo]
 ) async throws -> Void

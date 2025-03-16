@@ -26,9 +26,9 @@ import CoreTestSupport
 
 final class PlatformsProviderTests: XCTestCase {
   func testFetchInformation() async throws {
-    let providedInfo = try await PlatformsProvider.fetchInformation(
-      for: Fixture.makeSwiftPackage(),
-      package: Fixture.makePackageWrapper(
+    let providedInfo = try await PlatformsProvider.platforms(
+      for: Fixture.makePackageDefinition(),
+      resolvedPackage: Fixture.makePackageWrapper(
         platforms: [
           Fixture.makePackageContentPlatform(),
           Fixture.makePackageContentPlatform(

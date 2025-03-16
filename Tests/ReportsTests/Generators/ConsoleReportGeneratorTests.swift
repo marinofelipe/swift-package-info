@@ -26,7 +26,7 @@ import CoreTestSupport
 
 @MainActor
 final class ConsoleReportGeneratorTests: XCTestCase {
-  func testRenderReport() {
+  func testRenderReport() throws {
     let terminalControllerMock = TerminalControllerMock()
     let progressAnimationMock = ProgressAnimationMock()
     
@@ -41,7 +41,7 @@ final class ConsoleReportGeneratorTests: XCTestCase {
     )
     
     sut.renderReport(
-      for: Fixture.makeSwiftPackage(),
+      for: try Fixture.makePackageDefinition(),
       providedInfos: [
         ProvidedInfo.init(
           providerName: "Name",

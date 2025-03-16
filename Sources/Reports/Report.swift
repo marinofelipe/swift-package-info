@@ -22,14 +22,14 @@ import TSCBasic
 import Core
 
 public final class Report: Reporting {
-  let swiftPackage: SwiftPackage
+  let packageDefinition: PackageDefinition
   private let console: Console
 
   public init(
-    swiftPackage: SwiftPackage,
+    packageDefinition: PackageDefinition,
     console: Console
   ) {
-    self.swiftPackage = swiftPackage
+    self.packageDefinition = packageDefinition
     self.console = console
   }
 
@@ -49,7 +49,7 @@ public final class Report: Reporting {
   ) async throws {
     let reportGenerator = format.makeReportGenerator(console: console)
     try await reportGenerator(
-      swiftPackage,
+      packageDefinition,
       providedInfos
     )
   }
@@ -57,7 +57,7 @@ public final class Report: Reporting {
 
 // MARK: - SwiftPackage: CustomConsoleMessageConvertible
 
-extension SwiftPackage: @retroactive CustomConsoleMessageConvertible {
+extension PackageDefinition: @retroactive CustomConsoleMessageConvertible {
   public var message: ConsoleMessage {
     .init(
       text: "\(product), \(versionOrRevision)",
@@ -68,11 +68,13 @@ extension SwiftPackage: @retroactive CustomConsoleMessageConvertible {
   }
 
   private var versionOrRevision: String {
-    switch resolution {
+    switch source.remoteResolution {
     case let .revision(revision):
-      return revision
+      revision
     case let .version(tag):
-      return tag
+      tag
+    case .none:
+      "local package"
     }
   }
 }

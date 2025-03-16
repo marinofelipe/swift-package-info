@@ -18,22 +18,3 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Foundation
-
-import Core
-
-public extension Fixture {
-  static func makePackageDefinition(
-    url: URL = URL(string: "https://www.apple.com")!,
-    version: String = "1.0.0",
-    revision: String? = nil,
-    product: String = "Some"
-  ) throws -> PackageDefinition {
-    try PackageDefinition(
-      url: url,
-      version: version,
-      revision: revision,
-      product: product
-    )
-  }
-}

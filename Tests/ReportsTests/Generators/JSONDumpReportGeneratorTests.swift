@@ -39,7 +39,7 @@ final class JSONDumpReportGeneratorTests: XCTestCase {
     let sut = JSONDumpReportGenerator(console: .default)
 
     try sut.renderDump(
-      for: Fixture.makeSwiftPackage(),
+      for: Fixture.makePackageDefinition(),
       providedInfos: [
         ProvidedInfo.init(
           providerName: "Name",
@@ -100,7 +100,7 @@ final class JSONDumpReportGeneratorTests: XCTestCase {
     let sut = JSONDumpReportGenerator(console: .default)
 
     try sut.renderDump(
-      for: Fixture.makeSwiftPackage(),
+      for: Fixture.makePackageDefinition(),
       providedInfos: [
         ProvidedInfo.init(
           providerName: "Name",
