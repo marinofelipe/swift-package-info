@@ -69,8 +69,7 @@ struct AllArguments: ParsableArguments {
       .customLong("local-path"),
     ],
     help: """
-    Either a valid git repository URL or a relative local directory path that contains a `Package.swift`
-    - Note: For local packages full paths are discouraged and unsupported.
+    Either a valid git repository or the relative or absolute path to a local directory that contains a `Package.swift`.
     """
   )
   var url: URL
@@ -146,15 +145,6 @@ extension ParsableCommand {
     let isValidRemoteURL = arguments.url.isValidRemote
     let isValidLocalDirectory = try? arguments.url.isLocalDirectoryContainingPackageDotSwift()
     let isValidLocalCustomFile = arguments.xcconfig?.isLocalXCConfigFileValid()
-
-    guard arguments.url.absoluteString.first != "/" else {
-      throw CleanExit.message(
-        """
-        Error: Invalid argument '--url <url>'
-        Usage: Absolute paths aren't supported! Please pass a relative path to your local package.
-        """
-      )
-    }
 
     guard isValidRemoteURL || isValidLocalDirectory == true else {
       throw CleanExit.message(
