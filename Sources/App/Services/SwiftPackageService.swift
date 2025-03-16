@@ -86,8 +86,7 @@ final class SwiftPackageService {
     await Console.default.lineBreakAndWrite("swift-package-info built with Swift Toolchain: \(ToolsVersion.current)")
 
     let swiftVersionOutput = try await Shell.run("xcrun swift -version", verbose: false)
-    let swiftVersion = String(data: swiftVersionOutput.data, encoding: .utf8) ?? "<undefined>"
-
+    let swiftVersion = String(decoding: swiftVersionOutput.data, as: UTF8.self)
     await Console.default.write("Current user Swift Toolchain: \(swiftVersion)")
 
     switch swiftPackage.source {

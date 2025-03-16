@@ -166,20 +166,23 @@ private extension Shell {
   ) async -> Data {
     await withCheckedContinuation { continuation in
       pipe.fileHandleForReading.readabilityHandler = { fileHandle in
-        var allData = Data()
-        
         // readData(ofLength:) is used here to avoid unwanted performance side effects,
         // as described in the findings from:
         // https://stackoverflow.com/questions/49184623/nstask-race-condition-with-readabilityhandler-block
         let data = fileHandle.readData(ofLength: .max)
-        
+
+        let cleanAndResume = {
+          pipe.fileHandleForReading.readabilityHandler = nil
+          continuation.resume(returning: data)
+        }
+
         if data.isEmpty == false {
+          guard verbose else {
+            cleanAndResume()
+            return
+          }
           String(data: data, encoding: .utf8).map {
-            allData.append(data)
-            guard verbose else { return }
-            
             let text = $0
-            
             if isError {
               Task { @MainActor in
                 Console.default.lineBreakAndWrite(
@@ -200,9 +203,9 @@ private extension Shell {
               }
             }
           }
+          cleanAndResume()
         } else {
-          pipe.fileHandleForReading.readabilityHandler = nil
-          continuation.resume(returning: allData)
+          cleanAndResume()
         }
       }
     }
@@ -228,5 +231,19 @@ extension Process {
       process.currentDirectoryPath = workingDirectory
     }
     return process
+  }
+}
+
+struct SendableData: Equatable, Sendable {
+  private(set) var _data: Data = .init()
+  var data: Data {
+    get {
+      _data
+    }
+    set {
+      NSLock().withLock {
+        self._data.append(newValue)
+      }
+    }
   }
 }
