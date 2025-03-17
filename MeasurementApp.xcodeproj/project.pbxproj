@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -134,6 +134,7 @@
 				};
 			};
 			buildConfigurationList = ED3910112598F6B60059494D /* Build configuration list for PBXProject "MeasurementApp" */;
+			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -143,7 +144,6 @@
 			mainGroup = ED39100D2598F6B60059494D;
 			packageReferences = (
 			);
-			preferredProjectObjectVersion = 77;
 			productRefGroup = ED3910172598F6B60059494D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
