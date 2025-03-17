@@ -84,13 +84,13 @@ swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product
 ```
 
 ## Installation
-* Install [mint](https://github.com/yonaskolb/Mint).
-* _Optionally_ run `export MINT_LINK_PATH="/usr/local/bin"` to symlink it
-* Run: `mint install marinofelipe/swift-package-info`
+* Install [mint](https://github.com/yonaskolb/Mint)
+* _Optionally_ [add mint to your $PATH](https://github.com/yonaskolb/Mint?tab=readme-ov-file#linking) 
+* Run: `mint install marinofelipe/swift-package-info` to install the latest version
 
 ## Running it
 * `mint run swift-package-info`
-* or simply, `swift-package-info` in case it was symliked
+* or simply, `swift-package-info` in case it was symlinked
 
 ## Building
 Build from Swift Package Manager
