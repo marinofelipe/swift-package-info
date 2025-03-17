@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ extension SwiftPackageInfo {
       discussion: """
             Measures the estimated binary size impact of a Swift Package product,
             such as "ArgumentParser" declared on `swift-argument-parser`.
-
+            
             \(estimatedSizeNote)
             """,
       version: SwiftPackageInfo.configuration.version
@@ -52,7 +52,7 @@ extension SwiftPackageInfo {
       var packageDefinition = try makePackageDefinition(from: allArguments)
 
       Task { @MainActor in
-        packageDefinition.messages.forEach(Console.default.lineBreakAndWrite)
+        try packageDefinition.messages.forEach(Console.default.lineBreakAndWrite)
       }
 
       let validator = await SwiftPackageValidator(console: .default)
@@ -93,7 +93,7 @@ extension SwiftPackageInfo {
   }
 }
 
-extension PackageDefinition: @retroactive CustomConsoleMessagesConvertible {
+extension PackageDefinition: CustomConsoleMessagesConvertible {
   public var messages: [ConsoleMessage] {
     [
       .init(

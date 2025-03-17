@@ -7,7 +7,7 @@
 //  Created by Marino Felipe on 28.12.20.
 //
 
-import Foundation
+public import Foundation
 
 // MARK: - Size on disk
 

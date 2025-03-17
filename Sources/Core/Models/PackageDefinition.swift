@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -19,9 +19,11 @@
 //  SOFTWARE.
 
 public import struct Foundation.URL
+public import Basics
 
 /// Defines a Swift Package product.
 /// The initial input needed to resolve the package graph and provide the required information.
+@dynamicMemberLookup
 public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
   /// The remote repository resolution, either a git tag or revision.
   public enum RemoteResolution: Equatable, CustomStringConvertible, Sendable {
@@ -57,14 +59,14 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
   /// The source reference for the Package repository.
   public enum Source: Equatable, Sendable, CustomStringConvertible {
     /// A relative local directory path that contains a `Package.swift`. **Full paths not supported**.
-    case local(URL)
+    case local(AbsolutePath)
     /// A valid git repository URL that contains a `Package.swift` and it's resolution method, either the git version or revision.
     case remote(url: URL, resolution: RemoteResolution)
 
     public var description: String {
       switch self {
-      case let .local(url):
-        "Local path: \(url)"
+      case let .local(path):
+        "Local path: \(path)"
       case let .remote(url, resolution):
         """
         Repository URL: \(url)
@@ -82,19 +84,19 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
 
     public var url: URL {
       switch self {
-      case let .local(localURL): localURL
+      case let .local(path): path.asURL
       case let .remote(remoteURL, _): remoteURL
       }
     }
 
-    var version: String? {
+    public var version: String? {
       switch self {
       case .local: nil
       case let .remote(_, resolution): resolution.version
       }
     }
 
-    var revision: String? {
+    public var revision: String? {
       switch self {
       case .local: nil
       case let .remote(_, resolution): resolution.revision
@@ -107,15 +109,8 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
     case invalidURL
   }
 
-  public let url: URL
   public var source: Source
   public var product: String
-  public var isLocal: Bool {
-    switch source {
-    case .local: true
-    case .remote: false
-    }
-  }
 
   /// Initializes a ``PackageDefinition``
   /// - Parameters:
@@ -125,12 +120,21 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
     source: Source,
     product: String?
   ) throws(PackageDefinition.Error) {
-    try self.init(
-      url: source.url,
-      version: source.version,
-      revision: source.revision,
-      product: product
-    )
+    switch source {
+    case let .local(absolutePath):
+      let isValidLocalDirectory = try? absolutePath.asURL.isLocalDirectoryContainingPackageDotSwift()
+      guard isValidLocalDirectory ?? false else {
+        throw Error.invalidURL
+      }
+    case let .remote(url, _):
+      guard url.isValidRemote else {
+        throw Error.invalidURL
+      }
+    }
+
+    self.source = source
+    // N.B. Set as `undefined` which is used later on for replacing it for a valid Product
+    self.product = product ?? ResourceState.undefined.description
   }
 
   /// Initializes a ``PackageDefinition`` from CLI arguments
@@ -153,9 +157,17 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
       throw Error.invalidURL
     }
 
-    let isLocal = isValidLocalDirectory
-    if isLocal {
-      self.source = .local(url)
+    if isValidLocalDirectory {
+      let path: AbsolutePath
+      do {
+        path = try AbsolutePath(
+          validating: url.absoluteString,
+          relativeTo: .currentDir
+        )
+      } catch {
+        throw PackageDefinition.Error.invalidURL
+      }
+      self.source = .local(path)
     } else {
       let resolvedVersion = version ?? ResourceState.undefined.description
       if let revision = revision, resolvedVersion == ResourceState.undefined.description {
@@ -165,9 +177,12 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
       }
     }
 
-    self.url = url
     // N.B. Set as `undefined` which is used later on for replacing it for a valid Product
     self.product = product ?? ResourceState.undefined.description
+  }
+
+  public subscript<T>(dynamicMember keyPath: KeyPath<Source, T>) -> T {
+    source[keyPath: keyPath]
   }
 
   public var description: String {

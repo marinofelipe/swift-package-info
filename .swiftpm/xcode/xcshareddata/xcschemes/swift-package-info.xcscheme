@@ -173,7 +173,7 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
-      useCustomWorkingDirectory = "NO"
+      useCustomWorkingDirectory = "YES"
       customWorkingDirectory = "/Users/marino.felipe/Documents/projects/personal/swift-package-info"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
@@ -195,16 +195,24 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--path https://github.com/firebase/firebase-ios-sdk.git"
+            argument = "--path ../../yams"
             isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--path https://github.com/firebase/firebase-ios-sdk.git"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-v 6.0.0"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--product &quot;FirebaseCrashlytics&quot;"
+            argument = "--product &quot;Yams&quot;"
             isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--product &quot;Crashlytics&quot;"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--help"

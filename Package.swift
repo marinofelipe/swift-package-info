@@ -1,4 +1,4 @@
-// swift-tools-version:5.8
+// swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
   name: "swift-package-info",
   platforms: [
-    .macOS(.v12)
+    .macOS(.v13)
   ],
   products: [
     .executable(
@@ -35,11 +35,11 @@ let package = Package(
       url: "https://github.com/marinofelipe/http_client",
       .upToNextMinor(from: "0.0.4")
     ),
-    // - For now pinned to the 5.9.2 release / Xcode 15.1
-    // It auto exports SwiftToolsSupport, so no need to directly depend on the former 🙏
+    // - Pinned to the the Swift 6.0.3 release / Xcode 16.2
+    // It auto exports SwiftToolsSupport, so no need to directly depend it 🙏
     .package(
       url: "https://github.com/apple/swift-package-manager",
-      revision: "swift-5.9.2-RELEASE"
+      revision: "swift-6.0.3-RELEASE"
     ),
   ],
   targets: [
@@ -145,10 +145,6 @@ let package = Package(
       name: "Core",
       dependencies: [
         .product(
-          name: "ArgumentParser",
-          package: "swift-argument-parser"
-        ),
-        .product(
           name: "SwiftPM",
           package: "swift-package-manager"
         ),
@@ -179,11 +175,9 @@ let package = Package(
         .enableExperimentalFeature("InferSendableFromCaptures"),
       ]
     )
+  ],
+  swiftLanguageVersions: [
+    .v4,
+    .v5
   ]
 )
-
-// TODO: For lib
-// - Extract most out to the `App Target`
-// - Provide API for both a simple struct definition and passing a ready Package(Model)
-// - Remodel de report part, which has to return data for the consumer of the lib
-// - Consider App Target split

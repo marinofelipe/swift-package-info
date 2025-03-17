@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -21,35 +21,35 @@
 import Core
 
 public extension Fixture {
-    struct ProvidedInformation: Encodable, CustomConsoleMessagesConvertible {
-        let name: String
-        let value: Int
+  struct ProvidedInformation: Encodable, CustomConsoleMessagesConvertible {
+    let name: String
+    let value: Int
 
-        public var messages: [ConsoleMessage] {
-            [
-                .init(
-                    text: name,
-                    color: .green,
-                    isBold: true,
-                    hasLineBreakAfter: false
-                ),
-                .init(
-                    text: "Value is \(value)",
-                    color: .noColor,
-                    isBold: false,
-                    hasLineBreakAfter: true
-                ),
-            ]
-        }
-    }
-
-    static func makeProvidedInfoInformation(
-        name: String = "name",
-        value: Int = 10
-    ) -> ProvidedInformation {
+    public var messages: [ConsoleMessage] {
+      [
         .init(
-            name: name,
-            value: value
-        )
+          text: name,
+          color: .green,
+          isBold: true,
+          hasLineBreakAfter: false
+        ),
+        .init(
+          text: "Value is \(value)",
+          color: .noColor,
+          isBold: false,
+          hasLineBreakAfter: true
+        ),
+      ]
     }
+  }
+
+  static func makeProvidedInfoInformation(
+    name: String = "name",
+    value: Int = 10
+  ) -> ProvidedInformation {
+    .init(
+      name: name,
+      value: value
+    )
+  }
 }

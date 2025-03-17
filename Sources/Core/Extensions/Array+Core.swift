@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -18,12 +18,12 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Foundation
+internal import Foundation
 
 public extension Array {
-    subscript(safeIndex index: Int) -> Element? {
-        guard index >= 0, index < endIndex else { return nil }
+  subscript(safeIndex index: Int) -> Element? {
+    guard index >= 0, index < endIndex else { return nil }
 
-        return self[index]
-    }
+    return self[index]
+  }
 }

@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -18,7 +18,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Foundation
+public import Foundation
 
 public enum Shell {
   public struct Output: Equatable {
@@ -26,7 +26,7 @@ public enum Shell {
     public let data: Data
     public let errorData: Data
   }
-
+  
   @discardableResult
   public static func run(
     workingDirectory: String? = FileManager.default.currentDirectoryPath,
@@ -45,7 +45,7 @@ public enum Shell {
       timeout: timeout
     )
   }
-
+  
   @discardableResult
   public static func run(
     _ command: String,
@@ -56,7 +56,7 @@ public enum Shell {
     timeout: TimeInterval? = 30
   ) async throws -> Output {
     let commands = command.split(whereSeparator: \.isWhitespace)
-
+    
     let arguments: [String]
     if commands.count > 1 {
       arguments = commands.map { String($0) }
@@ -65,7 +65,7 @@ public enum Shell {
         .split { [" -", " --"].contains(String($0)) }
         .map { String($0) }
     }
-
+    
     return try await runProcess(
       workingDirectory: workingDirectory,
       outputPipe: outputPipe,
@@ -113,7 +113,7 @@ private extension Shell {
       arguments: arguments,
       verbose: verbose
     )
-
+    
     if verbose {
       await Console.default.lineBreakAndWrite(
         .init(
@@ -122,12 +122,12 @@ private extension Shell {
         )
       )
     }
-
+    
     var outputData = Data()
     var errorData = Data()
-
+    
     try process.run()
-
+    
     await withTaskGroup(of: Void.self) { taskGroup in
       outputData = await readData(
         from: outputPipe,
@@ -140,9 +140,9 @@ private extension Shell {
         verbose: verbose
       )
     }
-
+    
     process.waitUntilExit()
-
+    
     if verbose {
       await Console.default.lineBreakAndWrite(
         .init(
@@ -151,14 +151,14 @@ private extension Shell {
         )
       )
     }
-
+    
     return .init(
       succeeded: process.terminationStatus == 0,
       data: outputData,
       errorData: errorData
     )
   }
-
+  
   static func readData(
     from pipe: Pipe,
     isError: Bool,
@@ -166,20 +166,23 @@ private extension Shell {
   ) async -> Data {
     await withCheckedContinuation { continuation in
       pipe.fileHandleForReading.readabilityHandler = { fileHandle in
-        var allData = Data()
-
         // readData(ofLength:) is used here to avoid unwanted performance side effects,
         // as described in the findings from:
         // https://stackoverflow.com/questions/49184623/nstask-race-condition-with-readabilityhandler-block
         let data = fileHandle.readData(ofLength: .max)
 
+        let cleanAndResume = {
+          pipe.fileHandleForReading.readabilityHandler = nil
+          continuation.resume(returning: data)
+        }
+
         if data.isEmpty == false {
+          guard verbose else {
+            cleanAndResume()
+            return
+          }
           String(data: data, encoding: .utf8).map {
-            allData.append(data)
-            guard verbose else { return }
-
             let text = $0
-
             if isError {
               Task { @MainActor in
                 Console.default.lineBreakAndWrite(
@@ -200,9 +203,9 @@ private extension Shell {
               }
             }
           }
+          cleanAndResume()
         } else {
-          pipe.fileHandleForReading.readabilityHandler = nil
-          continuation.resume(returning: allData)
+          cleanAndResume()
         }
       }
     }
@@ -228,5 +231,19 @@ extension Process {
       process.currentDirectoryPath = workingDirectory
     }
     return process
+  }
+}
+
+struct SendableData: Equatable, Sendable {
+  private(set) var _data: Data = .init()
+  var data: Data {
+    get {
+      _data
+    }
+    set {
+      NSLock().withLock {
+        self._data.append(newValue)
+      }
+    }
   }
 }

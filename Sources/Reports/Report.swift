@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ public final class Report: Reporting {
 
 // MARK: - SwiftPackage: CustomConsoleMessageConvertible
 
-extension PackageDefinition: @retroactive CustomConsoleMessageConvertible {
+extension PackageDefinition: CustomConsoleMessageConvertible {
   public var message: ConsoleMessage {
     .init(
       text: "\(product), \(versionOrRevision)",

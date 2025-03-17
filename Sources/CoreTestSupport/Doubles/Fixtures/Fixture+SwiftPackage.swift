@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,19 @@ public extension Fixture {
       url: url,
       version: version,
       revision: revision,
+      product: product
+    )
+  }
+
+  static func makePackageDefinition(
+    source: PackageDefinition.Source = .remote(
+      url: URL(string: "https://www.apple.com")!,
+      resolution: .version("1.0.0")
+    ),
+    product: String = "Some"
+  ) throws -> PackageDefinition {
+    try PackageDefinition(
+      source: source,
       product: product
     )
   }

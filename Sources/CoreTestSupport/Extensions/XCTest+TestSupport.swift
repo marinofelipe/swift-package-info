@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -21,18 +21,18 @@
 import XCTest
 
 public extension XCTestCase {
-    func dataFromJSON(
-        named name: String,
-        bundle: Bundle,
-        file: StaticString = #file,
-        line: UInt = #line
-    ) throws -> Data {
-        let jsonData = try bundle.url(forResource: name, withExtension: "json")
-            .flatMap { try Data(contentsOf: $0) }
-        return try XCTUnwrap(
-            jsonData,
-            file: file,
-            line: line
-        )
-    }
+  func dataFromJSON(
+    named name: String,
+    bundle: Bundle,
+    file: StaticString = #filePath,
+    line: UInt = #line
+  ) throws -> Data {
+    let jsonData = try bundle.url(forResource: name, withExtension: "json")
+      .flatMap { try Data(contentsOf: $0) }
+    return try XCTUnwrap(
+      jsonData,
+      file: file,
+      line: line
+    )
+  }
 }

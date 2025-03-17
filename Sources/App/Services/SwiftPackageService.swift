@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@ private import HTTPClientCore
 internal import Basics
 internal import PackageModel
 @preconcurrency internal import SourceControl
-@preconcurrency internal import TSCBasic
 internal import TSCUtility
 
 struct SwiftPackageValidationResult: Sendable {
@@ -87,13 +86,17 @@ final class SwiftPackageService {
     await Console.default.lineBreakAndWrite("swift-package-info built with Swift Toolchain: \(ToolsVersion.current)")
 
     let swiftVersionOutput = try await Shell.run("xcrun swift -version", verbose: false)
-    let swiftVersion = String(data: swiftVersionOutput.data, encoding: .utf8) ?? "<undefined>"
-
+    let swiftVersion = String(decoding: swiftVersionOutput.data, as: UTF8.self)
     await Console.default.write("Current user Swift Toolchain: \(swiftVersion)")
 
-    if swiftPackage.isLocal {
-      return try await runLocalValidation(for: swiftPackage, verbose: verbose)
-    } else {
+    switch swiftPackage.source {
+    case let .local(absolutePath):
+      return try await runLocalValidation(
+        for: swiftPackage,
+        path: absolutePath,
+        verbose: verbose
+      )
+    case .remote:
       return try await runRemoteValidation(for: swiftPackage, verbose: verbose)
     }
   }
@@ -102,10 +105,11 @@ final class SwiftPackageService {
 
   private func runLocalValidation(
     for swiftPackage: PackageDefinition,
+    path: AbsolutePath,
     verbose: Bool
   ) async throws -> SwiftPackageValidationResult {
     .init(
-      from: try await fetchLocalPackage(atPath: swiftPackage.url.path),
+      from: try await PackageWrapper(from: packageLoader.load(path)),
       product: swiftPackage.product,
       sourceInformation: .local
     )
@@ -193,11 +197,18 @@ final class SwiftPackageService {
   ) async throws -> RepositoryManager.RepositoryHandle {
     let observability = ObservabilitySystem { print("\($0): \($1)") }
 
+    let updateStrategy: RepositoryUpdateStrategy
+    if let revision = swiftPackage.revision ?? swiftPackage.version {
+      updateStrategy = .ifNeeded(revision: Revision(identifier: revision))
+    } else {
+      updateStrategy = .always
+    }
+
     return try await withCheckedThrowingContinuation { continuation in
       repositoryManager.lookup(
         package: PackageIdentity(url: "\(swiftPackage.url)"),
         repository: RepositorySpecifier(url: "\(swiftPackage.url)"),
-        skipUpdate: false,
+        updateStrategy: updateStrategy,
         observabilityScope: observability.topScope,
         delegateQueue: .main,
         callbackQueue: .main
@@ -246,9 +257,14 @@ private extension String {
 
 private extension PackageDefinition {
   var repositoryName: String {
-    guard isLocal == false else { return "" }
-
-    return (url.pathComponents.last ?? "")
-      .replacingOccurrences(of: ".git", with: "")
+    switch source {
+    case .local: ""
+    case .remote:
+      self.url
+        .pathComponents
+        .last?
+        .replacingOccurrences(of: ".git", with: "")
+      ?? ""
+    }
   }
 }

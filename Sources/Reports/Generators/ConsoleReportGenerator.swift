@@ -160,7 +160,9 @@ private extension ConsoleReportGenerator {
         hasLineBreakAfter: false
       )
     )
-    cell.messages.forEach(console.write)
+    // try is only required because `forEach` rethrows, however `console.write` doesn't throw
+    // so it's safe to ignore it here
+    try? cell.messages.forEach(console.write)
     console.write(
       .init(
         text: titleTrailingMargin,
@@ -178,7 +180,9 @@ private extension ConsoleReportGenerator {
       console.write(Divider.space.message)
       sizeToFillWithSpace -= 1
 
-      cell.messages.forEach(console.write)
+      // try is only required because `forEach` rethrows, however `console.write` doesn't throw
+      // so it's safe to ignore it here
+      try? cell.messages.forEach(console.write)
       console.write(
         .init(
           text: String(

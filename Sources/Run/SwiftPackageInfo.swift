@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -69,8 +69,7 @@ struct AllArguments: ParsableArguments {
       .customLong("local-path"),
     ],
     help: """
-    Either a valid git repository URL or a relative local directory path that contains a `Package.swift`
-    - Note: For local packages full paths are discouraged and unsupported.
+    Either a valid git repository or the relative or absolute path to a local directory that contains a `Package.swift`.
     """
   )
   var url: URL
@@ -147,22 +146,13 @@ extension ParsableCommand {
     let isValidLocalDirectory = try? arguments.url.isLocalDirectoryContainingPackageDotSwift()
     let isValidLocalCustomFile = arguments.xcconfig?.isLocalXCConfigFileValid()
 
-    guard arguments.url.absoluteString.first != "/" else {
-      throw CleanExit.message(
-        """
-        Error: Invalid argument '--url <url>'
-        Usage: Absolute paths aren't supported! Please pass a relative path to your local package.
-        """
-      )
-    }
-
     guard isValidRemoteURL || isValidLocalDirectory == true else {
       throw CleanExit.message(
         """
         Error: Invalid argument '--url <url>'
         Usage: The URL must be either:
         - A valid git repository URL that contains a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`; or
-        - A relative local directory path that has a `Package.swift`, e.g. `../other-dir/my-project`
+        - A relative or absolute path to a local directory that has a `Package.swift`, e.g. `../other-dir/my-project`
         """
       )
     }

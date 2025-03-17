@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -18,6 +18,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
+internal import Basics
 import XCTest
 import CoreTestSupport
 
@@ -34,7 +35,6 @@ final class PackageDefinitionTests: XCTestCase {
     }
 
     let url = try Fixture.makePackageDefinition().url
-    let temporaryDir = createTemporaryValidLocalDir()
 
     let permutations = [
       Permutation(
@@ -77,18 +77,14 @@ final class PackageDefinitionTests: XCTestCase {
       Permutation(
         version: "",
         revision: nil,
-        expectedSource: .local(temporaryDir)
+        expectedSource: .local(try localFileSystem.tempDirectory)
       ),
     ]
 
     try permutations.forEach { permutation in
       let sut: PackageDefinition
-      if case let .local(url) = permutation.expectedSource {
-        sut = try Fixture.makePackageDefinition(
-          url: url,
-          version: permutation.version,
-          revision: permutation.revision
-        )
+      if case let .local(path) = permutation.expectedSource {
+        sut = try Fixture.makePackageDefinition(source: .local(path))
       } else {
         sut = try Fixture.makePackageDefinition(
           version: permutation.version,
@@ -122,8 +118,8 @@ final class PackageDefinitionTests: XCTestCase {
   // MARK: - Description
 
   func testDescriptionWhenLocal() throws {
-    let temporaryDir = createTemporaryValidLocalDir()
-    let sut = try Fixture.makePackageDefinition(url: temporaryDir)
+    let temporaryDir = try createTemporaryValidLocalDir()
+    let sut = try Fixture.makePackageDefinition(source: .local(temporaryDir))
     XCTAssertEqual(
       sut.description,
       """
@@ -163,7 +159,7 @@ final class PackageDefinitionTests: XCTestCase {
 }
 
 private extension PackageDefinitionTests {
-  func createTemporaryValidLocalDir() -> URL {
+  func createTemporaryValidLocalDir() throws -> AbsolutePath {
     let temporaryDir = URL.temporaryDirectory
     let temporaryFilename = "Package.swift"
     let temporaryFileURL = temporaryDir.appendingPathComponent(temporaryFilename)
@@ -173,6 +169,6 @@ private extension PackageDefinitionTests {
       content: Data("Test".utf8)
     )
 
-    return temporaryDir
+    return try AbsolutePath(validating: temporaryDir.path())
   }
 }

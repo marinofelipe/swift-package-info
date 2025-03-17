@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ extension SwiftPackageInfo {
 
       var packageDefinition = try makePackageDefinition(from: allArguments)
       Task { @MainActor in
-        packageDefinition.messages.forEach(Console.default.lineBreakAndWrite)
+        try packageDefinition.messages.forEach(Console.default.lineBreakAndWrite)
       }
 
       let validator = await SwiftPackageValidator(console: .default)

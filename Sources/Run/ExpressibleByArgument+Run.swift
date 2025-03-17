@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -18,11 +18,35 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import ArgumentParser
-import Foundation
+public import ArgumentParser
+public import Foundation
+public import Reports
+public import TSCUtility
 
-extension URL: @retroactive ExpressibleByArgument {
-    public init?(argument: String) {
-        self.init(string: argument)
-    }
+extension Foundation.URL: @retroactive ExpressibleByArgument {
+  public init?(argument: String) {
+    self.init(string: argument)
+  }
+}
+
+extension TSCUtility.Version: @retroactive ExpressibleByArgument {
+  public init?(argument: String) {
+    self.init(argument)
+  }
+
+  public var defaultValueDescription: String { "1.2.12" }
+}
+
+extension ReportFormat: ExpressibleByArgument {
+  public init?(argument: String) {
+    self.init(rawValue: argument)
+  }
+
+  public var defaultValueDescription: String {
+    ReportFormat.consoleMessage.rawValue
+  }
+
+  static public var allValueStrings: [String] {
+    ReportFormat.allCases.map(\.rawValue)
+  }
 }

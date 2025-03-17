@@ -1,4 +1,4 @@
-//  Copyright (c) 2022 Felipe Marino
+//  Copyright (c) 2025 Felipe Marino
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
 //  SOFTWARE.
 
 internal import Foundation
+internal import Basics
 internal import Core
 internal import XcodeProj
 
@@ -166,11 +167,18 @@ final class AppManager {
       throw BinarySizeProviderError.unableToRetrieveAppProject(atPath: appPath)
     }
 
-    if swiftPackage.isLocal {
-      let packageReference = try appProject.addLocal(swiftPackage: swiftPackage)
+    switch swiftPackage.source {
+    case let .local(path):
+      let relativePath = path.relative(to: .currentDir)
+      let packageReference = try appProject.addLocal(
+        swiftPackage: swiftPackage,
+        relativePath: relativePath
+      )
       xcodeProj.pbxproj.add(object: packageReference)
-    } else if let packageReference = try appProject.addRemote(swiftPackage: swiftPackage) {
-      xcodeProj.pbxproj.add(object: packageReference)
+    case .remote:
+      if let packageReference = try appProject.addRemote(swiftPackage: swiftPackage) {
+        xcodeProj.pbxproj.add(object: packageReference)
+      }
     }
 
     try xcodeProj.write(path: .init(appPath))
@@ -224,11 +232,13 @@ private extension PBXProject {
 
   func addLocal(
     swiftPackage: PackageDefinition,
+    relativePath: RelativePath,
     targetName: String = Constants.appName
   ) throws -> XCSwiftPackageProductDependency {
     try addLocalSwiftPackage(
-      // Relative path is adjusted for the location of the cloned MeasurementApp
-      path: .init("../\(swiftPackage.url.path)"),
+      // The path is adjusted considering the location of the cloned MeasurementApp is
+      // different than the the relative path to the current dir
+      path: .init("../\(relativePath.pathString)"),
       productName: swiftPackage.product,
       targetName: targetName
     )
