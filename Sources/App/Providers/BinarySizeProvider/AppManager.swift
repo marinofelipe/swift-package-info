@@ -79,7 +79,7 @@ final class AppManager {
       try await Shell.performShallowGitClone(
         workingDirectory: fileManager.currentDirectoryPath,
         repositoryURLString: "https://github.com/marinofelipe/swift-package-info",
-        branchOrTag: "1.5.0",
+        branchOrTag: "1.5.0", // latest stable release to avoid issues while developing on the main branch
         verbose: verbose
       )
     } catch {
