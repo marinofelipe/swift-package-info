@@ -22,9 +22,9 @@ import SwiftUI
 
 @main
 struct MeasurementAppApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
+  var body: some Scene {
+    WindowGroup {
+      ContentView()
     }
+  }
 }
