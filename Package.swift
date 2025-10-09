@@ -1,4 +1,4 @@
-// swift-tools-version:6.2
+// swift-tools-version:6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -55,8 +55,8 @@ let package = Package(
         ),
       ],
       swiftSettings: [
-        .defaultIsolation(MainActor.self)
-      ]
+        .enableExperimentalFeature("StrictConcurrency"),
+      ],
     ),
     .testTarget(
       name: "RunTests",
@@ -64,7 +64,7 @@ let package = Package(
         .target(name: "Run")
       ],
       swiftSettings: [
-//        .defaultIsolation(MainActor.self)
+        .enableExperimentalFeature("StrictConcurrency"),
       ]
     ),
     .target(
@@ -74,7 +74,7 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .defaultIsolation(MainActor.self)
+        .enableExperimentalFeature("StrictConcurrency"),
       ]
     ),
     .testTarget(
@@ -84,7 +84,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-//        .defaultIsolation(MainActor.self)
+        .enableExperimentalFeature("StrictConcurrency"),
       ]
     ),
     .target(
@@ -101,7 +101,7 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .defaultIsolation(MainActor.self)
+        .enableExperimentalFeature("StrictConcurrency"),
       ]
     ),
     .testTarget(
@@ -111,7 +111,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-//        .defaultIsolation(MainActor.self)
+        .enableExperimentalFeature("StrictConcurrency"),
       ]
     ),
     .target(
@@ -120,7 +120,7 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .defaultIsolation(MainActor.self)
+        .enableExperimentalFeature("StrictConcurrency"),
       ]
     ),
     .testTarget(
@@ -130,7 +130,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-//        .defaultIsolation(MainActor.self)
+        .enableExperimentalFeature("StrictConcurrency"),
       ]
     ),
     .target(
@@ -142,7 +142,7 @@ let package = Package(
         ),
       ],
       swiftSettings: [
-        .defaultIsolation(MainActor.self)
+        .enableExperimentalFeature("StrictConcurrency"),
       ]
     ),
     .testTarget(
@@ -152,7 +152,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-//        .defaultIsolation(MainActor.self)
+        .enableExperimentalFeature("StrictConcurrency"),
       ]
     ),
     .target(
@@ -161,7 +161,7 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .defaultIsolation(MainActor.self)
+        .enableExperimentalFeature("StrictConcurrency"),
       ]
     )
   ],
