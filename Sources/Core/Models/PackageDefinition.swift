@@ -26,7 +26,7 @@ public import Basics
 @dynamicMemberLookup
 public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
   /// The remote repository resolution, either a git tag or revision.
-  public nonisolated enum RemoteResolution: Equatable, CustomStringConvertible, Sendable {
+  public enum RemoteResolution: Equatable, CustomStringConvertible, Sendable {
     /// Semantic version of the Swift Package. If not valid, the latest semver tag is used
     case version(String)
     /// A single git commit, SHA-1 hash, or branch name
@@ -57,7 +57,7 @@ public struct PackageDefinition: Equatable, CustomStringConvertible, Sendable {
   }
 
   /// The source reference for the Package repository.
-  public nonisolated enum Source: Equatable, Sendable, CustomStringConvertible {
+  public enum Source: Equatable, Sendable, CustomStringConvertible {
     /// A relative local directory path that contains a `Package.swift`. **Full paths not supported**.
     case local(AbsolutePath)
     /// A valid git repository URL that contains a `Package.swift` and it's resolution method, either the git version or revision.

@@ -20,7 +20,7 @@
 
 public import Foundation
 
-public nonisolated struct InfoProviderError: LocalizedError, Equatable, CustomConsoleMessageConvertible {
+public struct InfoProviderError: LocalizedError, Equatable, CustomConsoleMessageConvertible {
   public let message: ConsoleMessage
   
   public private(set) var errorDescription: String?

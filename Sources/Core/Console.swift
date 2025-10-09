@@ -12,7 +12,7 @@ import TSCUtility
 
 // MARK: - ConsoleColor - Wrapper
 
-public nonisolated enum ConsoleColor: Sendable {
+public enum ConsoleColor: Sendable {
   case noColor
   case red
   case green
