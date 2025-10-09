@@ -5,31 +5,10 @@
 [![Twitter](https://img.shields.io/badge/twitter-@_marinofelipe-blue.svg?style=flat)](https://twitter.com/_marinofelipe)
 
 # Swift Package Info
-CLI tool that provides information about a *given Swift Package product*, such as a *measurament of its binary size impact*.
+CLI tool that provides information about a *given Swift Package product*, such as a *measurement of its binary size impact*.
 It's built on top of [Swift Argument Parser](https://github.com/apple/swift-argument-parser).
 
 ## Usage
-```
-OVERVIEW: A tool for analyzing Swift Packages
-
-Provides valuable information about a given Swift Package,
-that can be used in your favor when deciding whether to
-adopt or not a Swift Package as a dependency on your app.
-
-USAGE: swift-package-info <subcommand>
-
-OPTIONS:
-  --version               Show the version.
-  -h, --help              Show help information.
-
-SUBCOMMANDS:
-  binary-size             Estimated binary size of a Swift Package product.
-  platforms               Shows platforms supported b a Package product.
-  dependencies            List dependencies of a Package product.
-  full-analyzes (default) All available information about a Swift Package product.
-
-  See 'swift-package-info help <subcommand>' for detailed help.
-```
 
 ### Examples
 - Run a full analyzes
@@ -42,7 +21,7 @@ swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product
 swift-package-info platforms --for https://github.com/krzyzanowskim/CryptoSwift -v 1.3.8 --product CryptoSwift
 ```
 
-- See binary size of a local pacakge (e.g. under development framework)
+- See binary size of a local package (e.g. under development framework)
 ```
 swift-package-info binary-size --path ../project/my-framework
 ```
@@ -84,6 +63,10 @@ swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product
   }
 }
 ```
+
+## Requirements
+- Swift >= 6.1
+- Xcode >= 16.4
 
 ## Installation
 * Install [mint](https://github.com/yonaskolb/Mint)
