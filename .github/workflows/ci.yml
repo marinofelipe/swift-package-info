@@ -10,10 +10,10 @@ concurrency:
 
 jobs:
   test-xcode-16:
-    name: "Test"
+    name: "Test Xcode 16.4"
     runs-on: macos-latest
     env:
-      DEVELOPER_DIR: /Applications/Xcode_16.2.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
     steps:
       - uses: actions/checkout@v5
 
@@ -41,7 +41,7 @@ jobs:
           exclude: Tests/**/*
 
   test-xcode-26:
-    name: "Test"
+    name: "Test Xcode 26.0.1"
     runs-on: macos-latest
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.0.1.app/Contents/Developer
