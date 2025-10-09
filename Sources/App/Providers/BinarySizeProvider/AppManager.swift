@@ -79,7 +79,7 @@ final class AppManager {
       try await Shell.performShallowGitClone(
         workingDirectory: fileManager.currentDirectoryPath,
         repositoryURLString: "https://github.com/marinofelipe/swift-package-info",
-        branchOrTag: .currentVersion, // latest stable release to avoid issues while developing on the main branch
+        branchOrTag: "1.5.0", // latest stable release to avoid issues while developing on the main branch
         verbose: verbose
       )
     } catch {
@@ -115,7 +115,7 @@ final class AppManager {
         """
 
     if verbose {
-      console.lineBreakAndWrite(command)
+      await console.lineBreakAndWrite(command)
     }
 
     let output = try await Shell.run(
@@ -127,7 +127,7 @@ final class AppManager {
 
     if output.succeeded == false {
       if verbose {
-        console.lineBreakAndWrite(
+        await console.lineBreakAndWrite(
           .init(
             text: "Command failed...",
             color: .red
@@ -143,10 +143,10 @@ final class AppManager {
   func calculateBinarySize() async throws -> SizeOnDisk {
     do {
       let url = URL(fileURLWithPath: archivedProductPath)
-      let appSize = try url.sizeOnDisk()
+      let appSize = try await url.sizeOnDisk()
 
       if verbose {
-        console.lineBreakAndWrite(appSize.message)
+        await console.lineBreakAndWrite(appSize.message)
       }
 
       return appSize

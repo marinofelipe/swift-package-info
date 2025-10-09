@@ -20,7 +20,7 @@
 
 internal import Foundation
 
-public nonisolated struct SizeOnDisk: Equatable, Sendable {
+public struct SizeOnDisk: Equatable, Sendable {
   /// Literal size quantity, in `Kilobytes`
   public let amount: Int
   public let formatted: String

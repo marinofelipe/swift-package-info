@@ -22,12 +22,13 @@ public import Core
 public import Foundation
 
 public struct PlatformsProvider {
+  @Sendable
   public static func platforms(
     for packageDefinition: PackageDefinition,
     resolvedPackage: PackageWrapper,
     xcconfig: URL?,
     verbose: Bool
-  ) throws -> ProvidedInfo {
+  ) async throws -> ProvidedInfo {
     .init(
       providerName: "Platforms",
       providerKind: .platforms,
@@ -38,7 +39,7 @@ public struct PlatformsProvider {
   }
 }
 
-struct PlatformsInformation: Equatable, Encodable, CustomConsoleMessagesConvertible, Sendable {
+struct PlatformsInformation: Equatable, Encodable, CustomConsoleMessagesConvertible {
   let platforms: [PackageWrapper.Platform]
   let iOS: String?
   let macOS: String?
@@ -99,19 +100,19 @@ struct PlatformsInformation: Equatable, Encodable, CustomConsoleMessagesConverti
 }
 
 extension Array where Element == PackageWrapper.Platform {
-  nonisolated var iOSVersion: String? {
+  var iOSVersion: String? {
     first(where: \.platformName == "ios")?.version
   }
 
-  nonisolated var macOSVersion: String? {
+  var macOSVersion: String? {
     first(where: \.platformName == "macos")?.version
   }
 
-  nonisolated var tvOSVersion: String? {
+  var tvOSVersion: String? {
     first(where: \.platformName == "tvos")?.version
   }
 
-  nonisolated var watchOSVersion: String? {
+  var watchOSVersion: String? {
     first(where: \.platformName == "watchos")?.version
   }
 }

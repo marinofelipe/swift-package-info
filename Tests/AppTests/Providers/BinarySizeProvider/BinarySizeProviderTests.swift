@@ -24,7 +24,6 @@ import CoreTestSupport
 @testable import App
 @testable import Core
 
-@MainActor
 final class BinarySizeProviderTests: XCTestCase {
   func testFetchInformation() async throws {
     let sizeMeasurerMock = SizeMeasurerMock()
