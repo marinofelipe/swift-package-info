@@ -76,7 +76,7 @@ final class PrintController: TerminalControlling {
 
 // MARK: - ConsoleMessage
 
-public struct ConsoleMessage: Equatable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation, Sendable {
+public nonisolated struct ConsoleMessage: Equatable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation, Sendable {
   public let text: String
   let color: ConsoleColor
   let isBold: Bool
@@ -117,14 +117,13 @@ public protocol CustomConsoleMessageConvertible {
   var message: ConsoleMessage { get }
 }
 
-public protocol CustomConsoleMessagesConvertible: Sendable {
+public protocol CustomConsoleMessagesConvertible {
   /// A console message representation that is split into and composed by multiple messages.
   var messages: [ConsoleMessage] { get }
 }
 
 // MARK: - Console
 
-@MainActor
 public final class Console {
   private var isOutputColored: Bool
   private let terminalController: TerminalControlling

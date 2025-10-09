@@ -115,7 +115,7 @@ private extension Shell {
     )
     
     if verbose {
-      await Console.default.lineBreakAndWrite(
+      Console.default.lineBreakAndWrite(
         .init(
           text: "Running Shell command",
           color: .yellow
@@ -144,7 +144,7 @@ private extension Shell {
     process.waitUntilExit()
     
     if verbose {
-      await Console.default.lineBreakAndWrite(
+      Console.default.lineBreakAndWrite(
         .init(
           text: "Finished Shell command",
           color: .yellow

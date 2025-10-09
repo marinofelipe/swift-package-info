@@ -62,7 +62,7 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
   }
 }
 
-struct BinarySizeInformation: Equatable, Encodable, CustomConsoleMessagesConvertible {
+struct BinarySizeInformation: Equatable, Encodable, CustomConsoleMessagesConvertible, Sendable {
   private let amount: Int
   private let formatted: String
 
@@ -99,14 +99,13 @@ struct BinarySizeInformation: Equatable, Encodable, CustomConsoleMessagesConvert
 // MARK: - Provider
 
 public struct BinarySizeProvider {
-  @Sendable
   public static func binarySize(
     for packageDefinition: PackageDefinition,
     resolvedPackage: PackageWrapper,
     xcconfig: URL?,
     verbose: Bool
   ) async throws -> ProvidedInfo { // throws(InfoProviderError): typed throws only supported from macOS 15 runtime
-    let sizeMeasurer = await defaultSizeMeasurer(xcconfig, verbose)
+    let sizeMeasurer = await SizeMeasurer(verbose: verbose, xcconfig: xcconfig)
     var binarySize: SizeOnDisk = .zero
 
     let isProductDynamicLibrary = resolvedPackage.products
@@ -114,9 +113,9 @@ public struct BinarySizeProvider {
       .isDynamicLibrary ?? false
 
     do {
-      binarySize = try await sizeMeasurer(
-        packageDefinition,
-        isProductDynamicLibrary
+      binarySize = try await sizeMeasurer.binarySize(
+        for: packageDefinition,
+        isDynamic: isProductDynamicLibrary
       )
     } catch let error as LocalizedError {
       throw InfoProviderError(localizedError: error)
@@ -147,13 +146,12 @@ public extension BinarySizeProvider {
     public let formatted: String
   }
 
-  @Sendable
   static func binarySize(
     for packageDefinition: PackageDefinition,
     resolvedPackage: PackageWrapper,
     xcConfig: URL?
   ) async throws(InfoProviderError) -> Result {
-    let sizeMeasurer = await defaultSizeMeasurer(xcConfig, false)
+    let sizeMeasurer = await SizeMeasurer(verbose: false, xcconfig: xcConfig)
     var binarySize: SizeOnDisk = .zero
 
     let isProductDynamicLibrary = resolvedPackage.products
@@ -161,9 +159,9 @@ public extension BinarySizeProvider {
       .isDynamicLibrary ?? false
 
     do {
-      binarySize = try await sizeMeasurer(
-        packageDefinition,
-        isProductDynamicLibrary
+      binarySize = try await sizeMeasurer.binarySize(
+        for: packageDefinition,
+        isDynamic: isProductDynamicLibrary
       )
     } catch let error as LocalizedError {
       throw InfoProviderError(localizedError: error)
@@ -182,14 +180,3 @@ public extension BinarySizeProvider {
     )
   }
 }
-
-#if DEBUG
-// debug only
-nonisolated(unsafe) var defaultSizeMeasurer: (URL?, Bool) async -> SizeMeasuring = { xcconfig, verbose in
-  await SizeMeasurer(verbose: verbose, xcconfig: xcconfig).binarySize
-}
-#else
-let defaultSizeMeasurer: (URL?, Bool) async -> SizeMeasuring = { xcconfig, verbose in
-  await SizeMeasurer(verbose: verbose, xcconfig: xcconfig).binarySize
-}
-#endif

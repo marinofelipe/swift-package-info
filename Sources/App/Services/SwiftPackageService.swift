@@ -83,11 +83,11 @@ final class SwiftPackageService {
     swiftPackage: PackageDefinition,
     verbose: Bool
   ) async throws -> SwiftPackageValidationResult {
-    await Console.default.lineBreakAndWrite("swift-package-info built with Swift Toolchain: \(ToolsVersion.current)")
+    Console.default.lineBreakAndWrite("swift-package-info built with Swift Toolchain: \(ToolsVersion.current)")
 
     let swiftVersionOutput = try await Shell.run("xcrun swift -version", verbose: false)
     let swiftVersion = String(decoding: swiftVersionOutput.data, as: UTF8.self)
-    await Console.default.write("Current user Swift Toolchain: \(swiftVersion)")
+    Console.default.write("Current user Swift Toolchain: \(swiftVersion)")
 
     switch swiftPackage.source {
     case let .local(absolutePath):
@@ -128,67 +128,68 @@ final class SwiftPackageService {
     for swiftPackage: PackageDefinition,
     verbose: Bool
   ) async throws -> SwiftPackageValidationResult {
-    return try await withTemporaryDirectory(prefix: "spm-package-info-run-") { tempDirPath in
-      let repositoryManager = RepositoryManager(
-        fileSystem: localFileSystem,
-        path: tempDirPath,
-        provider: repositoryProvider,
-        initializationWarningHandler: { s in
-          print(s)
-        }
-      )
-
-      let repositoryHandle = try await fetchRepository(
-        repositoryManager: repositoryManager,
-        swiftPackage: swiftPackage
-      )
-
-      let cloneDirPath = tempDirPath.appending(swiftPackage.repositoryName)
-
-      let workingCopy = try repositoryHandle.createWorkingCopy(
-        at: cloneDirPath,
-        editable: false
-      )
-
-      let repositoryTags = try workingCopy.getSemVerOrderedTags()
-      
-      let tagState: ResourceState
-
-      switch swiftPackage.source.remoteResolution {
-      case let .version(version):
-        let resolvedTag: String
-        if version == ResourceState.undefined.description {
-          tagState = .undefined
-          resolvedTag = repositoryTags.last ?? ""
-        } else if repositoryTags.contains(version) {
-          tagState = .valid
-          resolvedTag = version
-        } else {
-          tagState = .invalid
-          resolvedTag = repositoryTags.last ?? ""
-        }
-
-        try workingCopy.checkout(tag: resolvedTag)
-      case let .revision(revision):
-        tagState = .undefined
-        try workingCopy.checkout(revision: Revision(identifier: revision))
-      case .none:
-        tagState = .invalid
-        try workingCopy.checkout(tag: repositoryTags.last ?? "")
-      }
-
-      let package = try await packageLoader.load(cloneDirPath)
-
-      return .init(
-        from: PackageWrapper(from: package),
-        product: swiftPackage.product,
-        sourceInformation: .remote(
-          isRepositoryValid: true,
-          tagState: tagState,
-          latestTag: repositoryTags.last
-        )
-      )
-    }
+//    try await withTemporaryDirectory(prefix: "spm-package-info-run-") { tempDirPath in
+//      let repositoryManager = RepositoryManager(
+//        fileSystem: localFileSystem,
+//        path: tempDirPath,
+//        provider: repositoryProvider,
+//        initializationWarningHandler: { s in
+//          print(s)
+//        }
+//      )
+//
+//      let repositoryHandle = try await fetchRepository(
+//        repositoryManager: repositoryManager,
+//        swiftPackage: swiftPackage
+//      )
+//
+//      let cloneDirPath = tempDirPath.appending(swiftPackage.repositoryName)
+//
+//      let workingCopy = try await repositoryHandle.createWorkingCopy(
+//        at: cloneDirPath,
+//        editable: false
+//      )
+//
+//      let repositoryTags = try workingCopy.getSemVerOrderedTags()
+//      
+//      let tagState: ResourceState
+//
+//      switch swiftPackage.source.remoteResolution {
+//      case let .version(version):
+//        let resolvedTag: String
+//        if version == ResourceState.undefined.description {
+//          tagState = .undefined
+//          resolvedTag = repositoryTags.last ?? ""
+//        } else if repositoryTags.contains(version) {
+//          tagState = .valid
+//          resolvedTag = version
+//        } else {
+//          tagState = .invalid
+//          resolvedTag = repositoryTags.last ?? ""
+//        }
+//
+//        try workingCopy.checkout(tag: resolvedTag)
+//      case let .revision(revision):
+//        tagState = .undefined
+//        try workingCopy.checkout(revision: Revision(identifier: revision))
+//      case .none:
+//        tagState = .invalid
+//        try workingCopy.checkout(tag: repositoryTags.last ?? "")
+//      }
+//
+//      let package = try await packageLoader.load(cloneDirPath)
+//
+//      return .init(
+//        from: PackageWrapper(from: package),
+//        product: swiftPackage.product,
+//        sourceInformation: .remote(
+//          isRepositoryValid: true,
+//          tagState: tagState,
+//          latestTag: repositoryTags.last
+//        )
+//      )
+//    }
+    fatalError()
   }
 
   private func fetchRepository(
@@ -204,24 +205,12 @@ final class SwiftPackageService {
       updateStrategy = .always
     }
 
-    return try await withCheckedThrowingContinuation { continuation in
-      repositoryManager.lookup(
-        package: PackageIdentity(url: "\(swiftPackage.url)"),
-        repository: RepositorySpecifier(url: "\(swiftPackage.url)"),
-        updateStrategy: updateStrategy,
-        observabilityScope: observability.topScope,
-        delegateQueue: .main,
-        callbackQueue: .main
-      ) { result in
-        switch result {
-        case let .success(handle):
-          let handleCopy = handle
-          continuation.resume(returning: handleCopy)
-        case let .failure(error):
-          continuation.resume(throwing: error)
-        }
-      }
-    }
+    return try await repositoryManager.lookup(
+      package: PackageIdentity(url: "\(swiftPackage.url)"),
+      repository: RepositorySpecifier(url: "\(swiftPackage.url)"),
+      updateStrategy: updateStrategy,
+      observabilityScope: observability.topScope
+    )
   }
 }
 

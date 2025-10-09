@@ -24,6 +24,7 @@ import CoreTestSupport
 @testable import App
 @testable import Core
 
+@MainActor
 final class DependenciesProviderTests: XCTestCase {
   func testWithTransitiveDependencies() async throws {
     let productName = "Some"

@@ -24,29 +24,29 @@ public import Reports
 public import TSCUtility
 
 extension Foundation.URL: @retroactive ExpressibleByArgument {
-  public init?(argument: String) {
+  public nonisolated init?(argument: String) {
     self.init(string: argument)
   }
 }
 
 extension TSCUtility.Version: @retroactive ExpressibleByArgument {
-  public init?(argument: String) {
+  public nonisolated init?(argument: String) {
     self.init(argument)
   }
 
-  public var defaultValueDescription: String { "1.2.12" }
+  public nonisolated var defaultValueDescription: String { "1.2.12" }
 }
 
 extension ReportFormat: ExpressibleByArgument {
-  public init?(argument: String) {
+  public nonisolated init?(argument: String) {
     self.init(rawValue: argument)
   }
 
-  public var defaultValueDescription: String {
+  public nonisolated var defaultValueDescription: String {
     ReportFormat.consoleMessage.rawValue
   }
 
-  static public var allValueStrings: [String] {
+  static public nonisolated var allValueStrings: [String] {
     ReportFormat.allCases.map(\.rawValue)
   }
 }

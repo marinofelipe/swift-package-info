@@ -38,15 +38,14 @@ extension SwiftPackageInfo {
 
     public init() {}
 
+    @MainActor
     public func run() async throws {
       try runArgumentsValidation(arguments: allArguments)
 
       var packageDefinition = try makePackageDefinition(from: allArguments)
-      Task { @MainActor in
-        try packageDefinition.messages.forEach(Console.default.lineBreakAndWrite)
-      }
+      packageDefinition.messages.forEach(Console.default.lineBreakAndWrite)
 
-      let validator = await SwiftPackageValidator(console: .default)
+      let validator = SwiftPackageValidator(console: .default)
       let package: PackageWrapper
       do {
         package = try await validator.validate(packageDefinition: &packageDefinition)
@@ -62,7 +61,7 @@ extension SwiftPackageInfo {
           verbose: allArguments.verbose
         )
 
-        let report = await Report(packageDefinition: packageDefinition, console: .default)
+        let report = Report(packageDefinition: packageDefinition, console: .default)
         try await report.generate(
           for: providedInfo,
           format: allArguments.report

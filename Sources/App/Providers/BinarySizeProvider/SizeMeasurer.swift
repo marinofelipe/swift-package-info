@@ -21,12 +21,14 @@
 internal import Foundation
 internal import Core
 
-typealias SizeMeasuring = (
-  _ swiftPackage: PackageDefinition,
-  _ isDynamic: Bool
-) async throws -> SizeOnDisk
+protocol SizeMeasuring {
+  func binarySize(
+    for swiftPackage: PackageDefinition,
+    isDynamic: Bool
+  ) async throws -> SizeOnDisk
+}
 
-final class SizeMeasurer {
+final class SizeMeasurer: SizeMeasuring {
   private var appManager: AppManager
   private let console: Console
   private let verbose: Bool
@@ -57,15 +59,13 @@ final class SizeMeasurer {
   private var currentStep = 1
   private static let second: Double = 1_000_000
 
-  deinit {
-    try? appManager.cleanUp()
-  }
-
   public func binarySize(
     for swiftPackage: PackageDefinition,
     isDynamic: Bool
   ) async throws -> SizeOnDisk {
-    await console.lineBreak()
+    defer { try? appManager.cleanUp() }
+
+    console.lineBreak()
 
     let emptyAppSize = try await measureEmptyAppSize()
     let appSizeWithDependencyAdded = try await measureAppSize(
@@ -73,7 +73,7 @@ final class SizeMeasurer {
       isDynamic: isDynamic
     )
 
-    await completeLoading()
+    completeLoading()
     let increasedSize = appSizeWithDependencyAdded - emptyAppSize
 
     return increasedSize
@@ -85,19 +85,19 @@ final class SizeMeasurer {
 private extension SizeMeasurer {
   func measureEmptyAppSize() async throws -> SizeOnDisk {
     if verbose == false {
-      await showOrUpdateLoading(withText: "Cleaning up empty app directory...")
+      showOrUpdateLoading(withText: "Cleaning up empty app directory...")
     }
     try appManager.cleanUp()
 
     if verbose {
-      await console.lineBreakAndWrite("Cloning empty app")
+      console.lineBreakAndWrite("Cloning empty app")
     } else {
-      await showOrUpdateLoading(withText: "Cloning empty app...")
+      showOrUpdateLoading(withText: "Cloning empty app...")
     }
     try await appManager.cloneEmptyApp()
 
     if verbose {
-      await console.lineBreakAndWrite(
+      console.lineBreakAndWrite(
         .init(
           text: "Measuring empty app size",
           color: .green,
@@ -107,12 +107,12 @@ private extension SizeMeasurer {
     }
 
     if verbose == false {
-      await showOrUpdateLoading(withText: "Generating archive for empty app...")
+      showOrUpdateLoading(withText: "Generating archive for empty app...")
     }
     try await appManager.generateArchive()
 
     if verbose == false {
-      await showOrUpdateLoading(withText: "Calculating binary size...")
+      showOrUpdateLoading(withText: "Calculating binary size...")
     }
     return try await appManager.calculateBinarySize()
   }
@@ -122,7 +122,7 @@ private extension SizeMeasurer {
     isDynamic: Bool
   ) async throws -> SizeOnDisk {
     if verbose {
-      await console.lineBreakAndWrite(
+      console.lineBreakAndWrite(
         .init(
           text: "Measuring app size with \(swiftPackage.product) added as dependency",
           color: .green,
@@ -132,7 +132,7 @@ private extension SizeMeasurer {
     }
 
     if verbose == false {
-      await showOrUpdateLoading(withText: "Adding \(swiftPackage.product) as dependency...")
+      showOrUpdateLoading(withText: "Adding \(swiftPackage.product) as dependency...")
     }
     try appManager.add(
       asDependency: swiftPackage,
@@ -140,24 +140,24 @@ private extension SizeMeasurer {
     )
 
     if verbose == false {
-      await showOrUpdateLoading(withText: "Generating archive for updated app...")
+      showOrUpdateLoading(withText: "Generating archive for updated app...")
     }
     try await appManager.generateArchive()
 
     if verbose == false {
-      await showOrUpdateLoading(withText: "Calculating updated binary size...")
+      showOrUpdateLoading(withText: "Calculating updated binary size...")
     }
     return try await appManager.calculateBinarySize()
   }
 
-  func showOrUpdateLoading(withText text: String) async {
+  func showOrUpdateLoading(withText text: String) {
     usleep(UInt32(Self.second * 0.5))
-    await console.showLoading(step: currentStep, total: Self.stepsCount, text: text)
+    console.showLoading(step: currentStep, total: Self.stepsCount, text: text)
     currentStep += 1
   }
 
-  func completeLoading() async {
-    await console.completeLoading(success: true)
+  func completeLoading() {
+    console.completeLoading(success: true)
     currentStep = 0
   }
 }

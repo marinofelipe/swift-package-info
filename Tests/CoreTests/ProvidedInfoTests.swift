@@ -21,57 +21,58 @@
 import XCTest
 @testable import Core
 
+@MainActor
 final class ProvidedInfoTests: XCTestCase {
-    private struct ProvidedContent: CustomConsoleMessagesConvertible, Encodable {
-        let binarySize: Float
-        var messages: [ConsoleMessage] {
-            [
-                .init(stringLiteral: "something")
-            ]
-        }
+  private struct ProvidedContent: CustomConsoleMessagesConvertible, Encodable {
+    let binarySize: Float
+    var messages: [ConsoleMessage] {
+      [
+        .init(stringLiteral: "something")
+      ]
     }
+  }
 
-    func testConsoleMessages() {
-        let sut = ProvidedInfo(
-            providerName: "name",
-            providerKind: .binarySize,
-            information: ProvidedContent(binarySize: 300)
-        )
+  func testConsoleMessages() {
+    let sut = ProvidedInfo(
+      providerName: "name",
+      providerKind: .binarySize,
+      information: ProvidedContent(binarySize: 300)
+    )
 
-        XCTAssertEqual(
-            sut.messages,
-            [
-                .init(stringLiteral: "something")
-            ]
-        )
-    }
+    XCTAssertEqual(
+      sut.messages,
+      [
+        .init(stringLiteral: "something")
+      ]
+    )
+  }
 
-    func testProviderName() {
-        let sut = ProvidedInfo(
-            providerName: "name",
-            providerKind: .binarySize,
-            information: ProvidedContent(binarySize: 300)
-        )
+  func testProviderName() {
+    let sut = ProvidedInfo(
+      providerName: "name",
+      providerKind: .binarySize,
+      information: ProvidedContent(binarySize: 300)
+    )
 
-        XCTAssertEqual(
-            sut.providerName,
-            "name"
-        )
-    }
+    XCTAssertEqual(
+      sut.providerName,
+      "name"
+    )
+  }
 
-    func testEncodedValue() throws {
-        let sut = ProvidedInfo(
-            providerName: "name",
-            providerKind: .binarySize,
-            information: ProvidedContent(binarySize: 300)
-        )
+  func testEncodedValue() throws {
+    let sut = ProvidedInfo(
+      providerName: "name",
+      providerKind: .binarySize,
+      information: ProvidedContent(binarySize: 300)
+    )
 
-        let encoded = try JSONEncoder().encode(sut)
-        let encodedString = String(data: encoded, encoding: .utf8)
+    let encoded = try JSONEncoder().encode(sut)
+    let encodedString = String(data: encoded, encoding: .utf8)
 
-        XCTAssertEqual(
-            encodedString,
-            #"{"binarySize":300}"#
-        )
-    }
+    XCTAssertEqual(
+      encodedString,
+      #"{"binarySize":300}"#
+    )
+  }
 }

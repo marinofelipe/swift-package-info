@@ -162,7 +162,7 @@ private extension ConsoleReportGenerator {
     )
     // try is only required because `forEach` rethrows, however `console.write` doesn't throw
     // so it's safe to ignore it here
-    try? cell.messages.forEach(console.write)
+    cell.messages.forEach(console.write)
     console.write(
       .init(
         text: titleTrailingMargin,
@@ -182,7 +182,7 @@ private extension ConsoleReportGenerator {
 
       // try is only required because `forEach` rethrows, however `console.write` doesn't throw
       // so it's safe to ignore it here
-      try? cell.messages.forEach(console.write)
+      cell.messages.forEach(console.write)
       console.write(
         .init(
           text: String(

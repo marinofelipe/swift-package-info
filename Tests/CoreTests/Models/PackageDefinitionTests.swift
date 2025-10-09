@@ -24,6 +24,7 @@ import CoreTestSupport
 
 @testable import Core
 
+@MainActor
 final class PackageDefinitionTests: XCTestCase {
   // MARK: - Init
 

@@ -53,14 +53,14 @@ public typealias InfoProvider = @Sendable (
 ) async throws -> ProvidedInfo
 //throws(InfoProviderError) , typed throws only supported from macOS 15.0 runtime
 
-public struct ProvidedInfo: Encodable, CustomConsoleMessagesConvertible, Sendable {
+public struct ProvidedInfo: Encodable, CustomConsoleMessagesConvertible {
   public let providerName: String
   public let providerKind: ProviderKind
   public var messages: [ConsoleMessage] {
     informationMessagesConvertible.messages
   }
   
-  private let informationEncoder: @Sendable (Encoder) throws -> Void
+  private let informationEncoder: (Encoder) throws -> Void
   private let informationMessagesConvertible: CustomConsoleMessagesConvertible
   
   public init<T>(

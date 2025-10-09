@@ -83,14 +83,14 @@ public struct SwiftPackageValidator: SwiftPackageValidating {
 
       switch packageDefinition.source.remoteResolution {
       case let .revision(revision):
-        await console?.lineBreakAndWrite("Resolved revision: \(revision)")
+        console?.lineBreakAndWrite("Resolved revision: \(revision)")
       case .version:
         switch tagState {
         case .undefined, .invalid:
-          await console?.lineBreakAndWrite("Package version was \(tagState.description)")
+          console?.lineBreakAndWrite("Package version was \(tagState.description)")
 
           if let latestTag {
-            await console?.lineBreakAndWrite("Defaulting to latest found semver tag: \(latestTag)")
+            console?.lineBreakAndWrite("Defaulting to latest found semver tag: \(latestTag)")
             packageDefinition.source = .remote(
               url: packageDefinition.url,
               resolution: .version(latestTag)
@@ -111,8 +111,8 @@ public struct SwiftPackageValidator: SwiftPackageValidating {
     }
 
     if packageResponse.isProductValid == false {
-      await console?.lineBreakAndWrite("Invalid product: \(packageDefinition.product)")
-      await console?.lineBreakAndWrite("Using first found product instead: \(packageDefinition)")
+      console?.lineBreakAndWrite("Invalid product: \(packageDefinition.product)")
+      console?.lineBreakAndWrite("Using first found product instead: \(packageDefinition)")
 
       packageDefinition.product = firstProduct
     }
