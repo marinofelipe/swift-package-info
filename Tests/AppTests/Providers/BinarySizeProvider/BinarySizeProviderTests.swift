@@ -27,29 +27,12 @@ import CoreTestSupport
 @MainActor
 final class BinarySizeProviderTests: XCTestCase {
   func testFetchInformation() async throws {
-    var defaultSizeMeasurerCallsCount = 0
-    var lastVerbose: Bool?
-    
-    var sizeMeasurerCallsCount = 0
-    var lastSwiftPackage: PackageDefinition?
-    var lastIsDynamic: Bool?
-    
-    defaultSizeMeasurer = { xcconfig, verbose in
-      lastVerbose = verbose
-      defaultSizeMeasurerCallsCount += 1
-      
-      return { swiftPackage, isDynamic in
-        lastSwiftPackage = swiftPackage
-        lastIsDynamic = isDynamic
-        sizeMeasurerCallsCount += 1
-        
-        return .init(
-          amount: 908,
-          formatted: "908 kb"
-        )
-      }
-    }
-    
+    let sizeMeasurerMock = SizeMeasurerMock()
+    sizeMeasurerMock.sizeStub = .init(
+      amount: 908,
+      formatted: "908 kb"
+    )
+
     let productName = "Product"
     let swiftPackage = try Fixture.makePackageDefinition(
       product: productName
@@ -70,11 +53,11 @@ final class BinarySizeProviderTests: XCTestCase {
             ]
           )
         ]
-      ), 
+      ),
       xcconfig: nil,
       verbose: true
     )
-    
+
     XCTAssertEqual(
       providedInfo.providerName,
       "Binary Size"
@@ -83,28 +66,20 @@ final class BinarySizeProviderTests: XCTestCase {
       providedInfo.providerKind,
       .binarySize
     )
-    
+
     XCTAssertEqual(
-      defaultSizeMeasurerCallsCount,
-      1
+      sizeMeasurerMock.called.map(\.0),
+      [
+        swiftPackage
+      ]
     )
     XCTAssertEqual(
-      lastVerbose,
-      true
+      sizeMeasurerMock.called.map(\.1),
+      [
+        true
+      ]
     )
-    XCTAssertEqual(
-      sizeMeasurerCallsCount,
-      1
-    )
-    XCTAssertEqual(
-      lastSwiftPackage,
-      swiftPackage
-    )
-    XCTAssertEqual(
-      lastIsDynamic,
-      true
-    )
-    
+
     XCTAssertEqual(
       providedInfo.messages,
       [
@@ -122,13 +97,13 @@ final class BinarySizeProviderTests: XCTestCase {
         )
       ]
     )
-    
+
     let encodedProvidedInfo = try JSONEncoder.sortedAndPrettyPrinted.encode(providedInfo)
     let encodedProvidedInfoString = String(
       data: encodedProvidedInfo,
       encoding: .utf8
     )
-    
+
     XCTAssertEqual(
       encodedProvidedInfoString,
       #"""
@@ -138,5 +113,18 @@ final class BinarySizeProviderTests: XCTestCase {
       }
       """#
     )
+  }
+}
+
+private final class SizeMeasurerMock: SizeMeasuring {
+  private(set) var called: [(PackageDefinition, Bool)] = []
+  var sizeStub: SizeOnDisk = .empty
+
+  func binarySize(
+    for swiftPackage: PackageDefinition,
+    isDynamic: Bool
+  ) async throws -> SizeOnDisk {
+    called.append((swiftPackage, isDynamic))
+    return sizeStub
   }
 }
