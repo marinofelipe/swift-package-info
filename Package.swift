@@ -55,8 +55,8 @@ let package = Package(
         ),
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-      ],
+        .enableExperimentalFeature("StrictConcurrency")
+      ]
     ),
     .testTarget(
       name: "RunTests",
@@ -64,7 +64,7 @@ let package = Package(
         .target(name: "Run")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .target(
@@ -74,7 +74,7 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .testTarget(
@@ -84,7 +84,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .target(
@@ -101,7 +101,7 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .testTarget(
@@ -111,7 +111,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .target(
@@ -120,7 +120,7 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .testTarget(
@@ -130,7 +130,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .target(
@@ -142,7 +142,7 @@ let package = Package(
         ),
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .testTarget(
@@ -152,7 +152,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .target(
@@ -161,7 +161,7 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     )
   ],
