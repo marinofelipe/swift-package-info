@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		ED2B733125C627A60088B5A1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED2B732F25C627A50088B5A1 /* Accelerate.framework */; };
-		ED2B733225C627A60088B5A1 /* Accelerate.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ED2B732F25C627A50088B5A1 /* Accelerate.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ED39101A2598F6B60059494D /* MeasurementApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3910192598F6B60059494D /* MeasurementApp.swift */; };
 		ED39101C2598F6B60059494D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED39101B2598F6B60059494D /* ContentView.swift */; };
 		ED39101E2598F6B70059494D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED39101D2598F6B70059494D /* Assets.xcassets */; };
@@ -22,7 +20,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				ED2B733225C627A60088B5A1 /* Accelerate.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -44,7 +41,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ED2B733125C627A60088B5A1 /* Accelerate.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
