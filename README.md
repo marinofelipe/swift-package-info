@@ -1,4 +1,4 @@
-![CI](https://github.com/marinofelipe/swift-package-info/workflows/CI/badge.svg)
+![CI](https://github.com/marinofelipe/swift-package-info/actions/workflows/ci.yml/badge.svg?branch=main)
 ![Toolchain](https://img.shields.io/badge/Swift-6.1.2+%20%7C%20Xcode%2016.4%2B-orange?logo=swift&logoColor=white)
 [![Mint](https://img.shields.io/badge/Mint-marinofelipe%2Fswift--package--info-40c8a7?logo=leaf&logoColor=white)](https://github.com/marinofelipe/swift-package-info#installation)
 [![Swift Package Manager](https://rawgit.com/jlyonsmith/artwork/master/SwiftPackageManager/swiftpackagemanager-compatible.svg)](https://swift.org/package-manager/)
