@@ -203,16 +203,12 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-v 6.0.0"
-            isEnabled = "NO">
+            argument = "-v 12.4.0"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--product &quot;Yams&quot;"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "--product &quot;Crashlytics&quot;"
-            isEnabled = "NO">
+            argument = "--product &quot;FirebaseCrashlytics&quot;"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--help"
