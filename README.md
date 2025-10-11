@@ -5,29 +5,30 @@
 [![Twitter](https://img.shields.io/badge/twitter-@_marinofelipe-blue.svg?style=flat)](https://twitter.com/_marinofelipe)
 
 # Swift Package Info
-CLI tool that provides information about a *given Swift Package product*, such as a *measurement of its binary size impact*.
-It's built on top of [Swift Argument Parser](https://github.com/apple/swift-argument-parser).
+CLI tool, built on top of [Swift Argument Parser](https://github.com/apple/swift-argument-parser),  that provides information about a *given Swift Package product*, such as a *measurement of its binary size impact*.
+<br>
+Binary size calculation is also available _as a library_ via the _`SwiftPackageInfo` package product_.
 
 ## Usage
 
 ### Examples
-- Run a full analyzes
-```
+- Run a complete analysis
+```sh
 swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product RxSwift
 ```
 
 - Check supported platforms (sub command)
-```
+```sh
 swift-package-info platforms --for https://github.com/krzyzanowskim/CryptoSwift -v 1.3.8 --product CryptoSwift
 ```
 
-- See binary size of a local package (e.g. under development framework)
-```
+- See the binary size of a local package (e.g., under development framework)
+```sh
 swift-package-info binary-size --path ../project/my-framework
 ```
 
 ### Report
-```
+```sh
 swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product RxSwift
 ```
 ```
@@ -45,8 +46,8 @@ swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product
 > Total of 3 providers used.
 ```
 
-A custom report strategy can be passed via the `report` argument _(check --help for supported values)_
-```
+A custom report strategy can be passed via the `report` argument _(check `--help` for supported values)_
+```sh
 swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product RxSwift --report jsonDump
 ```
 ```JSON
@@ -73,39 +74,16 @@ swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product
 * _Optionally_ [add mint to your $PATH](https://github.com/yonaskolb/Mint?tab=readme-ov-file#linking) 
 * Run: `mint install marinofelipe/swift-package-info` to install the latest version
 
-## Running it
+## Running
 * `mint run swift-package-info`
 * or simply, `swift-package-info` in case it was symlinked
 
-## Building
-Build from Swift Package Manager
-
-* `swift build` in the top level directory 
-* The built utility can be found in `.build/debug/swift-package-info`
-* Run with `swift run`
-
-## Running tests
-Run from Xcode
-
-* Add the project directory to `swift-package-info` scheme customWorkingDirectory
-* Run the tests
-
-Run from command line
-
-* `swift test --build-path PROJECT_DIR`
-
-## Dependencies
-* [CombineHTTPClient from HTTPClient](https://github.com/marinofelipe/http_client/blob/main/Package.swift)
-* [Swift Argument Parser](https://github.com/apple/swift-argument-parser)
-* [swift-tools-support-core from SwiftToolsSupport-auto](https://github.com/apple/swift-tools-support-core/blob/main/Package.swift)
-* [XcodeProj](https://github.com/tuist/XcodeProj.git)
-
 ## Binary size report
 Its methodology is inspired by [cocoapods-size](https://github.com/google/cocoapods-size), and thus works by comparing archives with no bitcode and ARM64 arch.
-Such strategy has proven to be consistent with the size added to iOS apps downloaded and installed via TestFlight.
+Such a strategy has proven consistent with the size of iOS apps downloaded and installed via TestFlight.
 
 ## Thanks
 Special thanks to [@unnamedd](https://github.com/unnamedd) for sharing his experience with [swift-tools-support-core](https://github.com/apple/swift-tools-support-core) and on how to build a pretty 👌 report.
 
 ## Contributions
-*Swift Package Info* is fully open and your contributions are more than welcome.
+*Swift Package Info* is fully open, and your contributions are more than welcome.
