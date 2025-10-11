@@ -85,5 +85,5 @@ Such a strategy has proven consistent with the size of iOS apps downloaded and i
 ## Thanks
 Special thanks to [@unnamedd](https://github.com/unnamedd) for sharing his experience with [swift-tools-support-core](https://github.com/apple/swift-tools-support-core) and on how to build a pretty 👌 report.
 
-## Contributions
-*Swift Package Info* is fully open, and your contributions are more than welcome.
+## Contributing
+Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
