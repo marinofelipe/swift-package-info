@@ -19,5 +19,5 @@
 //  SOFTWARE.
 
 public extension String {
-  static let defaultVersion: String = "1.6.0"
+  static let defaultVersion: String = "1.7.0"
 }
