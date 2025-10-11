@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -25,7 +25,7 @@ let package = Package(
     // swift-package-manager release still relies on older versions of the swift-argument-parser
     .package(
       url: "https://github.com/apple/swift-argument-parser",
-      .upToNextMinor(from: "1.2.1")
+      .upToNextMinor(from: "1.6.1")
     ),
     .package(
       url: "https://github.com/tuist/XcodeProj.git",
@@ -35,11 +35,11 @@ let package = Package(
       url: "https://github.com/marinofelipe/http_client",
       .upToNextMinor(from: "0.0.4")
     ),
-    // - Pinned to the the Swift 6.0.3 release / Xcode 16.2
+    // - Pinned to the the Swift 6.2 development / Xcode 26
     // It auto exports SwiftToolsSupport, so no need to directly depend it 🙏
     .package(
       url: "https://github.com/apple/swift-package-manager",
-      revision: "swift-6.0.3-RELEASE"
+      revision: "swift-6.2-DEVELOPMENT-SNAPSHOT-2025-10-01-a"
     ),
   ],
   targets: [
@@ -55,8 +55,7 @@ let package = Package(
         ),
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-        .enableExperimentalFeature("InferSendableFromCaptures"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .testTarget(
@@ -65,8 +64,7 @@ let package = Package(
         .target(name: "Run")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-        .enableExperimentalFeature("InferSendableFromCaptures"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .target(
@@ -76,8 +74,7 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-        .enableExperimentalFeature("InferSendableFromCaptures"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .testTarget(
@@ -87,8 +84,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-        .enableExperimentalFeature("InferSendableFromCaptures"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .target(
@@ -105,8 +101,7 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-        .enableExperimentalFeature("InferSendableFromCaptures"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .testTarget(
@@ -116,8 +111,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-        .enableExperimentalFeature("InferSendableFromCaptures"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .target(
@@ -126,8 +120,7 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-        .enableExperimentalFeature("InferSendableFromCaptures"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .testTarget(
@@ -137,8 +130,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-        .enableExperimentalFeature("InferSendableFromCaptures"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .target(
@@ -150,8 +142,7 @@ let package = Package(
         ),
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-        .enableExperimentalFeature("InferSendableFromCaptures"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .testTarget(
@@ -161,8 +152,7 @@ let package = Package(
         .target(name: "CoreTestSupport")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-        .enableExperimentalFeature("InferSendableFromCaptures"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     ),
     .target(
@@ -171,13 +161,12 @@ let package = Package(
         .target(name: "Core")
       ],
       swiftSettings: [
-        .enableExperimentalFeature("StrictConcurrency"),
-        .enableExperimentalFeature("InferSendableFromCaptures"),
+        .enableExperimentalFeature("StrictConcurrency")
       ]
     )
   ],
-  swiftLanguageVersions: [
-    .v4,
-    .v5
+  swiftLanguageModes: [
+    .v5,
+    .v6
   ]
 )

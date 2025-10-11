@@ -145,7 +145,7 @@ final class SwiftPackageService {
 
       let cloneDirPath = tempDirPath.appending(swiftPackage.repositoryName)
 
-      let workingCopy = try repositoryHandle.createWorkingCopy(
+      let workingCopy = try await repositoryHandle.createWorkingCopy(
         at: cloneDirPath,
         editable: false
       )
@@ -204,24 +204,12 @@ final class SwiftPackageService {
       updateStrategy = .always
     }
 
-    return try await withCheckedThrowingContinuation { continuation in
-      repositoryManager.lookup(
-        package: PackageIdentity(url: "\(swiftPackage.url)"),
-        repository: RepositorySpecifier(url: "\(swiftPackage.url)"),
-        updateStrategy: updateStrategy,
-        observabilityScope: observability.topScope,
-        delegateQueue: .main,
-        callbackQueue: .main
-      ) { result in
-        switch result {
-        case let .success(handle):
-          let handleCopy = handle
-          continuation.resume(returning: handleCopy)
-        case let .failure(error):
-          continuation.resume(throwing: error)
-        }
-      }
-    }
+    return try await repositoryManager.lookup(
+      package: PackageIdentity(url: "\(swiftPackage.url)"),
+      repository: RepositorySpecifier(url: "\(swiftPackage.url)"),
+      updateStrategy: updateStrategy,
+      observabilityScope: observability.topScope,
+    )
   }
 }
 
