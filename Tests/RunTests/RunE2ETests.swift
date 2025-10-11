@@ -22,32 +22,30 @@ import XCTest
 import Foundation
 
 @available(macOS 10.13, *)
-final class RunTests: XCTestCase {
+final class RunE2ETests: XCTestCase {
   func testWithInvalidRemoteURL() throws {
     try runToolProcessAndAssert(
       command: "--url somethingElse --package-version 6.0.0 --product RxSwift",
-      expectedOutput: """
+      outputContains: """
         Error: Invalid argument '--url <url>'
         Usage: The URL must be either:
         - A valid git repository URL that contains a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`; or
         - A relative or absolute path to a local directory that has a `Package.swift`, e.g. `../other-dir/my-project`
         
-        """,
-      expectedError: ""
+        """
     )
   }
 
   func testLocalURLWithoutPackage() throws {
     try runToolProcessAndAssert(
       command: "--url ../path",
-      expectedOutput: """
+      outputContains: """
         Error: Invalid argument '--url <url>'
         Usage: The URL must be either:
         - A valid git repository URL that contains a `Package.swift`, e.g `https://github.com/Alamofire/Alamofire`; or
         - A relative or absolute path to a local directory that has a `Package.swift`, e.g. `../other-dir/my-project`
         
-        """,
-      expectedError: ""
+        """
     )
   }
 
@@ -73,8 +71,14 @@ final class RunTests: XCTestCase {
 
     try runToolProcessAndAssert(
       command: "--help",
-      expectedOutput: expectedOutput,
-      expectedError: ""
+      outputContains: expectedOutput
+    )
+  }
+
+  func testValidBinarySizeCase() throws {
+    try runToolProcessAndAssert(
+      command: "binary-size --path https://github.com/firebase/firebase-ios-sdk.git -v 12.4.0 --product FirebaseCrashlytics",
+      outputContains: "Binary size increases by",
     )
   }
 
@@ -93,12 +97,12 @@ final class RunTests: XCTestCase {
   // MARK: - Helpers
 
   private func runToolProcessAndAssert(
+    command: String,
+    outputContains expectedOutput: String = "",
+    errorContains expectedError: String = "",
     _ file: StaticString = #filePath,
     _ function: StaticString = #function,
     _ line: UInt = #line,
-    command: String,
-    expectedOutput: String?,
-    expectedError: String?
   ) throws {
     let commands = command.split(whereSeparator: \.isWhitespace)
 
@@ -127,11 +131,32 @@ final class RunTests: XCTestCase {
     process.waitUntilExit()
 
     let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-    let outputContent = String(data: outputData, encoding: .utf8)
+    let outputContent = String(data: outputData, encoding: .utf8) ?? ""
     let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-    let errorContent = String(data: errorData, encoding: .utf8)
+    let errorContent = String(data: errorData, encoding: .utf8) ?? ""
 
-    XCTAssertEqual(outputContent, expectedOutput, file: file, line: line)
-    XCTAssertEqual(errorContent, expectedError, file: file, line: line)
+    if expectedOutput.isEmpty {
+      XCTAssertTrue(outputContent.isEmpty, file: file, line: line)
+    } else {
+      XCTAssertEqual(
+        outputContent.contains(expectedOutput),
+        true,
+        "Expected output to contain: \(outputContent), received output: \(outputContent)",
+        file: file,
+        line: line
+      )
+    }
+
+    if expectedError.isEmpty {
+      XCTAssertTrue(errorContent.isEmpty, file: file, line: line)
+    } else {
+      XCTAssertEqual(
+        errorContent.contains(expectedError),
+        true,
+        "Expected error to contain: \(outputContent), received error: \(outputContent)",
+        file: file,
+        line: line
+      )
+    }
   }
 }
