@@ -184,11 +184,11 @@ public extension BinarySizeProvider {
 }
 
 #if DEBUG
-// debug only
 nonisolated(unsafe) var defaultSizeMeasurer: (URL?, Bool) async -> SizeMeasuring = { xcconfig, verbose in
   await SizeMeasurer(verbose: verbose, xcconfig: xcconfig).binarySize
 }
 #else
+@MainActor
 let defaultSizeMeasurer: (URL?, Bool) async -> SizeMeasuring = { xcconfig, verbose in
   await SizeMeasurer(verbose: verbose, xcconfig: xcconfig).binarySize
 }
