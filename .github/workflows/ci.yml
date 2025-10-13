@@ -26,7 +26,7 @@ jobs:
           path: .build
           key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
           restore-keys: |
-            ${{ runner.os }}-spm-       
+            ${{ runner.os }}-spm-
 
       - name: Build
         run: swift build
@@ -58,7 +58,7 @@ jobs:
           path: .build
           key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
           restore-keys: |
-            ${{ runner.os }}-spm-       
+            ${{ runner.os }}-spm-
 
       - name: Build
         run: swift build
@@ -75,3 +75,22 @@ jobs:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           exclude: Tests/**/*
+
+  release-build:
+    name: "Build spmgraph in release mode against the latest Xcode toolchain"
+    runs-on: macos-latest
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.0.1.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check cache for Swift dependencies
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Build
+        run: swift build -c release
