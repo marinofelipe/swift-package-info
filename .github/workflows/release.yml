@@ -88,5 +88,7 @@ jobs:
       run: echo "new_tag=${{ inputs.version }}" >> $GITHUB_ENV
     
     - name: Create the release
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
         gh release create "$new_tag" --generate-notes
