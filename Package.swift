@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
   name: "swift-package-info",
   platforms: [
-    .macOS(.v13)
+    .macOS(.v14)
   ],
   products: [
     .executable(
@@ -35,11 +35,11 @@ let package = Package(
       url: "https://github.com/marinofelipe/http_client",
       .upToNextMinor(from: "0.0.4")
     ),
-    // - Pinned to the the Swift 6.2 development / Xcode 26
+    // - Pinned to the Swift 6.4 release / Xcode 27.0
     // It auto exports SwiftToolsSupport, so no need to directly depend it 🙏
     .package(
       url: "https://github.com/apple/swift-package-manager",
-      revision: "swift-6.2-DEVELOPMENT-SNAPSHOT-2025-10-01-a"
+      revision: "swift-6.4.0-RELEASE"
     ),
   ],
   targets: [

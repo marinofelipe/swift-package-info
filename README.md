@@ -68,6 +68,7 @@ swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product
 ## Requirements
 - Swift >= 6.1
 - Xcode >= 16.4
+- macOS >= 14
 
 ## Installation
 * Install [mint](https://github.com/yonaskolb/Mint)

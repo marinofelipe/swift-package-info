@@ -100,6 +100,7 @@ final class AppManager {
       cmdXCConfig = "-xcconfig \(customXCConfigURL.path)"
     }
 
+    // Xcode 27 rejects iOS deployment targets below 15, including older MeasurementApp checkouts.
     let command: ConsoleMessage = """
         xcodebuild \
         archive \
@@ -111,7 +112,8 @@ final class AppManager {
         -arch arm64 \
         CODE_SIGNING_REQUIRED=NO \
         CODE_SIGNING_ALLOWED=NO \
-        ENABLE_BITCODE=NO
+        ENABLE_BITCODE=NO \
+        IPHONEOS_DEPLOYMENT_TARGET=15.0
         """
 
     if verbose {
