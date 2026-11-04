@@ -1,5 +1,5 @@
 [![CI](https://github.com/marinofelipe/swift-package-info/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/marinofelipe/swift-package-info/actions/workflows/ci.yml?query=branch%3Amain)
-![Toolchain](https://img.shields.io/badge/Swift-6.1.2+%20%7C%20Xcode%2016.4%2B-orange?logo=swift&logoColor=white)
+![Toolchain](https://img.shields.io/badge/Swift-6.2+%20%7C%20Xcode%2026%2B-orange?logo=swift&logoColor=white)
 [![Mint](https://img.shields.io/badge/Mint-marinofelipe%2Fswift--package--info-40c8a7?logo=leaf&logoColor=white)](https://github.com/marinofelipe/swift-package-info#installation)
 [![Swift Package Manager](https://rawgit.com/jlyonsmith/artwork/master/SwiftPackageManager/swiftpackagemanager-compatible.svg)](https://swift.org/package-manager/)
 [![Twitter](https://img.shields.io/badge/twitter-@_marinofelipe-blue.svg?style=flat)](https://twitter.com/_marinofelipe)
@@ -66,9 +66,8 @@ swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product
 ```
 
 ## Requirements
-- Swift >= 6.1
-- Xcode >= 16.4
-- macOS >= 14
+- Swift >= 6.2
+- Xcode >= 26.0
 
 ## Installation
 * Install [mint](https://github.com/yonaskolb/Mint)
