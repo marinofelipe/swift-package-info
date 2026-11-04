@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
   name: "swift-package-info",
   platforms: [
-    .macOS(.v14)
+    .macOS(.v13)
   ],
   products: [
     .executable(
@@ -35,11 +35,18 @@ let package = Package(
       url: "https://github.com/marinofelipe/http_client",
       .upToNextMinor(from: "0.0.4")
     ),
-    // - Pinned to the Swift 6.4 release / Xcode 27.0
+    // - Capped below 1.17.0, which uses the Swift 6.4-only `@nonexhaustive` attribute
+    // while declaring swift-tools-version 6.2, breaking builds on Xcode 26.
+    // Transitively required by http_client.
+    .package(
+      url: "https://github.com/apple/swift-log.git",
+      "1.0.0"..<"1.17.0"
+    ),
+    // - Pinned to the Swift 6.2.4 release / Xcode 26.3
     // It auto exports SwiftToolsSupport, so no need to directly depend it 🙏
     .package(
       url: "https://github.com/apple/swift-package-manager",
-      revision: "swift-6.4.0-RELEASE"
+      revision: "swift-6.2.4-RELEASE"
     ),
   ],
   targets: [
