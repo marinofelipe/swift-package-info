@@ -94,3 +94,22 @@ jobs:
 
       - name: Build
         run: swift build -c release
+
+  release-build-xcode-27:
+    name: "Build in release mode (Xcode 27.0)"
+    runs-on: xcode-27
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.0.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check cache for Swift dependencies
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: ${{ runner.os }}-xcode-27-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-27-spm-
+
+      - name: Build
+        run: swift build -c release
