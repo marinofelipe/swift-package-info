@@ -95,6 +95,9 @@ jobs:
       - name: Build
         run: swift build -c release
 
+      - name: Smoke test release binary
+        run: scripts/smoke-test-release.sh
+
   release-build-xcode-27:
     name: "Build in release mode (Xcode 27.1)"
     runs-on: xcode-27
@@ -113,3 +116,6 @@ jobs:
 
       - name: Build
         run: swift build -c release
+
+      - name: Smoke test release binary
+        run: scripts/smoke-test-release.sh
