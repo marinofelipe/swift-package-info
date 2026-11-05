@@ -33,17 +33,17 @@ swift-package-info binary-size --path ../project/my-framework
 swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product RxSwift
 ```
 ```
-+------------------------------------------------+
-|               Swift Package Info               |
-|                                                |
-|                 RxSwift, 6.0.0                 |
-+--------------+---------------------------------+
-| Provider     | Results                         |
-+--------------+---------------------------------+
-| Binary Size  | Binary size increases by 963 KB |
-| Platforms    | System default                  |
-| Dependencies | No third-party dependencies :)  |
-+--------------+---------------------------------+
++----------------------------------------------------------------------------------------+
+|                                   Swift Package Info                                   |
+|                                                                                        |
+|                                     RxSwift, 6.0.0                                     |
++--------------+-------------------------------------------------------------------------+
+| Provider     | Results                                                                 |
++--------------+-------------------------------------------------------------------------+
+| Binary Size  | Binary size increases by 840 KB (install), ~301 KB (estimated download) |
+| Platforms    | System default                                                          |
+| Dependencies | No third-party dependencies :)                                          |
++--------------+-------------------------------------------------------------------------+
 > Total of 3 providers used.
 ```
 
@@ -54,8 +54,12 @@ swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product
 ```JSON
 {
   "binarySize" : {
-    "amount" : 962560,
-    "formatted" : "963 KB"
+    "amount" : 839680,
+    "estimatedDownload" : {
+      "amount" : 301096,
+      "formatted" : "301 KB"
+    },
+    "formatted" : "840 KB"
   },
   "dependencies" : [
 
@@ -83,6 +87,13 @@ swift-package-info --for https://github.com/ReactiveX/RxSwift -v 6.0.0 --product
 ## Binary size report
 Its methodology is inspired by [cocoapods-size](https://github.com/google/cocoapods-size), and thus works by comparing archives with no bitcode and ARM64 arch.
 Such a strategy has proven consistent with the size of iOS apps downloaded and installed via TestFlight.
+
+Two values are reported, both as the difference between an empty app and the same app with the package product added:
+- **Install size** (`amount` / `formatted`): the uncompressed size of the archived app bundle, close to the space the app takes on a device.
+- **Estimated download size** (`estimatedDownload`): the size of the app bundle compressed the way an IPA is packaged.
+
+> [!NOTE]
+> Both values are measured before App Store processing. App Thinning removes assets not needed by a given device, and the App Store encrypts the app executable, which makes it compress less. The actual download size of code-heavy packages is therefore likely higher than the estimate.
 
 ## Thanks
 Special thanks to [@unnamedd](https://github.com/unnamedd) for sharing his experience with [swift-tools-support-core](https://github.com/apple/swift-tools-support-core) and on how to build a pretty 👌 report.

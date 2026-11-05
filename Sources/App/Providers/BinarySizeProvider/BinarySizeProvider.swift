@@ -27,6 +27,7 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
   case unableToGenerateArchive(errorMessage: String)
   case unableToCloneEmptyApp(errorMessage: String)
   case unableToGetBinarySizeOnDisk(underlyingError: NSError)
+  case unableToEstimateDownloadSize(errorMessage: String)
   case unableToRetrieveAppProject(atPath: String)
   case unexpectedError(underlyingError: NSError, isVerbose: Bool)
 
@@ -43,6 +44,9 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
     case let .unableToGetBinarySizeOnDisk(underlyingError):
       step = "Reading binary size"
       message = "Failed to read binary size from archive. Details: \(underlyingError.localizedDescription)"
+    case let .unableToEstimateDownloadSize(errorMessage):
+      step = "Estimating download size"
+      message = errorMessage
     case let .unableToRetrieveAppProject(path):
       step = "Read measurement app project"
       message = "Failed to get MeasurementApp project from XcodeProj at path: \(path)"
@@ -63,19 +67,31 @@ enum BinarySizeProviderError: LocalizedError, Equatable {
 }
 
 struct BinarySizeInformation: Equatable, Encodable, CustomConsoleMessagesConvertible {
+  struct EstimatedDownload: Equatable, Encodable {
+    let amount: Int
+    let formatted: String
+  }
+
+  /// Install (uncompressed) size. Kept at the top level for backwards compatibility of the JSON report.
   private let amount: Int
   private let formatted: String
+  private let estimatedDownload: EstimatedDownload
 
   var messages: [ConsoleMessage] { buildConsoleMessages() }
 
-  init(binarySize: SizeOnDisk) {
-    self.amount = binarySize.amount
-    self.formatted = binarySize.formatted
+  init(binarySize: BinarySize) {
+    self.amount = binarySize.install.amount
+    self.formatted = binarySize.install.formatted
+    self.estimatedDownload = .init(
+      amount: binarySize.estimatedDownload.amount,
+      formatted: binarySize.estimatedDownload.formatted
+    )
   }
 
   private enum CodingKeys: String, CodingKey {
     case amount
     case formatted
+    case estimatedDownload
   }
 
   private func buildConsoleMessages() -> [ConsoleMessage] {
@@ -90,6 +106,24 @@ struct BinarySizeInformation: Equatable, Encodable, CustomConsoleMessagesConvert
         text: formatted,
         color: .yellow,
         isBold: true,
+        hasLineBreakAfter: false
+      ),
+      .init(
+        text: " (install), ~",
+        color: .noColor,
+        isBold: false,
+        hasLineBreakAfter: false
+      ),
+      .init(
+        text: estimatedDownload.formatted,
+        color: .yellow,
+        isBold: true,
+        hasLineBreakAfter: false
+      ),
+      .init(
+        text: " (estimated download)",
+        color: .noColor,
+        isBold: false,
         hasLineBreakAfter: false
       )
     ]
@@ -107,7 +141,7 @@ public struct BinarySizeProvider {
     verbose: Bool
   ) async throws -> ProvidedInfo { // throws(InfoProviderError): typed throws only supported from macOS 15 runtime
     let sizeMeasurer = await defaultSizeMeasurer(xcconfig, verbose)
-    var binarySize: SizeOnDisk = .zero
+    var binarySize: BinarySize = .zero
 
     let isProductDynamicLibrary = resolvedPackage.products
       .first{ $0.name == packageDefinition.product }?
@@ -143,8 +177,12 @@ public struct BinarySizeProvider {
 
 public extension BinarySizeProvider {
   struct Result: Sendable {
+    /// Install (uncompressed) size, in bytes.
     public let amount: Int
     public let formatted: String
+    /// Estimated download (compressed) size, in bytes.
+    public let estimatedDownloadAmount: Int
+    public let estimatedDownloadFormatted: String
   }
 
   @Sendable
@@ -154,7 +192,7 @@ public extension BinarySizeProvider {
     xcConfig: URL?
   ) async throws(InfoProviderError) -> Result {
     let sizeMeasurer = await defaultSizeMeasurer(xcConfig, false)
-    var binarySize: SizeOnDisk = .zero
+    var binarySize: BinarySize = .zero
 
     let isProductDynamicLibrary = resolvedPackage.products
       .first{ $0.name == packageDefinition.product }?
@@ -177,8 +215,10 @@ public extension BinarySizeProvider {
     }
 
     return Result(
-      amount: binarySize.amount,
-      formatted: binarySize.formatted
+      amount: binarySize.install.amount,
+      formatted: binarySize.install.formatted,
+      estimatedDownloadAmount: binarySize.estimatedDownload.amount,
+      estimatedDownloadFormatted: binarySize.estimatedDownload.formatted
     )
   }
 }
