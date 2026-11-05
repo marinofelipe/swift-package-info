@@ -188,8 +188,9 @@ nonisolated(unsafe) var defaultSizeMeasurer: (URL?, Bool) async -> SizeMeasuring
   await SizeMeasurer(verbose: verbose, xcconfig: xcconfig).binarySize
 }
 #else
-@MainActor
-let defaultSizeMeasurer: (URL?, Bool) async -> SizeMeasuring = { xcconfig, verbose in
+// Free function (not a MainActor-isolated `let`) so the factory can be awaited from
+// `@Sendable` providers without tripping NonSendableExitingActor under Swift 6.4 / Xcode 27.1.
+func defaultSizeMeasurer(_ xcconfig: URL?, _ verbose: Bool) async -> SizeMeasuring {
   await SizeMeasurer(verbose: verbose, xcconfig: xcconfig).binarySize
 }
 #endif
