@@ -109,6 +109,7 @@ final class AppManager {
         -archivePath \(archivedPath) \
         -configuration Release \
         \(cmdXCConfig) \
+        -sdk iphoneos \
         -arch arm64 \
         CODE_SIGNING_REQUIRED=NO \
         CODE_SIGNING_ALLOWED=NO \
