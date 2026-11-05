@@ -2,7 +2,7 @@
 ![Toolchain](https://img.shields.io/badge/Swift-6.2+%20%7C%20Xcode%2026%2B-orange?logo=swift&logoColor=white)
 ![Platform](https://img.shields.io/badge/macOS-13%2B-lightgrey?logo=apple&logoColor=white)
 [![Mint](https://img.shields.io/badge/Mint-marinofelipe%2Fswift--package--info-40c8a7?logo=leaf&logoColor=white)](https://github.com/marinofelipe/swift-package-info#installation)
-[![Swift Package Manager](https://rawgit.com/jlyonsmith/artwork/master/SwiftPackageManager/swiftpackagemanager-compatible.svg)](https://swift.org/package-manager/)
+[![Swift Package Manager](https://img.shields.io/badge/SwiftPM-compatible-orange?logo=swift&logoColor=white)](https://swift.org/package-manager/)
 [![Twitter](https://img.shields.io/badge/twitter-@_marinofelipe-blue.svg?style=flat)](https://twitter.com/_marinofelipe)
 
 # Swift Package Info
