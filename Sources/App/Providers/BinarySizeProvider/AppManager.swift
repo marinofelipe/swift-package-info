@@ -143,19 +143,75 @@ final class AppManager {
     }
   }
 
-  func calculateBinarySize() async throws -> SizeOnDisk {
+  func calculateBinarySize() async throws -> BinarySize {
+    let url = URL(fileURLWithPath: archivedProductPath)
+
+    let installSize: SizeOnDisk
     do {
-      let url = URL(fileURLWithPath: archivedProductPath)
-      let appSize = try await url.sizeOnDisk()
-
-      if verbose {
-        await console.lineBreakAndWrite(appSize.message)
-      }
-
-      return appSize
+      installSize = try await url.sizeOnDisk()
     } catch {
       throw BinarySizeProviderError.unableToGetBinarySizeOnDisk(
         underlyingError: error as NSError
+      )
+    }
+
+    let downloadSize = try await estimatedDownloadSize(ofAppAt: url)
+
+    if verbose {
+      await console.lineBreakAndWrite(installSize.message)
+      await console.lineBreakAndWrite("Estimated download size: \(downloadSize.formatted)")
+    }
+
+    return BinarySize(
+      install: installSize,
+      estimatedDownload: downloadSize
+    )
+  }
+
+  /// Estimates the download size of the app by packaging it the way an IPA is laid out (`Payload/<App>.app`)
+  /// and measuring the compressed archive.
+  private func estimatedDownloadSize(ofAppAt appURL: URL) async throws -> SizeOnDisk {
+    let workingDirectory = fileManager.temporaryDirectory
+      .appendingPathComponent("swift-package-info-ipa-\(UUID().uuidString)")
+    defer { try? fileManager.removeItem(at: workingDirectory) }
+
+    do {
+      let payloadDirectory = workingDirectory.appendingPathComponent("Payload")
+      try fileManager.createDirectory(at: payloadDirectory, withIntermediateDirectories: true)
+      try fileManager.copyItem(
+        at: appURL,
+        to: payloadDirectory.appendingPathComponent(appURL.lastPathComponent)
+      )
+    } catch {
+      throw BinarySizeProviderError.unableToEstimateDownloadSize(
+        errorMessage: error.localizedDescription
+      )
+    }
+
+    let ipaName = "\(Constants.appName).ipa"
+    let output = try await Shell.run(
+      workingDirectory: workingDirectory.path,
+      arguments: "zip", "-qry", ipaName, "Payload",
+      verbose: verbose,
+      timeout: nil
+    )
+
+    guard output.succeeded else {
+      throw BinarySizeProviderError.unableToEstimateDownloadSize(
+        errorMessage: String(data: output.errorData, encoding: .utf8) ?? ""
+      )
+    }
+
+    do {
+      let ipaURL = workingDirectory.appendingPathComponent(ipaName)
+      let size = try ipaURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+      return SizeOnDisk(
+        amount: size,
+        formatted: URL.fileByteCountFormatter.string(for: size) ?? ""
+      )
+    } catch {
+      throw BinarySizeProviderError.unableToEstimateDownloadSize(
+        errorMessage: error.localizedDescription
       )
     }
   }

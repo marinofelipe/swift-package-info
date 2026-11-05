@@ -24,7 +24,7 @@ internal import Core
 typealias SizeMeasuring = (
   _ swiftPackage: PackageDefinition,
   _ isDynamic: Bool
-) async throws -> SizeOnDisk
+) async throws -> BinarySize
 
 final class SizeMeasurer {
   private var appManager: AppManager
@@ -64,7 +64,7 @@ final class SizeMeasurer {
   public func binarySize(
     for swiftPackage: PackageDefinition,
     isDynamic: Bool
-  ) async throws -> SizeOnDisk {
+  ) async throws -> BinarySize {
     await console.lineBreak()
 
     let emptyAppSize = try await measureEmptyAppSize()
@@ -83,7 +83,7 @@ final class SizeMeasurer {
 // MARK: - Private
 
 private extension SizeMeasurer {
-  func measureEmptyAppSize() async throws -> SizeOnDisk {
+  func measureEmptyAppSize() async throws -> BinarySize {
     if verbose == false {
       await showOrUpdateLoading(withText: "Cleaning up empty app directory...")
     }
@@ -120,7 +120,7 @@ private extension SizeMeasurer {
   func measureAppSize(
     with swiftPackage: PackageDefinition,
     isDynamic: Bool
-  ) async throws -> SizeOnDisk {
+  ) async throws -> BinarySize {
     if verbose {
       await console.lineBreakAndWrite(
         .init(

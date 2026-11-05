@@ -30,6 +30,8 @@ extension SwiftPackageInfo {
         Its methodology is inspired by [cocoapods-size](https://github.com/google/cocoapods-size),
         and thus works by comparing archives with no bitcode and ARM64 arch.
         Such a strategy has proven to be very consistent with the size added to iOS apps downloaded and installed via TestFlight.
+        It reports both the install (uncompressed) size and an estimated download (compressed) size,
+        which doesn't account for App Store encryption of the executable and may be lower than the actual download size.
         """
 
     public static let configuration = CommandConfiguration(

@@ -43,8 +43,14 @@ final class BinarySizeProviderTests: XCTestCase {
         sizeMeasurerCallsCount += 1
         
         return .init(
-          amount: 908,
-          formatted: "908 kb"
+          install: .init(
+            amount: 908,
+            formatted: "908 kb"
+          ),
+          estimatedDownload: .init(
+            amount: 402,
+            formatted: "402 kb"
+          )
         )
       }
     }
@@ -118,6 +124,24 @@ final class BinarySizeProviderTests: XCTestCase {
           color: .yellow,
           isBold: true,
           hasLineBreakAfter: false
+        ),
+        ConsoleMessage(
+          text: " (install), ~",
+          color: .noColor,
+          isBold: false,
+          hasLineBreakAfter: false
+        ),
+        ConsoleMessage(
+          text: "402 kb",
+          color: .yellow,
+          isBold: true,
+          hasLineBreakAfter: false
+        ),
+        ConsoleMessage(
+          text: " (estimated download)",
+          color: .noColor,
+          isBold: false,
+          hasLineBreakAfter: false
         )
       ]
     )
@@ -133,6 +157,10 @@ final class BinarySizeProviderTests: XCTestCase {
       #"""
       {
         "amount" : 908,
+        "estimatedDownload" : {
+          "amount" : 402,
+          "formatted" : "402 kb"
+        },
         "formatted" : "908 kb"
       }
       """#
